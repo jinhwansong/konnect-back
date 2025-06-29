@@ -5,7 +5,6 @@ import { UsersService } from '@/users/users.service';
 import { JoinDto, LoginDto } from './dto/auth.dto';
 import { RedisService } from '@/redis/redis.service';
 import { SocialLoginProvider } from '@/common/enum/status.enum';
-import { Users } from '@/entities';
 
 @Injectable()
 export class AuthService {
@@ -52,7 +51,6 @@ export class AuthService {
     res.status(200).json({
       message: '로그인 되었습니다.',
       accessToken,
-      refreshToken,
       email,
       name: user.name,
       nickname: user.nickname,

@@ -1,9 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsString, Max, Min } from "class-validator";
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Users } from "./user.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Mentors } from "./mentor.entity";
-import { Like } from "./like.entity";
 
 @Entity({ schema: 'konnect', name: 'mentoring_reviews' })
 export class MentoringReview {
@@ -46,17 +44,17 @@ export class MentoringReview {
   })
   @UpdateDateColumn()
   updatedAt: Date;
-  @ApiProperty({ description: '멘토링 후기 작성자 (멘티)', required: true })
-  @ManyToOne(() => Users, (user) => user.review, {
-    onDelete: 'CASCADE',
-  })
-  mentee: Users;
+  // @ApiProperty({ description: '멘토링 후기 작성자 (멘티)', required: true })
+  // @ManyToOne(() => Users, (user) => user.review, {
+  //   onDelete: 'CASCADE',
+  // })
+  // mentee: Users;
 
   @ApiProperty({ description: '리뷰 대상 멘토', required: true })
   @ManyToOne(() => Mentors, (mentor) => mentor.review, {
     onDelete: 'CASCADE',
   })
   mentor: Mentors;
-  @OneToMany(() => Like, (like) => like.review)
-  likes: Like[];
+  // @OneToMany(() => Like, (like) => like.review)
+  // likes: Like[];
 }

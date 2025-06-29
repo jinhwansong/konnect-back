@@ -1,8 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Users } from "./user.entity";
-import { Article } from "./article.entity";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity({ schema: 'konnect', name: 'comment' })
 export class Comment {
@@ -39,15 +37,15 @@ export class Comment {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ApiProperty({ description: '댓글 작성자', required: true })
-  @ManyToOne(() => Users, (user) => user.comments, {
-    onDelete: 'CASCADE',
-  })
-  user: Users;
-  @ApiProperty({ description: '댓글 대상 (아티클)', required: false })
-  @ManyToOne(() => Article, (article) => article.comments, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  article: Article;
+  // @ApiProperty({ description: '댓글 작성자', required: true })
+  // @ManyToOne(() => Users, (user) => user.comments, {
+  //   onDelete: 'CASCADE',
+  // })
+  // user: Users;
+  // @ApiProperty({ description: '댓글 대상 (아티클)', required: false })
+  // @ManyToOne(() => Article, (article) => article.comments, {
+  //   nullable: true,
+  //   onDelete: 'CASCADE',
+  // })
+  // article: Article;
 }

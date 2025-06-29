@@ -1,14 +1,18 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
+import { AdminController } from './admin/admin.controller';
+import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoggerMiddleware } from './middlewares/logger.middelware';
-import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { MentorsController } from './mentors/mentors.controller';
+import { MentorsModule } from './mentors/mentors.module';
+import { LoggerMiddleware } from './middlewares/logger.middelware';
 import { RedisModule } from './redis/redis.module';
+import { UsersModule } from './users/users.module';
 
 
 @Module({
@@ -44,8 +48,10 @@ import { RedisModule } from './redis/redis.module';
     UsersModule,
     AuthModule,
     RedisModule,
+    MentorsModule,
+    AdminModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, MentorsController, AdminController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {

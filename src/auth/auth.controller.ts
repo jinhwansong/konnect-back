@@ -58,7 +58,6 @@ export class AuthController {
     status: 500,
     description: '서버 에러',
   })
-  @UseGuards(JwtAuthGuard)
   @Post('refresh')
   async refresh(@Req() req: Request) {
     const refreshToken = req.cookies['refreshToken'];
@@ -98,8 +97,7 @@ export class AuthController {
   }
   @UseGuards(AuthGuard('kakao'))
   @Get('kakao/callback')
-  async kakaoCallback(@Req() req, @Res() res: Response) {
-    // 세션이 제대로 저장되었는지 확인
+  async kakaoCallback( @Res() res: Response) {
     return res.redirect(`${process.env.CLIENT}`);
   }
 }
