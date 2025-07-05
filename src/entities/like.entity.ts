@@ -1,7 +1,10 @@
 import { LikeType } from "@/common/enum/status.enum";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum } from "class-validator";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Users } from "./user.entity";
+import { MentoringReview } from "./mentoring-review.entity";
+import { Article } from "./article.entity";
 
 @Entity({ schema: 'konnect', name: 'likes' })
 export class Like {
@@ -41,22 +44,22 @@ export class Like {
   })
   @UpdateDateColumn()
   updatedAt: Date;
-  // @ApiProperty({ description: '좋아요를 누른 사용자', required: true })
-  // @ManyToOne(() => Users, (user) => user.likes, {
-  //   onDelete: 'CASCADE',
-  // })
-  // user: Users;
+  @ApiProperty({ description: '좋아요를 누른 사용자', required: true })
+  @ManyToOne(() => Users, (user) => user.likes, {
+    onDelete: 'CASCADE',
+  })
+  user: Users;
 
-  // @ApiProperty({ description: '좋아요 대상 (멘토링 후기)', required: false })
-  // @ManyToOne(() => MentoringReview, (review) => review.likes, {
-  //   nullable: true,
-  //   onDelete: 'CASCADE',
-  // })
-  // review?: MentoringReview;
-  // @ApiProperty({ description: '좋아요 대상 (아티클)', required: false })
-  // @ManyToOne(() => Article, (article) => article.likes, {
-  //   nullable: true,
-  //   onDelete: 'CASCADE',
-  // })
-  // article?: Article;
+  @ApiProperty({ description: '좋아요 대상 (멘토링 후기)', required: false })
+  @ManyToOne(() => MentoringReview, (review) => review.likes, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  review?: MentoringReview;
+  @ApiProperty({ description: '좋아요 대상 (아티클)', required: false })
+  @ManyToOne(() => Article, (article) => article.likes, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  article?: Article;
 }

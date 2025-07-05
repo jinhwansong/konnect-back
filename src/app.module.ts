@@ -3,15 +3,15 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
-import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { MentorsController } from './mentors/mentors.controller';
+import { MentoringModule } from './mentoring/mentoring.module';
 import { MentorsModule } from './mentors/mentors.module';
 import { LoggerMiddleware } from './middlewares/logger.middelware';
 import { RedisModule } from './redis/redis.module';
+import { ScheduleModule } from './schedule/schedule.module';
 import { UsersModule } from './users/users.module';
 
 
@@ -50,8 +50,10 @@ import { UsersModule } from './users/users.module';
     RedisModule,
     MentorsModule,
     AdminModule,
+    MentoringModule,
+    ScheduleModule,
   ],
-  controllers: [AppController, MentorsController, AdminController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {

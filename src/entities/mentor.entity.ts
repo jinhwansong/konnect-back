@@ -1,10 +1,10 @@
-import { Status } from '@/common/enum/status.enum';
+import { MentorStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Users } from './user.entity';
-import { MentoringSession } from './mentoring-session.entity';
 import { MentoringReview } from './mentoring-review.entity';
 import { MentoringSchedule } from './mentoring-schedule.entity';
+import { MentoringSession } from './mentoring-session.entity';
+import { Users } from './user.entity';
 
 @Entity({ schema: 'konnect', name: 'mentors' })
 export class Mentors {
@@ -12,7 +12,7 @@ export class Mentors {
   id: string;
   @Column({ type: 'varchar', length: 20, nullable: true })
   company: string;
-  @Column({ type: 'text', nullable: false })
+  @Column({ type: 'varchar', nullable: false, length: 100 })
   introduce: string;
   @Column({ type: 'varchar', nullable: true })
   position: string;
@@ -22,12 +22,16 @@ export class Mentors {
   career: string;
   @Column({ type: 'varchar', nullable: false })
   portfolio: string;
-  @Column({ type: 'enum', enum: Status, default: Status.PENDING })
-  status: Status;
+  @Column({ type: 'enum', enum: MentorStatus, default: MentorStatus.PENDING })
+  status: MentorStatus;
+  @Column({ type: 'varchar', nullable: true, length: 100 })
+  reason: string;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()
   updatedAt: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  rejectedAt?: Date;
   @ApiProperty({ description: '멘토와 연결된 사용자', required: true })
   @OneToOne(() => Users, (user) => user.mentorProfile, { onDelete: 'CASCADE' })
   @JoinColumn()

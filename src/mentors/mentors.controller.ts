@@ -1,3 +1,6 @@
+import { JwtAuthGuard } from '@/auth/jwt.guard';
+import { User } from '@/common/decorators/user.decorator';
+import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
 import { Body, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -5,14 +8,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { MentorsService } from './mentors.service';
-import { JwtAuthGuard } from '@/auth/jwt.guard';
-import { User } from '@/common/decorators/user.decorator';
 import { CreateMentorDto } from './dto/mentor.dto';
-import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
+import { MentorsService } from './mentors.service';
 
 @UseInterceptors(UndefinedToNullInterceptor)
-@ApiTags('멘토')
+@ApiTags('Mentor')
 @Controller('mentors')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -25,10 +25,10 @@ export class MentorsController {
     description: '멘토 신청 완료',
     type: CreateMentorDto,
   })
-  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @ApiResponse({ status: 500, description: '멘토 신청 중 오류가 발생했습니다.' })
   @ApiResponse({
     status: 500,
-    description: '서버 에러',
+    description: '멘토 신청 중 오류가 발생했습니다.',
   })
   @Post('apply')
   async applyMentor(@User() user, @Body() dto: CreateMentorDto) {

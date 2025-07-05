@@ -1,4 +1,4 @@
-import { Status } from "@/common/enum/status.enum";
+import { MentorStatus } from "@/common/enum/status.enum";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class MentorListDto {
@@ -30,12 +30,12 @@ export class MentorListDto {
   })
   name: string;
   @ApiProperty({
-    example: Status.PENDING,
+    example: MentorStatus.PENDING,
     description: '승인 여부',
-    enum: Status,
+    enum: MentorStatus,
     required: true,
   })
-  status: Status;
+  status: MentorStatus;
   @ApiProperty({
     example: '2023-05-09T12:34:56Z',
     description: '멘토 등록일',

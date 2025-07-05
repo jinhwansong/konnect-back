@@ -30,7 +30,9 @@ export class MentorsService {
         await this.mentorRepository.save(mentor)
         return {message:'멘토 신청이 완료되었습니다.'}
     } catch (error) {
-        throw new InternalServerErrorException(error.message);
+        throw new InternalServerErrorException(
+        '멘토 신청 중 오류가 발생했습니다.',
+      );
     }
   }
 }

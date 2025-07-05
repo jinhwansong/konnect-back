@@ -1,7 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmpty, IsString } from "class-validator";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Users } from "./user.entity";
+import { Like } from "./like.entity";
+import { Comment } from "./comment.entity";
 
 @Entity({ schema: 'konnect', name: 'articles' })
 export class Article {
@@ -54,9 +56,9 @@ export class Article {
   @Column({ type: 'int', default: 0 })
   views: number;
 
-  // @OneToMany(() => Like, (like) => like.article)
-  // likes: Like[];
+  @OneToMany(() => Like, (like) => like.article)
+  likes: Like[];
 
-  // @OneToMany(() => Comment, (comment) => comment.article)
-  // comments: Comment[];
+  @OneToMany(() => Comment, (comment) => comment.article)
+  comments: Comment[];
 }

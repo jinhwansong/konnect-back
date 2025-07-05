@@ -1,17 +1,19 @@
 import { UserListDto } from '@/admin/dto/user.dto';
 import { JwtAuthGuard } from '@/auth/jwt.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
+import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
 import { UserRole } from '@/common/enum/status.enum';
 import { RolesGuard } from '@/common/guard/roles.guard';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
-import { Controller, Get, Param, ParseIntPipe, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
+import { ApproveOrRejectMentorDto } from './dto/approve.dto';
 import { MentorDetailDto, MentorListDto } from './dto/mentor.dto';
 
 @UseInterceptors(UndefinedToNullInterceptor)
-@ApiTags('관리자')
+@ApiTags('Admin')
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth('access-token')
@@ -33,7 +35,7 @@ export class AdminController {
   @Get('users')
   async getUserList(
     @Query() dto: PaginationDto,
-  ): Promise<{ data: UserListDto[]; totalPage: number, message:string }> {
+  ) {
     return this.adminService.getUserList(dto);
   }
 
@@ -52,7 +54,7 @@ export class AdminController {
   @Get('mentors')
   async getMentorList(
     @Query() dto: PaginationDto,
-  ): Promise<{ data: MentorListDto[], totalPage: number, message:string }> {
+  ) {
     return this.adminService.getMentorList(dto);
   }
 
@@ -73,5 +75,14 @@ export class AdminController {
   @Get('mentors/:id')
   async getMentorDetail(@Param('id', ParseIntPipe) id: string) {
     return this.adminService.getMentorDetail(id);
+  }
+  @ApiOperation({ summary: '승인/거절' })
+  @ApiResponse({
+    status: 200,
+    description: '승인/거절',
+  })
+  @Get('mentors/:id/approve')
+  async approveMentor(@Param('id', ParseIntPipe) id: string,@User() userId: string, @Body() body:ApproveOrRejectMentorDto) {
+    return this.adminService.approveMentor(id,userId,body);
   }
 }

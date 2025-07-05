@@ -1,4 +1,4 @@
-export enum Status {
+export enum MentorStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
   REJECTED = 'rejected',
@@ -22,7 +22,7 @@ export enum LikeType {
 }
 
 // 멘토링 현황
-export enum MemtoringStatus {
+export enum MentoringStatus {
   // 대기
   PENDING = 'pending',
   // 승인전

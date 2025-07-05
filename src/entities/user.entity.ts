@@ -5,6 +5,9 @@ import { Mentors } from './mentor.entity';
 import { MentoringReservation } from './mentoring-reservation.entity';
 import { Payment } from './payment.entity';
 import { SocialAccount } from './social-account.entity';
+import { MentoringReview } from './mentoring-review.entity';
+import { Like } from './like.entity';
+import { Comment } from './comment.entity';
 
 @Entity({ schema: 'konnect', name: 'users' })
 export class Users {
@@ -47,15 +50,15 @@ export class Users {
   @ApiProperty({ description: '소셜로그인', required: true })
   @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user)
   socialAccounts: SocialAccount[];
-  // @ApiProperty({ description: '멘토링 리뷰(멘티)', required: true })
-  // @OneToMany(() => MentoringReview, (review) => review.mentee)
-  // review: MentoringReview[];
-  // @ApiProperty({ description: '아티클 댓글', required: true })
-  // @OneToMany(() => Comment, (comments) => comments.user)
-  // comments: Comment[];
-  // @ApiProperty({ description: '좋아요 (멘토링, 아티클)', required: true })
-  // @OneToMany(() => Like, (likes) => likes.user)
-  // likes: Like[];
+  @ApiProperty({ description: '멘토링 리뷰(멘티)', required: true })
+  @OneToMany(() => MentoringReview, (review) => review.mentee)
+  review: MentoringReview[];
+  @ApiProperty({ description: '아티클 댓글', required: true })
+  @OneToMany(() => Comment, (comments) => comments.user)
+  comments: Comment[];
+  @ApiProperty({ description: '좋아요 (멘토링, 아티클)', required: true })
+  @OneToMany(() => Like, (likes) => likes.user)
+  likes: Like[];
   @ApiProperty({ description: '멘토링 예약', required: true })
   @OneToMany(() => MentoringReservation, (reservation) => reservation.mentee)
   reservation: MentoringReservation[];

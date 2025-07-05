@@ -1,8 +1,10 @@
 import { PaginationDto } from '@/common/dto/page.dto';
+import { MentorStatus, UserRole } from '@/common/enum/status.enum';
 import { Mentors, Users } from '@/entities';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ApproveOrRejectMentorDto } from './dto/approve.dto';
 
 @Injectable()
 export class AdminService {
@@ -42,6 +44,7 @@ export class AdminService {
 
       return {
         data,
+        total,
         totalPage: Math.ceil(total / limit),
         message: '멘토신청  목록을 조회했습니다.',
       };
@@ -116,6 +119,48 @@ export class AdminService {
     } catch (error) {
       throw new InternalServerErrorException(
         '사용자 목록 를 찾을 수 없습니다.',
+      );
+    }
+  }
+  // 승인 / 거절
+  async approveMentor (mentorId :string, userId:string,body:ApproveOrRejectMentorDto) {
+    const admin = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!admin) throw new NotFoundException('사용자를 찾을 수 없습니다.');
+
+    if (admin.role !== UserRole.ADMIN)
+      throw new ForbiddenException('관리자만 이 작업을 수행할 수 있습니다.');
+    const mentor = await this.mentorRepository.findOne({
+      where: { id: mentorId },
+    });
+    if (!mentor) throw new NotFoundException('멘토 정보를 찾을 수 없습니다.');
+    if (body.status === MentorStatus.REJECTED && !body.reason) {
+      throw new BadRequestException('거절 사유를 입력해야 합니다.');
+    }
+    mentor.status = body.status;
+    mentor.reason = body.reason || null;
+    if (body.status === MentorStatus.REJECTED) {
+      mentor.rejectedAt = new Date();
+    } else {
+      mentor.rejectedAt = null;
+      mentor.reason = null;
+    }
+    try {
+      
+      await this.mentorRepository.save(mentor);
+      if(body.status === MentorStatus.REJECTED) {
+        return {
+          message: '멘토가 거절되었습니다.',
+        }
+      }
+      return {
+        message: '멘토가 승인되었습니다.',
+      };
+
+    } catch (error) {
+      throw new InternalServerErrorException(
+        '멘토 승인/거절 처리 중 오류가 발생했습니다.',
       );
     }
   }
