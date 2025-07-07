@@ -1,31 +1,36 @@
-import { MentoringStatus, MentorStatus } from '@/common/enum/status.enum';
+import { MentoringStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { MentoringReview } from './mentoring-review.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Payment } from './payment.entity';
 import { Users } from './user.entity';
 
 @Entity({ schema: 'konnect', name: 'mentoring_reservation' })
 export class MentoringReservation {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({
     type: 'enum',
     enum: MentoringStatus,
-    default: MentorStatus.PENDING,
+    default: MentoringStatus.PENDING,
   })
-  status: MentorStatus;
+  status: MentoringStatus;
 
   @Column({ type: 'date', nullable: false })
   date: string;
   @Column({ type: 'time', nullable: false })
   startTime: string;
 
-
   @Column({ type: 'time', nullable: false })
   endTime: string;
+
+  @Column({ type: 'text', nullable: false })
+  question: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  expiresAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -42,6 +47,8 @@ export class MentoringReservation {
   })
   session: MentoringSession;
   @ApiProperty({ description: '결제된 멘토링 세션', required: true })
-  @OneToMany(() => Payment, (payment) => payment.reservation)
+  @OneToOne(() => Payment, (payment) => payment.reservation)
   payments: Payment[];
+  @OneToMany(()=> MentoringReview, (review) => review.reservation)
+  review: MentoringReview[];
 }

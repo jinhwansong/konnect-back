@@ -2,9 +2,8 @@ import { LikeType } from "@/common/enum/status.enum";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum } from "class-validator";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Users } from "./user.entity";
 import { MentoringReview } from "./mentoring-review.entity";
-import { Article } from "./article.entity";
+import { Users } from "./user.entity";
 
 @Entity({ schema: 'konnect', name: 'likes' })
 export class Like {
@@ -56,10 +55,10 @@ export class Like {
     onDelete: 'CASCADE',
   })
   review?: MentoringReview;
-  @ApiProperty({ description: '좋아요 대상 (아티클)', required: false })
-  @ManyToOne(() => Article, (article) => article.likes, {
-    nullable: true,
-    onDelete: 'CASCADE',
-  })
-  article?: Article;
+  // @ApiProperty({ description: '좋아요 대상 (아티클)', required: false })
+  // @ManyToOne(() => Article, (article) => article.likes, {
+  //   nullable: true,
+  //   onDelete: 'CASCADE',
+  // })
+  // article?: Article;
 }

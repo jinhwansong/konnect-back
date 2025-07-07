@@ -4,7 +4,7 @@ import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
 import { UserRole } from '@/common/enum/status.enum';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateMentoringSessionDto, MentoringSessionResponseDto } from './dto/mentoring.session.dto';
 import { UpdateMentoringSessionDto } from './dto/update.mentoring.session.dto';
@@ -46,7 +46,8 @@ export class MentoringController {
     @ApiResponse({
         status: 200,
         description: '등록된 세션 목록',
-        type: [MentoringSessionResponseDto],
+        type: MentoringSessionResponseDto,
+        isArray: true,
     })
     @ApiResponse({
         status: 500,
@@ -64,15 +65,15 @@ export class MentoringController {
     @ApiResponse({ status: 404, description: '세션을 찾을 수 없습니다.' })
     @Get('session/:id')
     async getSessionDetail(
-        @Param('id', ParseIntPipe) sessionId: string,
+        @Param('id') sessionId: string,
         @User('id') userId: string,
     ) {
         return this.mentoringService.getSessionDetail(userId, sessionId);
     }
-
-    @Put('session/:id')
+    @ApiOperation({ summary: '멘토링 세션 수정' })
+    @Patch('session/:id')
     async updateSession(
-        @Param('id', ParseIntPipe) sessionId: string,
+        @Param('id') sessionId: string,
         @User('id') userId: string,
         @Body() body: UpdateMentoringSessionDto,
     ) {
@@ -82,7 +83,7 @@ export class MentoringController {
     @Delete('session/:id')
     @ApiOperation({ summary: '멘토링 세션 삭제' })
     async deleteSession(
-    @Param('id', ParseIntPipe) sessionId: string,
+    @Param('id') sessionId: string,
     @User('id') userId: string,
     ) {
         return this.mentoringService.deleteSession(userId, sessionId);

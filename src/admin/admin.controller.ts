@@ -26,7 +26,8 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: '사용자 목록 조회 성공',
-    type: [UserListDto],
+    type: UserListDto,
+    isArray: true,
   })
   @ApiResponse({
     status: 404,
@@ -45,7 +46,8 @@ export class AdminController {
   @ApiResponse({
     status: 200,
     description: '멘토 신청 목록',
-    type: [MentorListDto],
+    type: MentorListDto,
+    isArray: true,
   })
   @ApiResponse({
     status: 500,

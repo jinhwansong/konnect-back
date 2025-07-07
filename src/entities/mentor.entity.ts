@@ -1,7 +1,6 @@
 import { MentorStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { MentoringReview } from './mentoring-review.entity';
 import { MentoringSchedule } from './mentoring-schedule.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Users } from './user.entity';
@@ -39,9 +38,6 @@ export class Mentors {
   @ApiProperty({ description: '멘토링 세션', required: true })
   @OneToMany(() => MentoringSession, (session) => session.mentor)
   sessions: MentoringSession[];
-  @ApiProperty({ description: '멘토링 리뷰(멘토)', required: true })
-  @OneToMany(() => MentoringReview, (review) => review.mentor)
-  review: MentoringReview[];
   @ApiProperty({ description: '멘토링 시간 조정', required: true })
   @OneToMany(() => MentoringSchedule, (schedule) => schedule.mentor)
   schedule: MentoringSchedule[];

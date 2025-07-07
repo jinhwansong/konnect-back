@@ -51,8 +51,8 @@ export class MentoringService {
   async getSession (userId: string, { page = 1, limit = 10 }: PaginationDto ) {
     try {
       const mentor = await this.mentorRepository.findOne({
-      where: { user: { id: userId } },
-    });
+        where: { user: { id: userId } },
+      });
 
     if (!mentor) {
       throw new NotFoundException('멘토 정보를 찾을 수 없습니다.');
@@ -75,7 +75,6 @@ export class MentoringService {
     return {
       data,
       total,
-      page,
       totalPages: Math.ceil(total / limit),
     };
     } catch (error) {

@@ -1,13 +1,12 @@
 import { UserRole } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Like } from './like.entity';
 import { Mentors } from './mentor.entity';
 import { MentoringReservation } from './mentoring-reservation.entity';
+import { MentoringReview } from './mentoring-review.entity';
 import { Payment } from './payment.entity';
 import { SocialAccount } from './social-account.entity';
-import { MentoringReview } from './mentoring-review.entity';
-import { Like } from './like.entity';
-import { Comment } from './comment.entity';
 
 @Entity({ schema: 'konnect', name: 'users' })
 export class Users {
@@ -53,9 +52,9 @@ export class Users {
   @ApiProperty({ description: '멘토링 리뷰(멘티)', required: true })
   @OneToMany(() => MentoringReview, (review) => review.mentee)
   review: MentoringReview[];
-  @ApiProperty({ description: '아티클 댓글', required: true })
-  @OneToMany(() => Comment, (comments) => comments.user)
-  comments: Comment[];
+  // @ApiProperty({ description: '아티클 댓글', required: true })
+  // @OneToMany(() => Comment, (comments) => comments.user)
+  // comments: Comment[];
   @ApiProperty({ description: '좋아요 (멘토링, 아티클)', required: true })
   @OneToMany(() => Like, (likes) => likes.user)
   likes: Like[];

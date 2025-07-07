@@ -6,13 +6,21 @@ import { DataSource } from 'typeorm';
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
 import { MentoringModule } from './mentoring/mentoring.module';
 import { MentorsModule } from './mentors/mentors.module';
 import { LoggerMiddleware } from './middlewares/logger.middelware';
+import { PaymentModule } from './payment/payment.module';
 import { RedisModule } from './redis/redis.module';
+import { ReservationModule } from './reservation/reservation.module';
+import { ReviewModule } from './review/review.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 import { UsersModule } from './users/users.module';
+import { SessionController } from './session/session.controller';
+import { SessionService } from './session/session.service';
+import { SessionModule } from './session/session.module';
 
 
 @Module({
@@ -52,9 +60,15 @@ import { UsersModule } from './users/users.module';
     AdminModule,
     MentoringModule,
     ScheduleModule,
+    ReservationModule,
+    PaymentModule,
+    SchedulerModule,
+    ReviewModule,
+    ArticleModule,
+    SessionModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, SessionController],
+  providers: [AppService, SessionService],
 })
 export class AppModule implements NestModule {
   constructor(private dataSource: DataSource) {}

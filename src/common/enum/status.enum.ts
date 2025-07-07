@@ -23,21 +23,16 @@ export enum LikeType {
 
 // 멘토링 현황
 export enum MentoringStatus {
-  // 대기
   PENDING = 'pending',
-  // 승인전
-  COMFIRMED = 'confirmed',
-  // 취소
+  CONFIRMED = 'confirmed',
   CANCELLED = 'cancelled',
-  // 완료
   COMPLETED = 'completed',
-  // 승인후
   PROGRESS = 'progress',
 }
 
 export enum PaymentStatus {
   PENDING = 'pending',
-  SUCCESS = 'completed',
+  SUCCESS = 'success',
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }

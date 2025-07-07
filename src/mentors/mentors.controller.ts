@@ -13,7 +13,7 @@ import { MentorsService } from './mentors.service';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Mentor')
-@Controller('mentors')
+@Controller('mentor')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 export class MentorsController {

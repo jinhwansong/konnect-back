@@ -3,7 +3,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { UserRole } from '@/common/enum/status.enum';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateMentoringScheduleDto } from './dto/schedule.dto';
 import { UpdateMentoringScheduleDto } from './dto/update.schedule.dto';
@@ -35,7 +35,7 @@ export class ScheduleController {
     @ApiResponse({ status: 404, description: '스케줄을 찾을 수 없습니다.' })
     async updateSchedule(
         @User('id') userId: string,
-        @Param('id', ParseIntPipe) scheduleId: string,
+        @Param('id') scheduleId: string,
         @Body() body: UpdateMentoringScheduleDto,
     ) {
         return this.scheduleService.updateSchedule(userId,scheduleId, body);
@@ -47,7 +47,7 @@ export class ScheduleController {
     @ApiResponse({ status: 403, description: '본인의 스케줄만 삭제 가능' })
     @ApiResponse({ status: 404, description: '스케줄을 찾을 수 없습니다.' })
     async deleteSchedule(
-        @Param('id', ParseIntPipe) scheduleId: string,
+        @Param('id') scheduleId: string,
         @User('id') userId: string,
     ) {
         return this.scheduleService.deleteSchedule(userId, scheduleId);
