@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsBoolean, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class UpdateMentoringSessionDto {
   @ApiPropertyOptional()
@@ -21,4 +21,9 @@ export class UpdateMentoringSessionDto {
   @IsOptional()
   @IsNumber()
   duration?: number;
+}
+export class UpdateSessionPublicDto {
+  @ApiProperty({ example: true, description: '공개 여부' })
+  @IsBoolean()
+  isPublic: boolean;
 }

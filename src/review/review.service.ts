@@ -1,6 +1,6 @@
 import { PaginationDto } from '@/common/dto/page.dto';
 import { MentoringStatus } from '@/common/enum/status.enum';
-import { Like, MentoringReservation, MentoringReview, Users } from '@/entities';
+import { Like, MentoringReservation, MentoringReview, MentoringSession, Users } from '@/entities';
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,6 +18,9 @@ export class ReviewService {
         private readonly reservationRepository: Repository<MentoringReservation>,
         @InjectRepository(Like)
         private readonly likeRepository: Repository<Like>,
+        @InjectRepository(MentoringSession)
+        private readonly sessionRepository: Repository<MentoringSession>,
+        
     ){}
 
     async createReview(body: CreateReviewDto, userId:string){
@@ -54,8 +57,11 @@ export class ReviewService {
                 reservation,
                 rating:body.rating,
                 content:body.content,
+                session: reservation.session,
             });
             this.reviewRepository.save(review);
+            
+            await this.recalculateSessionRating(review.session)
             return {message:'후기를 작성하셨습니다.'}
         } catch (error) {
             throw new InternalServerErrorException('후기 작성 중 오류가 발생했습니다.');
@@ -79,7 +85,9 @@ export class ReviewService {
             if (body.content) review.content = body.content;
             if (body.rating) review.rating = body.rating;
 
-            return await this.reviewRepository.save(review);
+            await this.reviewRepository.save(review);
+            await this.recalculateSessionRating(review.session)
+             return {message:'후기를 수정하셨습니다.'}
         } catch (error) {
             throw new InternalServerErrorException('후기 수정 중 오류가 발생했습니다.');
         }
@@ -99,7 +107,7 @@ export class ReviewService {
                 throw new ForbiddenException('본인이 작성한 후기만 삭제할 수 있습니다.');
             }
             await this.reviewRepository.remove(review);
-
+            await this.recalculateSessionRating(review.session)
             return { message: '후기가 성공적으로 삭제되었습니다.' };
         } catch (error) {
             throw new InternalServerErrorException('후기 삭제 중 오류가 발생했습니다.');
@@ -158,5 +166,15 @@ export class ReviewService {
         } catch (error) {
             throw new InternalServerErrorException('리뷰 좋아요 중 오류가 발생했습니다.');
         }
+    }
+
+    private async recalculateSessionRating(session: MentoringSession) {
+        const [reviews, count] = await this.reviewRepository.findAndCount({
+            where: {session: {id:session.id}}
+        })
+        const avg = count > 0 ? reviews.reduce((sum, acc) => sum + acc.rating, 0) / count : 0
+        session.averageRating = avg
+        session.reviewCount = count
+        await this.sessionRepository.save(session)
     }
 }

@@ -24,7 +24,6 @@ export class CreateMentoringSessionDto {
 }
 
 export class MentoringSessionResponseDto {
-
   @ApiProperty()
   title: string;
 
@@ -39,5 +38,4 @@ export class MentoringSessionResponseDto {
 
   @ApiProperty()
   createdAt: Date;
-
 }

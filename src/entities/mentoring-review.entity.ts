@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Like } from "./like.entity";
 import { MentoringReservation } from "./mentoring-reservation.entity";
+import { MentoringSession } from "./mentoring-session.entity";
 import { Users } from "./user.entity";
 
 @Entity({ schema: 'konnect', name: 'mentoring_reviews' })
@@ -29,4 +30,9 @@ export class MentoringReview {
   })
   @ApiProperty({ description: '후기를 남긴 멘토링 예약 정보', required: true })
   reservation: MentoringReservation;
+  @ManyToOne(() => MentoringSession, (session) => session.reviews, {
+    onDelete: 'CASCADE',
+  })
+  @ApiProperty({ description: '해당 리뷰가 속한 멘토링 세션' })
+  session: MentoringSession;
 }

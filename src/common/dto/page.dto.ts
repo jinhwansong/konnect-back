@@ -8,3 +8,5 @@ export class PaginationDto {
   @ApiProperty({ description: '페이지당 항목 수', example: 10, default: 10 })
   limit?: number = 10;
 }
+
+

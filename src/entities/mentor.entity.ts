@@ -25,6 +25,8 @@ export class Mentors {
   status: MentorStatus;
   @Column({ type: 'varchar', nullable: true, length: 100 })
   reason: string;
+  @Column({ default: true })
+  isCompanyHidden: boolean;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()

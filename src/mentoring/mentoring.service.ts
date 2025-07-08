@@ -5,7 +5,7 @@ import { ForbiddenException, Injectable, InternalServerErrorException, NotFoundE
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateMentoringSessionDto } from './dto/mentoring.session.dto';
-import { UpdateMentoringSessionDto } from './dto/update.mentoring.session.dto';
+import { UpdateMentoringSessionDto, UpdateSessionPublicDto } from './dto/update.mentoring.session.dto';
 
 @Injectable()
 export class MentoringService {
@@ -140,5 +140,17 @@ export class MentoringService {
      await this.sessionRepository.remove(session);
 
      return { message: '세션이 성공적으로 삭제되었습니다.' };
+  }
+
+  async updateSessionPublic (userId: string, sessionId: string, body:UpdateSessionPublicDto) {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId },
+      relations: ['mentor', 'mentor.user'],
+    });
+    if(!session) throw new NotFoundException('세션을 찾을 수 없습니다.');
+    if(session.mentor.user.id !== userId) throw new ForbiddenException('본인의 세션만 수정할 수 있습니다.');
+    session.isPublic = body.isPublic
+    await this.sessionRepository.save(session)
+    return { message: `세션이 ${body.isPublic ? '공개' : '비공개'}로 변경되었습니다.` };
   }
 }

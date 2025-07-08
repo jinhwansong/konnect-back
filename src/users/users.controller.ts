@@ -1,11 +1,12 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserDto } from '@/auth/dto/auth.dto';
 import { JwtAuthGuard } from '@/auth/jwt.guard';
 import { User } from '@/common/decorators/user.decorator';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { UserDto } from '@/auth/dto/auth.dto';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UsersService } from './users.service';
 
-@Controller('users')
+@ApiTags('User')
+@Controller('user')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 

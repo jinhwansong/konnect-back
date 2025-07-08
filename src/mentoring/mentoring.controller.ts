@@ -3,11 +3,12 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
 import { UserRole } from '@/common/enum/status.enum';
+import { RolesGuard } from '@/common/guard/roles.guard';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateMentoringSessionDto, MentoringSessionResponseDto } from './dto/mentoring.session.dto';
-import { UpdateMentoringSessionDto } from './dto/update.mentoring.session.dto';
+import { UpdateMentoringSessionDto, UpdateSessionPublicDto } from './dto/update.mentoring.session.dto';
 import { MentoringService } from './mentoring.service';
 
 @UseInterceptors(UndefinedToNullInterceptor)
@@ -15,7 +16,7 @@ import { MentoringService } from './mentoring.service';
 @ApiBearerAuth('access-token')
 @Controller('mentoring')
 @Roles(UserRole.MENTOR)
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class MentoringController {
     constructor(private readonly mentoringService: MentoringService) {}
     
@@ -33,14 +34,14 @@ export class MentoringController {
         status: 500,
         description: '멘토링 세션 등록 중 오류가 발생했습니다.',
     })
-    @Post('session')
+    @Post('')
     async createSession(
         @User('id') userId: string,
         @Body() body: CreateMentoringSessionDto,
     ) {
         return this.mentoringService.createSession(userId, body);
     }
-    @ApiOperation({ summary: '등록된 세션 목록 조회' })
+    @ApiOperation({ summary: '멘토가 등록한 세션 목록 조회' })
     @ApiQuery({ name: 'page', required: false, example: 1 })
     @ApiQuery({ name: 'limit', required: false, example: 10 })
     @ApiResponse({
@@ -53,17 +54,17 @@ export class MentoringController {
         status: 500,
         description: '등록된 세션 목록을 찾을 수 없습니다.',
     })
-    @Get('session')
+    @Get('')
     async getSession(
         @User('id') userId: string,
         @Query() dto: PaginationDto,
     ) {
         return this.mentoringService.getSession(userId, dto);
     }
-    @ApiOperation({ summary: '멘토링 세션 상세 조회' })
+    @ApiOperation({ summary: '멘토가 등록한 세션 상세 조회' })
     @ApiResponse({ status: 200, type: MentoringSessionResponseDto })
     @ApiResponse({ status: 404, description: '세션을 찾을 수 없습니다.' })
-    @Get('session/:id')
+    @Get(':id')
     async getSessionDetail(
         @Param('id') sessionId: string,
         @User('id') userId: string,
@@ -71,7 +72,7 @@ export class MentoringController {
         return this.mentoringService.getSessionDetail(userId, sessionId);
     }
     @ApiOperation({ summary: '멘토링 세션 수정' })
-    @Patch('session/:id')
+    @Patch(':id')
     async updateSession(
         @Param('id') sessionId: string,
         @User('id') userId: string,
@@ -80,12 +81,22 @@ export class MentoringController {
         return this.mentoringService.updateSession(userId, sessionId, body);
     }
 
-    @Delete('session/:id')
+    @Delete(':id')
     @ApiOperation({ summary: '멘토링 세션 삭제' })
     async deleteSession(
     @Param('id') sessionId: string,
     @User('id') userId: string,
     ) {
         return this.mentoringService.deleteSession(userId, sessionId);
+    }
+
+    @ApiOperation({ summary: '멘토링 세션별 공개 여부' })
+    @Patch(':id/public')
+    async updatePublic(
+        @Param('id') sessionId: string,
+        @Body() body: UpdateSessionPublicDto,
+        @User('id') userId: string,
+    ) {
+    return this.mentoringService.updateSessionPublic(userId, sessionId, body);
     }
 }

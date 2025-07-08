@@ -1,6 +1,9 @@
 import { JwtAuthGuard } from '@/auth/jwt.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
+import { UserRole } from '@/common/enum/status.enum';
+import { RolesGuard } from '@/common/guard/roles.guard';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
 import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -10,18 +13,20 @@ import { PaymentService } from './payment.service';
 
 @ApiTags('Payment')
 @UseInterceptors(UndefinedToNullInterceptor)
-@UseGuards(JwtAuthGuard)
+
 @ApiBearerAuth('access-token')
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
-
+  @UseGuards(JwtAuthGuard)
   @Post('confirm')
   @ApiOperation({ summary: '결제 성공 시 Toss confirm 처리' })
   async confirmPayment(@Body() body:ConfirmPaymentDto, @User() userId:string) {
     return this.paymentService.confirmPayment(body,userId);
   }
 
+  @Roles(UserRole.MENTOR)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('mentor-income')
   @ApiOperation({ summary: '멘토 수입 내역 조회' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
@@ -42,7 +47,7 @@ export class PaymentController {
   ) {
     return this.paymentService.getMentorIncome(userId, query);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get('mentee-income')
   @ApiOperation({ summary: '멘티 결제 내역 조회' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
@@ -63,7 +68,7 @@ export class PaymentController {
   ) {
     return this.paymentService.getMenteeIncome(userId, query);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Post('refund')
   @ApiOperation({ summary: '결제 환불' })
   async refundPayment(

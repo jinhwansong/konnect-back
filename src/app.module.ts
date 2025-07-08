@@ -17,10 +17,8 @@ import { ReservationModule } from './reservation/reservation.module';
 import { ReviewModule } from './review/review.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
-import { UsersModule } from './users/users.module';
-import { SessionController } from './session/session.controller';
-import { SessionService } from './session/session.service';
 import { SessionModule } from './session/session.module';
+import { UsersModule } from './users/users.module';
 
 
 @Module({
@@ -67,8 +65,8 @@ import { SessionModule } from './session/session.module';
     ArticleModule,
     SessionModule,
   ],
-  controllers: [AppController, SessionController],
-  providers: [AppService, SessionService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   constructor(private dataSource: DataSource) {}
