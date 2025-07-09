@@ -1,8 +1,16 @@
-import { PaymentStatus } from "@/common/enum/status.enum";
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { MentoringReservation } from "./mentoring-reservation.entity";
-import { Users } from "./user.entity";
+import { PaymentStatus } from '@/common/enum/status.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { MentoringReservation } from './mentoring-reservation.entity';
+import { Users } from './user.entity';
 
 @Entity({ schema: 'konnect', name: 'payment' })
 export class Payment {
@@ -13,7 +21,7 @@ export class Payment {
   })
   @PrimaryGeneratedColumn('uuid')
   id: string;
-  
+
   @Column({ type: 'int', nullable: false })
   price: number;
   @Column({ type: 'varchar', length: 60, nullable: false })
@@ -34,12 +42,8 @@ export class Payment {
   @ManyToOne(() => Users, (user) => user.payments, { onDelete: 'CASCADE' })
   user: Users;
   @ApiProperty({ description: '결제된 예약', required: true })
-  @OneToOne(
-    () => MentoringReservation,
-    (reservation) => reservation.payments,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
+  @OneToOne(() => MentoringReservation, (reservation) => reservation.payments, {
+    onDelete: 'CASCADE',
+  })
   reservation: MentoringReservation;
 }

@@ -1,12 +1,20 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Comment } from "./comment.entity";
-import { Like } from "./like.entity";
-import { Users } from "./user.entity";
+import { ArticleCategory } from '@/common/enum/category.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Comment } from './comment.entity';
+import { Like } from './like.entity';
+import { Users } from './user.entity';
 
 @Entity({ schema: 'konnect', name: 'articles' })
 export class Article {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -17,7 +25,9 @@ export class Article {
   content: string;
   @Column({ type: 'varchar', length: 255, nullable: true })
   thumbnail: string;
-  
+
+  @Column({ type: 'enum', enum: ArticleCategory, nullable: true })
+  category: ArticleCategory;
   @CreateDateColumn()
   createdAt: Date;
 

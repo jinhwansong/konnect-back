@@ -1,6 +1,15 @@
 import { UserRole } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { Mentors } from './mentor.entity';
@@ -26,14 +35,14 @@ export class Users {
     nullable: false,
   })
   password: string | null;
-  
+
   @Column({ type: 'varchar', length: 30, unique: true, nullable: false })
   nickname: string;
   @Column({ type: 'varchar', length: 30, nullable: false })
   name: string;
   @Column({ type: 'varchar', length: 11, unique: true, nullable: false })
   phone: string;
- 
+
   @Column({ type: 'text', nullable: true })
   image: string;
 

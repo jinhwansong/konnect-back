@@ -1,12 +1,20 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Mentors } from "./mentor.entity";
-import { MentoringReservation } from "./mentoring-reservation.entity";
-import { MentoringReview } from "./mentoring-review.entity";
+import { MentoringCategory } from '@/common/enum/category.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Mentors } from './mentor.entity';
+import { MentoringReservation } from './mentoring-reservation.entity';
+import { MentoringReview } from './mentoring-review.entity';
 
 @Entity({ schema: 'konnect', name: 'mentoring_sessions' })
 export class MentoringSession {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
   @Column({ type: 'varchar', length: 255, nullable: false })
@@ -24,8 +32,8 @@ export class MentoringSession {
   averageRating: number;
   @Column({ type: 'int', default: 0 })
   reviewCount: number;
-  @Column({ type: 'varchar', length: 100 })
-  category: string;
+  @Column({ type: 'enum', enum: MentoringCategory })
+  category: MentoringCategory;
   @Column({ default: true })
   isPublic: boolean;
   @CreateDateColumn()
@@ -42,5 +50,4 @@ export class MentoringSession {
   reservation: MentoringReservation[];
   @OneToMany(() => MentoringReview, (review) => review.session)
   reviews: MentoringReview[];
-  
 }

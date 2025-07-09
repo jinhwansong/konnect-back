@@ -1,9 +1,17 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Like } from "./like.entity";
-import { MentoringReservation } from "./mentoring-reservation.entity";
-import { MentoringSession } from "./mentoring-session.entity";
-import { Users } from "./user.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Like } from './like.entity';
+import { MentoringReservation } from './mentoring-reservation.entity';
+import { MentoringSession } from './mentoring-session.entity';
+import { Users } from './user.entity';
 
 @Entity({ schema: 'konnect', name: 'mentoring_reviews' })
 export class MentoringReview {

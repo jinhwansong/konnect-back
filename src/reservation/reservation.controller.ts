@@ -1,7 +1,7 @@
 import { JwtAuthGuard } from '@/auth/jwt.guard';
 import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
-import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
+import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNull.Interceptor';
 import { Body, Controller, Get, Param, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateReservationDto, ReservationItemDto } from './dto/reservation.dto';

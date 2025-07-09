@@ -1,7 +1,14 @@
-import { SocialLoginProvider } from "@/common/enum/status.enum";
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Users } from "./user.entity";
+import { SocialLoginProvider } from '@/common/enum/status.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Users } from './user.entity';
 
 @Entity({ schema: 'konnect', name: 'social_accounts' })
 export class SocialAccount {

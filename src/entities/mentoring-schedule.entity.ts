@@ -1,7 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Mentors } from './mentor.entity';
 import { DayOfWeek } from '@/common/enum/day.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Mentors } from './mentor.entity';
 
 @Entity({ schema: 'konnect', name: 'mentoring_schedules' })
 export class MentoringSchedule {

@@ -2,7 +2,7 @@ import { JwtAuthGuard } from '@/auth/jwt.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { UserRole } from '@/common/enum/status.enum';
-import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
+import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNull.Interceptor';
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateMentoringScheduleDto } from './dto/schedule.dto';

@@ -4,7 +4,7 @@ import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
 import { UserRole } from '@/common/enum/status.enum';
 import { RolesGuard } from '@/common/guard/roles.guard';
-import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNullInterceptor';
+import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNull.Interceptor';
 import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MenteePaymentHistoryDto, MentorIComeResponseDto } from './dto/icome.dto';

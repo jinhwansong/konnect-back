@@ -1,11 +1,17 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Article } from "./article.entity";
-import { Users } from "./user.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Article } from './article.entity';
+import { Users } from './user.entity';
 
 @Entity({ schema: 'konnect', name: 'comment' })
 export class Comment {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

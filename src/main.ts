@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import dotenv from 'dotenv';
 import path from 'path';
 import { AppModule } from './app.module';
-import { createUploadFolder } from './common/utill/upload.utils';
+import { createUploadFolder } from './common/util/upload.folder';
 import { HttpExceptionFilter } from './httpException.fliter';
 
 declare const module: any;
@@ -23,10 +23,7 @@ async function bootstrap() {
   // 예외처리
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
-
-  // 업로드 폴더 생성
-  createUploadFolder('uploads/article');
-  createUploadFolder('uploads/chat-files');
+  createUploadFolder('uploads');
   // 이미지 정적 파일
   const uploadsPath = path.join(__dirname, '..', 'uploads');
   app.useStaticAssets(uploadsPath, { prefix: '/uploads' });

@@ -1,6 +1,15 @@
 import { MentorStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { MentoringSchedule } from './mentoring-schedule.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Users } from './user.entity';

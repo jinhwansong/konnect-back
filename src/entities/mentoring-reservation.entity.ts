@@ -1,6 +1,15 @@
 import { MentoringStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { MentoringReview } from './mentoring-review.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Payment } from './payment.entity';
@@ -49,6 +58,6 @@ export class MentoringReservation {
   @ApiProperty({ description: '결제된 멘토링 세션', required: true })
   @OneToOne(() => Payment, (payment) => payment.reservation)
   payments: Payment[];
-  @OneToMany(()=> MentoringReview, (review) => review.reservation)
+  @OneToMany(() => MentoringReview, (review) => review.reservation)
   review: MentoringReview[];
 }
