@@ -9,7 +9,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Comment } from './comment.entity';
 import { Like } from './like.entity';
 import { Users } from './user.entity';
 
@@ -45,6 +44,6 @@ export class Article {
   @OneToMany(() => Like, (like) => like.article)
   likes: Like[];
 
-  @OneToMany(() => Comment, (comment) => comment.article)
-  comments: Comment[];
+  // @OneToMany(() => Comment, (comment) => comment.article)
+  // comments: Comment[];
 }

@@ -1,5 +1,5 @@
 export { Article } from './article.entity';
-export { Comment } from './comment.entity';
+// export { Comment } from './comment.entity';
 export { Like } from './like.entity';
 export { Mentors } from './mentor.entity';
 export { MentoringReservation } from './mentoring-reservation.entity';
