@@ -1,10 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '@/users/users.service';
 import { JoinDto, LoginDto } from './dto/auth.dto';
 import { RedisService } from '@/redis/redis.service';
 import { SocialLoginProvider } from '@/common/enum/status.enum';
+import { sendEmailDto, verifyCodeDto } from './dto/email.dto';
+import { MailService } from '@/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -12,13 +19,18 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
+    private readonly mailService: MailService,
   ) {}
   async join(body: JoinDto) {
     const { email, name, nickname, phone, password } = body;
     // 이메일 중복체크
     const exUser = await this.usersService.findByEmail(email);
     if (exUser) {
-      throw new UnauthorizedException('이미 사용중인 이메일 입니다.');
+      throw new ConflictException('이미 사용중인 이메일 입니다.');
+    }
+    const exNickname = await this.usersService.findByNickname(nickname);
+    if (exNickname) {
+      throw new ConflictException('이미 사용중인 닉네임입니다.');
     }
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -43,10 +55,9 @@ export class AuthService {
     const { accessToken, refreshToken } = this.createToken(user.id, user.email);
     await this.saveRefreshToken(user.id, refreshToken);
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true, // 클라이언트에서 접근 불가 (보안)
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 1일
+      maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
       message: '로그인 되었습니다.',
@@ -99,7 +110,7 @@ export class AuthService {
     name: string,
   ) {
     let user = await this.usersService.findUserBySocialId(provider, socialId);
-    if(!user){
+    if (!user) {
       user = await this.usersService.createSocialUser(
         email,
         name,
@@ -115,7 +126,7 @@ export class AuthService {
       user,
     };
   }
-  createToken(userId:string, email:string) {
+  createToken(userId: string, email: string) {
     // Access Token
     const accessToken = this.jwtService.sign(
       { id: userId, email },
@@ -128,7 +139,35 @@ export class AuthService {
     );
     return { accessToken, refreshToken };
   }
-  async saveRefreshToken(userId: string, refreshToken:string) {
+  async saveRefreshToken(userId: string, refreshToken: string) {
     return await this.redisService.saveRefreshToken(userId, refreshToken);
+  }
+  async duplicateEmail(email: string) {
+    const exUser = await this.usersService.findByEmail(email);
+    if (exUser) {
+      throw new ConflictException('이미 사용중인 이메일 입니다.');
+    }
+    return { message: '사용가능한 이메일입니다.' };
+  }
+  async duplicateNickname(nickname: string) {
+    const exUser = await this.usersService.findByNickname(nickname);
+    if (exUser) {
+      throw new ConflictException('이미 사용중인 닉네임 입니다.');
+    }
+    return { message: '사용가능한 닉네임입니다.' };
+  }
+  async sendEmailVerification(body: sendEmailDto) {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    await this.mailService.sendCode(body.email, code);
+    await this.redisService.saveEmailCode(body.email, code);
+    return { message: '인증 코드가 전송되었습니다.' };
+  }
+  async verifyCode(body: verifyCodeDto) {
+    const storedCode = await this.redisService.getEmailCode(body.email);
+    if (!storedCode) throw new BadRequestException('인증코드 만료');
+    if (storedCode !== body.code)
+      throw new BadRequestException('인증코드 불일치');
+    await this.redisService.deleteEmailCode(body.email);
+    return { message: '이메일 인증 완료' };
   }
 }

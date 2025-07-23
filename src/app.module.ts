@@ -19,7 +19,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { SessionModule } from './session/session.module';
 import { UsersModule } from './users/users.module';
-
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -64,6 +64,7 @@ import { UsersModule } from './users/users.module';
     ReviewModule,
     ArticleModule,
     SessionModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

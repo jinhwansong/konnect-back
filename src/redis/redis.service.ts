@@ -22,6 +22,22 @@ export class RedisService {
     });
   }
 
+  // 인증코드 저장
+  async saveEmailCode(email: string, code: string) {
+    await this.client.set(`verify:${email}`, code, { EX: 60 * 3 });
+  }
+
+  // 인증코드 검증
+  async getEmailCode(email: string): Promise<string | null> {
+    const res = await this.client.get(`verify:${email}`);
+    return res as string | null;
+  }
+
+  // 인증코드 삭제 (성공 시)
+  async deleteEmailCode(email: string) {
+    return await this.client.del(`verify:${email}`);
+  }
+
   // RefreshToken 조회
   async getRefreshToken(userId: string) {
     return await this.client.get(`refresh:${userId}`);

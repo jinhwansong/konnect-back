@@ -7,6 +7,7 @@ import { JwtStrategy } from './jwtStrategy';
 import { UsersModule } from '@/users/users.module';
 import { RedisModule } from '@/redis/redis.module';
 import { KakaoStrategy } from './kakao.strategy';
+import { MailService } from '@/mail/mail.service';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { KakaoStrategy } from './kakao.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, KakaoStrategy],
+  providers: [AuthService, JwtStrategy, KakaoStrategy, MailService],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
