@@ -5,15 +5,31 @@ import { PaginationDto } from '@/common/dto/page.dto';
 import { UserRole } from '@/common/enum/status.enum';
 import { RolesGuard } from '@/common/guard/roles.guard';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNull.Interceptor';
-import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { MenteePaymentHistoryDto, MentorIComeResponseDto } from './dto/icome.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  MenteePaymentHistoryDto,
+  MentorIComeResponseDto,
+} from './dto/icome.dto';
 import { ConfirmPaymentDto, RefundPaymentDto } from './dto/payment.dto';
 import { PaymentService } from './payment.service';
 
 @ApiTags('Payment')
 @UseInterceptors(UndefinedToNullInterceptor)
-
 @ApiBearerAuth('access-token')
 @Controller('payment')
 export class PaymentController {
@@ -21,8 +37,11 @@ export class PaymentController {
   @UseGuards(JwtAuthGuard)
   @Post('confirm')
   @ApiOperation({ summary: '결제 성공 시 Toss confirm 처리' })
-  async confirmPayment(@Body() body:ConfirmPaymentDto, @User() userId:string) {
-    return this.paymentService.confirmPayment(body,userId);
+  async confirmPayment(
+    @Body() body: ConfirmPaymentDto,
+    @User('id') userId: string,
+  ) {
+    return this.paymentService.confirmPayment(body, userId);
   }
 
   @Roles(UserRole.MENTOR)
@@ -32,17 +51,17 @@ export class PaymentController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiResponse({
-      status: 200,
-      description: '멘토 수입 내역',
-      type: MentorIComeResponseDto,
-      isArray:true
+    status: 200,
+    description: '멘토 수입 내역',
+    type: MentorIComeResponseDto,
+    isArray: true,
   })
   @ApiResponse({
-      status: 500,
-      description: '멘토 수입 내역 목록을 찾을 수 없습니다.',
+    status: 500,
+    description: '멘토 수입 내역 목록을 찾을 수 없습니다.',
   })
   async getMentorIncome(
-    @User() userId:string,
+    @User('id') userId: string,
     @Query() query: PaginationDto,
   ) {
     return this.paymentService.getMentorIncome(userId, query);
@@ -53,17 +72,17 @@ export class PaymentController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiResponse({
-      status: 200,
-      description: '멘티 결제 내역',
-      type: MenteePaymentHistoryDto,
-      isArray:true
+    status: 200,
+    description: '멘티 결제 내역',
+    type: MenteePaymentHistoryDto,
+    isArray: true,
   })
   @ApiResponse({
-      status: 500,
-      description: '멘티 결제 내역 목록을 찾을 수 없습니다.',
+    status: 500,
+    description: '멘티 결제 내역 목록을 찾을 수 없습니다.',
   })
   async getMenteeIncome(
-    @User() userId:string,
+    @User('id') userId: string,
     @Query() query: PaginationDto,
   ) {
     return this.paymentService.getMenteeIncome(userId, query);
@@ -72,7 +91,7 @@ export class PaymentController {
   @Post('refund')
   @ApiOperation({ summary: '결제 환불' })
   async refundPayment(
-    @User() userId: string,
+    @User('id') userId: string,
     @Body() body: RefundPaymentDto,
   ) {
     return this.paymentService.refundPayment(userId, body);

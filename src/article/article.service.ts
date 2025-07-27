@@ -169,11 +169,6 @@ export class ArticleService {
 
     return await this.articleRepository.save(article);
   }
-  async uploadEditorImage(@UploadedFile() file: Express.Multer.File) {
-    if (!file) throw new BadRequestException('이미지 파일이 필요합니다.');
-    const url = `/uploads/article/${file.filename}`;
-    return { url };
-  }
   async likedArticle(id: string, userId: string) {
     try {
       const user = await this.userRepository.findOneBy({ id: userId });
@@ -206,5 +201,16 @@ export class ArticleService {
         '아티클 좋아요 중 오류가 발생했습니다.',
       );
     }
+  }
+  async uploadEditorImages(files: { images?: Express.Multer.File[] }) {
+    const uploaded = files.images;
+    if (!uploaded || uploaded.length === 0) {
+      throw new BadRequestException('이미지 파일이 없습니다.');
+    }
+
+    const urls = uploaded.map(
+      (file) => `${process.env.SERVER_HOST}/uploads/article/${file.filename}`,
+    );
+    return { urls };
   }
 }

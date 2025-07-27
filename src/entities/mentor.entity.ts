@@ -1,4 +1,3 @@
-import { MentorStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -13,6 +12,7 @@ import {
 import { MentoringSchedule } from './mentoring-schedule.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Users } from './user.entity';
+import { MentorStatus } from '@/common/enum/status.enum';
 
 @Entity({ schema: 'konnect', name: 'mentors' })
 export class Mentors {
@@ -24,8 +24,8 @@ export class Mentors {
   introduce: string;
   @Column({ type: 'varchar', nullable: true })
   position: string;
-  @Column({ type: 'varchar', nullable: false })
-  expertise: string;
+  @Column({ type: 'simple-array', nullable: false })
+  expertise: string[];
   @Column('varchar')
   career: string;
   @Column({ type: 'varchar', nullable: false })

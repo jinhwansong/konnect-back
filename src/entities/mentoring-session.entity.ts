@@ -1,4 +1,3 @@
-import { MentoringCategory } from '@/common/enum/category.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -12,6 +11,7 @@ import {
 import { Mentors } from './mentor.entity';
 import { MentoringReservation } from './mentoring-reservation.entity';
 import { MentoringReview } from './mentoring-review.entity';
+import { MentoringCategory } from '@/common/enum/category.enum';
 
 @Entity({ schema: 'konnect', name: 'mentoring_sessions' })
 export class MentoringSession {

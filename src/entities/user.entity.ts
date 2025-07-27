@@ -1,4 +1,3 @@
-import { UserRole } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -16,6 +15,7 @@ import { MentoringReservation } from './mentoring-reservation.entity';
 import { MentoringReview } from './mentoring-review.entity';
 import { Payment } from './payment.entity';
 import { SocialAccount } from './social-account.entity';
+import { UserRole } from '@/common/enum/status.enum';
 
 @Entity({ schema: 'konnect', name: 'users' })
 export class Users {

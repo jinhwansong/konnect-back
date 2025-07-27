@@ -1,4 +1,3 @@
-import { PaymentStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -11,6 +10,7 @@ import {
 } from 'typeorm';
 import { MentoringReservation } from './mentoring-reservation.entity';
 import { Users } from './user.entity';
+import { PaymentStatus } from '@/common/enum/status.enum';
 
 @Entity({ schema: 'konnect', name: 'payment' })
 export class Payment {

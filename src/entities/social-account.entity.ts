@@ -1,4 +1,3 @@
-import { SocialLoginProvider } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -9,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Users } from './user.entity';
+import { SocialLoginProvider } from '@/common/enum/status.enum';
 
 @Entity({ schema: 'konnect', name: 'social_accounts' })
 export class SocialAccount {

@@ -2,7 +2,12 @@ import { UserDto } from '@/auth/dto/auth.dto';
 import { JwtAuthGuard } from '@/auth/jwt.guard';
 import { User } from '@/common/decorators/user.decorator';
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 
 @ApiTags('User')
@@ -23,7 +28,7 @@ export class UsersController {
     description: '서버 에러',
   })
   @Get('')
-  async profile(@User() user) {
-    return this.userService.profile(user.id);
+  async profile(@User('id') user: string) {
+    return this.userService.profile(user);
   }
 }

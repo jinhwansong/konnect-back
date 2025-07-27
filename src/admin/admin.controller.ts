@@ -6,8 +6,24 @@ import { PaginationDto } from '@/common/dto/page.dto';
 import { UserRole } from '@/common/enum/status.enum';
 import { RolesGuard } from '@/common/guard/roles.guard';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNull.Interceptor';
-import { Body, Controller, Get, Param, ParseIntPipe, Query, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { ApproveOrRejectMentorDto } from './dto/approve.dto';
 import { MentorDetailDto, MentorListDto } from './dto/mentor.dto';
@@ -34,9 +50,7 @@ export class AdminController {
     description: '사용자 목록 를 찾을 수 없습니다.',
   })
   @Get('users')
-  async getUserList(
-    @Query() dto: PaginationDto,
-  ) {
+  async getUserList(@Query() dto: PaginationDto) {
     return this.adminService.getUserList(dto);
   }
 
@@ -54,9 +68,7 @@ export class AdminController {
     description: '멘토 신청 정보를 찾을 수 없습니다.',
   })
   @Get('mentors')
-  async getMentorList(
-    @Query() dto: PaginationDto,
-  ) {
+  async getMentorList(@Query() dto: PaginationDto) {
     return this.adminService.getMentorList(dto);
   }
 
@@ -75,16 +87,48 @@ export class AdminController {
     description: '멘토 상세 정보를 불러오는 데 실패했습니다.',
   })
   @Get('mentors/:id')
-  async getMentorDetail(@Param('id', ParseIntPipe) id: string) {
+  async getMentorDetail(@Param('id') id: string) {
     return this.adminService.getMentorDetail(id);
   }
   @ApiOperation({ summary: '승인/거절' })
+  @ApiBody({
+    type: ApproveOrRejectMentorDto,
+    examples: {
+      승인: {
+        summary: '멘토 승인',
+        value: { status: 'approved' },
+      },
+      거절: {
+        summary: '멘토 거절',
+        value: { status: 'rejected', reason: '포트폴리오 기준 미달' },
+      },
+    },
+  })
   @ApiResponse({
     status: 200,
-    description: '승인/거절',
+    description: '멘토 승인 또는 거절 성공',
+    schema: {
+      example: { message: '멘토가 승인되었습니다.' },
+    },
   })
-  @Get('mentors/:id/approve')
-  async approveMentor(@Param('id', ParseIntPipe) id: string,@User() userId: string, @Body() body:ApproveOrRejectMentorDto) {
-    return this.adminService.approveMentor(id,userId,body);
+  @ApiResponse({
+    status: 400,
+    description: '거절 시 사유 누락 등 잘못된 요청',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '관리자만 접근 가능한 요청',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '멘토 또는 관리자 계정 없음',
+  })
+  @Post('mentors/:id/approve')
+  async approveMentor(
+    @Param('id') id: string,
+    @User('id') userId: string,
+    @Body() body: ApproveOrRejectMentorDto,
+  ) {
+    return this.adminService.approveMentor(id, userId, body);
   }
 }

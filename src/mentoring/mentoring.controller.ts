@@ -14,11 +14,13 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -33,6 +35,7 @@ import {
   UpdateSessionPublicDto,
 } from './dto/update.mentoring.session.dto';
 import { MentoringService } from './mentoring.service';
+import { createMultiUploadInterceptor } from '@/common/interceptors/multer.interceptor';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Mentoring')
@@ -122,5 +125,20 @@ export class MentoringController {
     @User('id') userId: string,
   ) {
     return this.mentoringService.updateSessionPublic(userId, sessionId, body);
+  }
+
+  @ApiOperation({ summary: '이미지 업로드 (세션)' })
+  @UseInterceptors(
+    createMultiUploadInterceptor(
+      [{ name: 'images', maxCount: 10 }],
+      'uploads/session',
+    ),
+  )
+  @ApiConsumes('multipart/form-data')
+  @Post('upload-image')
+  async uploadSessionEditorImages(
+    @UploadedFiles() files: { images?: Express.Multer.File[] },
+  ) {
+    return this.mentoringService.uploadEditorImages(files);
   }
 }

@@ -1,4 +1,3 @@
-import { MentoringStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -14,6 +13,7 @@ import { MentoringReview } from './mentoring-review.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Payment } from './payment.entity';
 import { Users } from './user.entity';
+import { MentoringStatus } from '@/common/enum/status.enum';
 
 @Entity({ schema: 'konnect', name: 'mentoring_reservation' })
 export class MentoringReservation {
@@ -40,6 +40,8 @@ export class MentoringReservation {
 
   @Column({ type: 'timestamp', nullable: true })
   expiresAt: Date;
+  @Column({ type: 'text', nullable: true })
+  rejectReason?: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -57,7 +59,7 @@ export class MentoringReservation {
   session: MentoringSession;
   @ApiProperty({ description: '결제된 멘토링 세션', required: true })
   @OneToOne(() => Payment, (payment) => payment.reservation)
-  payments: Payment[];
+  payments: Payment;
   @OneToMany(() => MentoringReview, (review) => review.reservation)
   review: MentoringReview[];
 }

@@ -1,6 +1,7 @@
 import { PaginationDto } from '@/common/dto/page.dto';
-import { MentoringSession, Mentors } from '@/entities';
+import { MentoringSchedule, MentoringSession, Mentors } from '@/entities';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -21,6 +22,8 @@ export class MentoringService {
     private readonly mentorRepository: Repository<Mentors>,
     @InjectRepository(MentoringSession)
     private sessionRepository: Repository<MentoringSession>,
+    @InjectRepository(MentoringSchedule)
+    private scheduleRepository: Repository<MentoringSchedule>,
   ) {}
   async createSession(userId: string, body: CreateMentoringSessionDto) {
     try {
@@ -29,7 +32,14 @@ export class MentoringService {
         relations: ['user'],
       });
       if (!mentor) throw new NotFoundException('멘토를 찾을 수 없습니다.');
-
+      const hasSchedule = await this.scheduleRepository.findOne({
+        where: { mentor: { id: mentor.id } },
+      });
+      if (!hasSchedule) {
+        throw new ForbiddenException(
+          '정기 스케줄을 먼저 등록해야 세션을 생성할 수 있습니다.',
+        );
+      }
       const session = this.sessionRepository.create({
         ...body,
         mentor,
@@ -74,6 +84,8 @@ export class MentoringService {
         title: item.title,
         price: item.price,
         duration: item.duration,
+        rating: item.averageRating,
+        public: item.isPublic,
         createdAt: item.createdAt,
       }));
       return {
@@ -106,6 +118,9 @@ export class MentoringService {
       description: session.description,
       price: session.price,
       duration: session.duration,
+      category: session.category,
+      rating: session.averageRating,
+      public: session.isPublic,
       createdAt: session.createdAt,
     };
   }
@@ -167,5 +182,17 @@ export class MentoringService {
     return {
       message: `세션이 ${body.isPublic ? '공개' : '비공개'}로 변경되었습니다.`,
     };
+  }
+
+  async uploadEditorImages(files: { images?: Express.Multer.File[] }) {
+    const uploaded = files.images;
+    if (!uploaded || uploaded.length === 0) {
+      throw new BadRequestException('이미지 파일이 없습니다.');
+    }
+
+    const urls = uploaded.map(
+      (file) => `${process.env.SERVER_HOST}/uploads/session/${file.filename}`,
+    );
+    return { urls };
   }
 }

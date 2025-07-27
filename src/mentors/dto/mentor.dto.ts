@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsNotEmpty,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 
 export class CreateMentorDto {
   @IsString()
@@ -26,14 +32,16 @@ export class CreateMentorDto {
     required: false,
   })
   position: string;
-  @IsString()
-  @IsNotEmpty()
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
   @ApiProperty({
-    example: 'React, Next.js',
-    description: '전문 분야',
+    example: ['it', 'marketing'],
+    description: '전문 분야 (다중 선택)',
     required: true,
+    type: [String],
   })
-  expertise: string;
+  expertise: string[];
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

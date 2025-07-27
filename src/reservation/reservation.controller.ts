@@ -2,11 +2,28 @@ import { JwtAuthGuard } from '@/auth/jwt.guard';
 import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNull.Interceptor';
-import { Body, Controller, Get, Param, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateReservationDto, ReservationItemDto } from './dto/reservation.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  CreateReservationDto,
+  ReservationItemDto,
+} from './dto/reservation.dto';
 import { ReservationService } from './reservation.service';
-
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Reservation')
@@ -65,22 +82,30 @@ export class ReservationController {
   })
   @Post('')
   async createReservation(
-    @User() userId: string,
+    @User('id') userId: string,
     @Body() body: CreateReservationDto,
   ) {
     return this.reservationService.createReservation(userId, body);
   }
 
-
-  
   @ApiOperation({ summary: '멘티 예약 내역 조회' })
-  @ApiQuery({ name: 'page', required: false, example: 1, description: '페이지 번호 (기본값: 1)' })
-  @ApiQuery({ name: 'limit', required: false, example: 10, description: '페이지당 개수 (기본값: 10)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    example: 1,
+    description: '페이지 번호 (기본값: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    example: 10,
+    description: '페이지당 개수 (기본값: 10)',
+  })
   @ApiResponse({
     status: 200,
     description: '멘티 예약 내역을 조회합니다.',
-    type:ReservationItemDto,
-    isArray:true
+    type: ReservationItemDto,
+    isArray: true,
   })
   @ApiResponse({
     status: 500,
@@ -88,7 +113,7 @@ export class ReservationController {
   })
   @Get('my')
   async getMyReservations(
-    @User() userId: string,
+    @User('id') userId: string,
     @Query() query: PaginationDto,
   ) {
     return this.reservationService.getMyReservations(userId, query);

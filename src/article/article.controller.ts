@@ -19,6 +19,7 @@ import {
   Query,
   Req,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -100,7 +101,7 @@ export class ArticleController {
   @Post('')
   async createArticle(
     @Body() body: CreateArticleDto,
-    @User() userId: string,
+    @User('id') userId: string,
     @UploadedFile() thumbnail?: Express.Multer.File,
   ) {
     return this.articleService.createArticle(body, userId, thumbnail);
@@ -116,7 +117,7 @@ export class ArticleController {
   async getArticleDetail(
     @Param('id') id: string,
     @Req() req: Request,
-    @User() userId?: string,
+    @User('id') userId?: string,
     @Ip() ip?: string,
   ) {
     const clientIp = ip || req.socket.remoteAddress || 'unknown';
@@ -128,7 +129,7 @@ export class ArticleController {
   @ApiBearerAuth('access-token')
   @Delete(':id')
   @ApiOperation({ summary: '아티클 삭제 (작성자 전용)' })
-  async deleteArticle(@Param('id') id: string, @User() userId?: string) {
+  async deleteArticle(@Param('id') id: string, @User('id') userId?: string) {
     return this.articleService.deleteArticle(id, userId);
   }
 
@@ -145,7 +146,7 @@ export class ArticleController {
   async updateArticle(
     @Param('id') id: string,
     @Body() body: CreateArticleDto,
-    @User() userId: string,
+    @User('id') userId: string,
     @UploadedFile() thumbnail?: Express.Multer.File,
   ) {
     return this.articleService.updateArticle(
@@ -166,7 +167,24 @@ export class ArticleController {
   @ApiResponse({ status: 404, description: '아티클이 존재하지 않음' })
   @ApiResponse({ status: 500, description: '서버 오류' })
   @Post(':id/like')
-  toggleArticleLike(@Param('id') articleId: string, @User() userId: string) {
+  toggleArticleLike(
+    @Param('id') articleId: string,
+    @User('id') userId: string,
+  ) {
     return this.articleService.likedArticle(articleId, userId);
+  }
+  @ApiOperation({ summary: '이미지 업로드 (아티클)' })
+  @UseInterceptors(
+    createMultiUploadInterceptor(
+      [{ name: 'images', maxCount: 10 }],
+      'uploads/article',
+    ),
+  )
+  @ApiConsumes('multipart/form-data')
+  @Post('upload-image')
+  async uploadArticleEditorImages(
+    @UploadedFiles() files: { images?: Express.Multer.File[] },
+  ) {
+    return this.articleService.uploadEditorImages(files);
   }
 }

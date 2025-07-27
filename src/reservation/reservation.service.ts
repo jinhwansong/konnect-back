@@ -1,8 +1,18 @@
 import { PaginationDto } from '@/common/dto/page.dto';
 import { DayOfWeek } from '@/common/enum/day.enum';
 import { MentoringStatus } from '@/common/enum/status.enum';
-import { MentoringReservation, MentoringSchedule, MentoringSession, Users } from '@/entities';
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  MentoringReservation,
+  MentoringSchedule,
+  MentoringSession,
+  Users,
+} from '@/entities';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateReservationDto } from './dto/reservation.dto';
@@ -71,7 +81,7 @@ export class ReservationService {
   }
 
   async createReservation(userId: string, body: CreateReservationDto) {
-    const { sessionId, date,startTime,endTime,question } = body;
+    const { sessionId, date, startTime, endTime, question } = body;
     try {
       const session = await this.sessionRepository.findOne({
         where: { id: sessionId },
@@ -111,7 +121,6 @@ export class ReservationService {
       return {
         reservationId: newReservation.id,
       };
-
     } catch (error) {
       throw new InternalServerErrorException(
         '멘토링 예약 중 오류가 발생했습니다.',
@@ -119,7 +128,10 @@ export class ReservationService {
     }
   }
 
-  async getMyReservations(userId:string, { page = 1, limit = 10 }: PaginationDto) {
+  async getMyReservations(
+    userId: string,
+    { page = 1, limit = 10 }: PaginationDto,
+  ) {
     const [reservation, total] = await this.reservationRepository
       .createQueryBuilder('reservation')
       .leftJoinAndSelect('reservation.session', 'session')

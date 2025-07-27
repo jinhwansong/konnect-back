@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '@/users/users.service';
 import { JoinDto, LoginDto } from './dto/auth.dto';
 import { RedisService } from '@/redis/redis.service';
-import { SocialLoginProvider } from '@/common/enum/status.enum';
+import { SocialLoginProvider, UserRole } from '@/common/enum/status.enum';
 import { sendEmailDto, verifyCodeDto } from './dto/email.dto';
 import { MailService } from '@/mail/mail.service';
 
@@ -52,7 +52,11 @@ export class AuthService {
     if (!passwordMatch) {
       throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
     }
-    const { accessToken, refreshToken } = this.createToken(user.id, user.email);
+    const { accessToken, refreshToken } = this.createToken(
+      user.id,
+      user.email,
+      user.role,
+    );
     await this.saveRefreshToken(user.id, refreshToken);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -84,7 +88,7 @@ export class AuthService {
       }
       // 새로운 토큰 생성
       const accessToken = this.jwtService.sign(
-        { id: payload.id, email: payload.email },
+        { id: payload.id, email: payload.email, role: payload.role },
         { secret: process.env.COOKIE_SECRET, expiresIn: '15m' },
       );
       return { message: '새로운 access Token이 발급되었습니다.', accessToken };
@@ -118,7 +122,11 @@ export class AuthService {
         socialId,
       );
     }
-    const { accessToken, refreshToken } = this.createToken(user.id, user.email);
+    const { accessToken, refreshToken } = this.createToken(
+      user.id,
+      user.email,
+      user.role,
+    );
     await this.saveRefreshToken(user.id, refreshToken);
     return {
       accessToken,
@@ -126,15 +134,15 @@ export class AuthService {
       user,
     };
   }
-  createToken(userId: string, email: string) {
+  createToken(userId: string, email: string, role: UserRole) {
     // Access Token
     const accessToken = this.jwtService.sign(
-      { id: userId, email },
+      { id: userId, email, role },
       { secret: process.env.COOKIE_SECRET, expiresIn: '15m' },
     );
     // refreshToken
     const refreshToken = this.jwtService.sign(
-      { id: userId, email },
+      { id: userId, email, role },
       { secret: process.env.REFRESH_SECRET, expiresIn: '1d' },
     );
     return { accessToken, refreshToken };

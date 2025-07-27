@@ -1,4 +1,3 @@
-import { LikeType } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -11,6 +10,7 @@ import {
 import { Article } from './article.entity';
 import { MentoringReview } from './mentoring-review.entity';
 import { Users } from './user.entity';
+import { LikeType } from '@/common/enum/status.enum';
 
 @Entity({ schema: 'konnect', name: 'likes' })
 export class Like {

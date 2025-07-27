@@ -10,9 +10,9 @@
     "sourceMap": true,
     "outDir": "./dist",
     "esModuleInterop": true,
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["*"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -1,4 +1,3 @@
-import { ArticleCategory } from '@/common/enum/category.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -11,6 +10,7 @@ import {
 } from 'typeorm';
 import { Like } from './like.entity';
 import { Users } from './user.entity';
+import { ArticleCategory } from '@/common/enum/category.enum';
 
 @Entity({ schema: 'konnect', name: 'articles' })
 export class Article {
