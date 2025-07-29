@@ -1,9 +1,10 @@
-import { PaginationDto } from '@/common/dto/page.dto';
-import { MentoringReview, MentoringSession } from '@/entities';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import striptags from 'striptags';
+import { MentoringReview, MentoringSession } from '@/entities';
 import { SessionQueryDto } from './dto/session.dto';
+import { PaginationDto } from '@/common/dto/page.dto';
 
 @Injectable()
 export class SessionService {
@@ -38,7 +39,6 @@ export class SessionService {
         likeCount: res.likes ?? 0,
       }));
       return {
-        message: '리뷰 목록 조회 성공',
         totalPages: Math.ceil(total / limit),
         data: items,
       };
@@ -114,7 +114,7 @@ export class SessionService {
           take: 3,
         });
         const previewReviews = reviews.map((review) => ({
-          content: review.content,
+          content: striptags(review.content).split('\n').slice(0, 3).join('\n'),
           rating: review.rating,
           createdAt: review.createdAt,
           nickname: review.mentee.nickname,
@@ -122,7 +122,14 @@ export class SessionService {
         return {
           id: item.id,
           title: item.title,
-          description: item.description,
+          description: striptags(item.description)
+            .replace(/&nbsp;/g, ' ')
+            .replace(/⭐only\.?/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .split('\n')
+            .slice(0, 3)
+            .join('\n'),
           price: item.price,
           duration: item.duration,
           previewReviews,
@@ -140,7 +147,6 @@ export class SessionService {
     );
 
     return {
-      message: '세션 목록 조회 성공',
       totalPages: Math.ceil(total / limit),
       data,
     };

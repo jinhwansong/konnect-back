@@ -35,7 +35,7 @@ export class UsersService {
       name: user.name,
       nickname: user.nickname,
       phone: user.phone,
-      image: user.image,
+      image: user.image ? `${process.env.SERVER_HOST}${user.image}` : null,
       role: user.role,
     };
   }

@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { PassportStrategy } from "@nestjs/passport";
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-kakao';
-import { AuthService } from "./auth.service";
-import { SocialLoginProvider } from "@/common/enum/status.enum";
+import { AuthService } from './auth.service';
+import { SocialLoginProvider } from '@/common/enum/status.enum';
 
 @Injectable()
 export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
@@ -14,7 +14,7 @@ export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
     });
   }
   async validate(accessToken: string, refreshToken: string, profile: any) {
-    const { id, username, _json} = profile;
+    const { id, username, _json } = profile;
     console.log(_json);
     const kakao = await this.authService.socialLogin(
       SocialLoginProvider.KAKAO,

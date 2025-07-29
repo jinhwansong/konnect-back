@@ -1,7 +1,13 @@
 import { PaginationDto } from '@/common/dto/page.dto';
 import { ArticleCategory } from '@/common/enum/category.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional } from 'class-validator';
+import {
+  IsEnum,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class ArticleQueryDto extends PaginationDto {
   @ApiPropertyOptional({
@@ -12,15 +18,25 @@ export class ArticleQueryDto extends PaginationDto {
   @IsOptional()
   @IsIn(['latest', 'likes'])
   sort?: 'latest' | 'likes' = 'latest';
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    example: ArticleCategory.BOOK,
+    enum: ArticleCategory,
+    description: '아티클 카테고리',
+  })
+  @IsOptional()
+  @IsEnum(ArticleCategory)
   category?: string;
 }
 
 export class CreateArticleDto {
-  @ApiProperty({ example: '제목입니다.', description: '아티클 제목' })
+  @ApiProperty({ example: '제목입니다.' })
+  @IsString()
+  @IsNotEmpty()
   title: string;
 
-  @ApiProperty({ example: '내용입니다.', description: '아티클 내용' })
+  @ApiProperty({ example: '내용입니다.' })
+  @IsString()
+  @IsNotEmpty()
   content: string;
 
   @ApiProperty({
@@ -28,9 +44,17 @@ export class CreateArticleDto {
     description: '아티클 카테고리',
     enum: ArticleCategory,
   })
+  @IsEnum(ArticleCategory)
   category: ArticleCategory;
-}
 
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    description: '썸네일 이미지 파일',
+  })
+  thumbnail?: any;
+}
 export class ArticleListItemDto {
   @ApiProperty({ example: 'uuid-1234' })
   id: string;
@@ -46,7 +70,12 @@ export class ArticleListItemDto {
 
   @ApiProperty({ example: 12 })
   likeCount: number;
-
+  @ApiProperty({
+    example: ArticleCategory.BOOK,
+    description: '아티클 카테고리',
+    enum: ArticleCategory,
+  })
+  category: ArticleCategory;
   @ApiProperty()
   createdAt: Date;
 }

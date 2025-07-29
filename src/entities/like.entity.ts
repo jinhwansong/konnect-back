@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -30,18 +31,26 @@ export class Like {
   @ManyToOne(() => Users, (user) => user.likes, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'userId' })
   user: Users;
-
+  @Column()
+  userId: string;
   @ApiProperty({ description: '좋아요 대상 (멘토링 후기)', required: false })
   @ManyToOne(() => MentoringReview, (review) => review.likes, {
     nullable: true,
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'reviewId' })
   review?: MentoringReview;
+  @Column({ nullable: true })
+  reviewId?: string;
   @ApiProperty({ description: '좋아요 대상 (아티클)', required: false })
   @ManyToOne(() => Article, (article) => article.likes, {
     nullable: true,
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'articleId' })
   article?: Article;
+  @Column({ nullable: true })
+  articleId?: string;
 }

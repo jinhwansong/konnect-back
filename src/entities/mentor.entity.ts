@@ -13,6 +13,7 @@ import { MentoringSchedule } from './mentoring-schedule.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Users } from './user.entity';
 import { MentorStatus } from '@/common/enum/status.enum';
+import { MentorCareerLevel, MentorPosition } from '@/common/enum/category.enum';
 
 @Entity({ schema: 'konnect', name: 'mentors' })
 export class Mentors {
@@ -22,11 +23,19 @@ export class Mentors {
   company: string;
   @Column({ type: 'varchar', nullable: false, length: 100 })
   introduce: string;
-  @Column({ type: 'varchar', nullable: true })
+  @Column({
+    type: 'enum',
+    enum: MentorPosition,
+    default: MentorPosition.BACKEND,
+  })
   position: string;
   @Column({ type: 'simple-array', nullable: false })
   expertise: string[];
-  @Column('varchar')
+  @Column({
+    type: 'enum',
+    enum: MentorCareerLevel,
+    default: MentorCareerLevel.JUNIOR,
+  })
   career: string;
   @Column({ type: 'varchar', nullable: false })
   portfolio: string;

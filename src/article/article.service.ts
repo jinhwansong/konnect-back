@@ -7,11 +7,11 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UploadedFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArticleQueryDto, CreateArticleDto } from './dto/article.dto';
+import striptags from 'striptags';
 
 @Injectable()
 export class ArticleService {
@@ -35,8 +35,9 @@ export class ArticleService {
     const skip = (page - 1) * limit;
     const article = this.articleRepository
       .createQueryBuilder('article')
-      .leftJoinAndSelect('session.author', 'author')
-      .leftJoinAndSelect('article.likes', 'likes')
+      .leftJoinAndSelect('article.author', 'author')
+      .leftJoin('article.likes', 'likes')
+      .loadRelationCountAndMap('article.likeCount', 'article.likes')
       .select([
         'article.id',
         'article.title',
@@ -44,11 +45,11 @@ export class ArticleService {
         'article.thumbnail',
         'article.createdAt',
         'article.views',
-        'user.id',
-        'user.nickname',
-        'user.image',
-      ])
-      .loadRelationCountAndMap('article.likeCount', 'article.likes');
+        'article.category',
+        'author.id',
+        'author.nickname',
+        'author.image',
+      ]);
 
     if (category) {
       article.andWhere('article.category = :category', { category });
@@ -56,18 +57,41 @@ export class ArticleService {
 
     switch (sort) {
       case 'likes':
-        article.orderBy('likeCount', 'DESC');
+        article
+          .orderBy('article.likeCount', 'DESC')
+          .addOrderBy('article.id', 'ASC');
         break;
       case 'latest':
       default:
         article.orderBy('article.createdAt', 'DESC');
     }
-    const [data, total] = await article
-      .skip(skip)
-      .take(limit)
-      .getManyAndCount();
+    const entities = await article.skip(skip).take(limit).getMany();
+
+    const data = entities.map((entity) => ({
+      id: entity.id,
+      title: entity.title,
+      thumbnail: `${process.env.SERVER_HOST}${entity.thumbnail}`,
+      views: entity.views,
+      likeCount: (entity as any).likeCount ?? 0,
+      category: entity.category,
+      createdAt: entity.createdAt,
+      content: striptags(entity.content)
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .split('\n')
+        .slice(0, 2)
+        .join('\n'),
+      author: {
+        id: entity.author.id,
+        nickname: entity.author.nickname,
+        image: entity.author.image,
+      },
+    }));
+
+    const total = await article.getCount();
+
     return {
-      message: '아티클 목록 조회 성공',
       totalPages: Math.ceil(total / limit),
       data,
     };
@@ -76,8 +100,9 @@ export class ArticleService {
     try {
       const article = await this.articleRepository.findOne({
         where: { id },
-        relations: ['mentor'],
+        relations: ['author'],
       });
+
       if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
       if (article.author.id !== userId)
         throw new ForbiddenException(
@@ -86,6 +111,12 @@ export class ArticleService {
       await this.articleRepository.remove(article);
       return { message: '아티클이 성공적으로 삭제되었습니다.' };
     } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
       throw new InternalServerErrorException(
         '아티클 삭제 중 오류가 발생했습니다.',
       );
@@ -113,6 +144,12 @@ export class ArticleService {
 
       return await this.articleRepository.save(article);
     } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
       throw new InternalServerErrorException(
         '아티클 생성 중 오류가 발생했습니다.',
       );
@@ -121,12 +158,13 @@ export class ArticleService {
   async getArticleDetail(id: string, userId?: string, clientIp?: string) {
     const article = await this.articleRepository.findOne({
       where: { id },
-      relations: ['author'],
+      relations: ['author', 'likes'],
     });
     if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
     const redisKey = userId
       ? `article:viewed:${id}:user:${userId}`
       : `article:viewed:${id}:user:${clientIp}`;
+
     const alreadyViewed = await this.redisService.existsCount(redisKey);
     if (!alreadyViewed) {
       article.views += 1;
@@ -134,14 +172,18 @@ export class ArticleService {
       await this.redisService.saveCount(redisKey, '1');
     }
     return {
+      id: article.id,
       title: article.title,
       content: article.content,
       createdAt: article.createdAt,
       views: article.views,
+      category: article.category,
       likeCount: article.likes.length ?? 0,
-      authorNickname: article.author.nickname,
-      authorImage: article.author.image,
-      authorId: article.author.id,
+      author: {
+        id: article.author.id,
+        nickname: article.author.nickname,
+        image: article.author.image,
+      },
     };
   }
   async updateArticle(
@@ -173,11 +215,9 @@ export class ArticleService {
     try {
       const user = await this.userRepository.findOneBy({ id: userId });
       if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
-
       const article = await this.articleRepository.findOne({
         where: { id },
       });
-
       if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
       const existing = await this.likeRepository.findOne({
         where: {
@@ -185,6 +225,7 @@ export class ArticleService {
           user: { id: userId },
         },
       });
+
       if (existing) {
         await this.likeRepository.remove(existing);
         return { message: '좋아요 취소됨', liked: false };
@@ -197,10 +238,27 @@ export class ArticleService {
       await this.likeRepository.save(like);
       return { message: '좋아요 추가됨', liked: true };
     } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
       throw new InternalServerErrorException(
         '아티클 좋아요 중 오류가 발생했습니다.',
       );
     }
+  }
+
+  async getLikedArticles(articleIds: string[], userId: string) {
+    const liked = await this.likeRepository
+      .createQueryBuilder('like')
+      .select('like.articleId', 'articleId')
+      .where('like.userId = :userId', { userId })
+      .andWhere('like.articleId IN (:...articleIds)', { articleIds })
+      .getRawMany();
+
+    return liked.map((l) => l.articleId);
   }
   async uploadEditorImages(files: { images?: Express.Multer.File[] }) {
     const uploaded = files.images;

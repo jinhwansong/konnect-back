@@ -20,7 +20,7 @@ export class Article {
   @Column({ type: 'varchar', length: 255, nullable: false })
   title: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'text', nullable: false })
   content: string;
   @Column({ type: 'varchar', length: 255, nullable: true })
   thumbnail: string;

@@ -13,7 +13,6 @@ export enum ArticleCategory {
 }
 
 export enum MentoringCategory {
-  GENERAL = 'general', // 전체
   HR = 'hr', // 인사/총무/노무
   MARKETING = 'marketing', // 마케팅/MD
   PR = 'pr', //홍보/CSR
@@ -26,4 +25,29 @@ export enum MentoringCategory {
   CONSULTING = 'consulting', // 교육/상담/컨설팅
   MANUFACTURING = 'manufacturing', // 생산/품질/제조
   ETC = 'etc', // 기타 사무
+}
+export enum MentorCareerLevel {
+  JUNIOR = 'junior', // 주니어 (1~3년)
+  MIDDLE = 'middle', // 미들 (4~8년)
+  SENIOR = 'senior', // 시니어 (9년 이상)
+  LEAD = 'lead', // Lead 레벨
+}
+export enum MentorPosition {
+  BACKEND = 'backend', // 백엔드 / 서버 개발자
+  FRONTEND = 'frontend', // 프론트엔드 개발자
+  FULLSTACK = 'fullstack', // 풀스택 개발자
+  MOBILE = 'mobile', // 모바일 앱 개발자
+  DEVOPS = 'devops', // 데브옵스 / 인프라 엔지니어
+  SECURITY = 'security', // 보안 엔지니어
+  DATA_ENGINEER = 'data_engineer', // 데이터 엔지니어
+  DATA_SCIENTIST = 'data_scientist', // 데이터 분석가 / 사이언티스트
+  PM_PO = 'pm_po', // PM / PO
+  UX_DESIGNER = 'ux_designer', // UX 디자이너
+  UI_DESIGNER = 'ui_designer', // UI 디자이너
+  PLANNER = 'planner', // 서비스 기획자
+  MARKETING = 'marketing', // 마케터 / 콘텐츠 기획자
+  HR = 'hr', // HR / 리쿠루터
+  CS = 'cs', // CS / 운영
+  FINANCE = 'finance', // 회계 / 재무
+  ETC = 'etc', // 기타
 }

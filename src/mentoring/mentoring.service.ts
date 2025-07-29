@@ -56,6 +56,12 @@ export class MentoringService {
         category: saved.category,
       };
     } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
       throw new InternalServerErrorException(
         '멘토링 세션 등록 중 오류가 발생했습니다.',
       );
@@ -90,10 +96,12 @@ export class MentoringService {
       }));
       return {
         data,
-        total,
         totalPages: Math.ceil(total / limit),
       };
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new InternalServerErrorException(
         '등록된 세션 목록을 찾을 수 없습니다.',
       );
@@ -101,28 +109,40 @@ export class MentoringService {
   }
 
   async getSessionDetail(userId: string, sessionId: string) {
-    const session = await this.sessionRepository.findOne({
-      where: { id: sessionId },
-      relations: { mentor: { user: true } },
-    });
-    if (!session) {
-      throw new NotFoundException('세션을 찾을 수 없습니다.');
-    }
+    try {
+      const session = await this.sessionRepository.findOne({
+        where: { id: sessionId },
+        relations: { mentor: { user: true } },
+      });
+      if (!session) {
+        throw new NotFoundException('세션을 찾을 수 없습니다.');
+      }
 
-    if (session.mentor.user.id !== userId) {
-      throw new ForbiddenException('해당 세션에 접근할 수 없습니다.');
+      if (session.mentor.user.id !== userId) {
+        throw new ForbiddenException('해당 세션에 접근할 수 없습니다.');
+      }
+      return {
+        id: session.id,
+        title: session.title,
+        description: session.description,
+        price: session.price,
+        duration: session.duration,
+        category: session.category,
+        rating: session.averageRating,
+        public: session.isPublic,
+        createdAt: session.createdAt,
+      };
+    } catch (error) {
+      if (
+        error instanceof ForbiddenException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        '등록된 세션 을 찾을 수 없습니다.',
+      );
     }
-    return {
-      id: session.id,
-      title: session.title,
-      description: session.description,
-      price: session.price,
-      duration: session.duration,
-      category: session.category,
-      rating: session.averageRating,
-      public: session.isPublic,
-      createdAt: session.createdAt,
-    };
   }
 
   async updateSession(

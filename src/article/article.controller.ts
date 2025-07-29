@@ -1,5 +1,4 @@
 import { JwtAuthGuard } from '@/auth/jwt.guard';
-import { ARTICLE_UPLOAD_FIELDS } from '@/common/constants/upload.fields';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { UserRole } from '@/common/enum/status.enum';
@@ -14,6 +13,7 @@ import {
   Get,
   Ip,
   Param,
+  ParseArrayPipe,
   Patch,
   Post,
   Query,
@@ -49,18 +49,8 @@ export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @ApiOperation({ summary: '아티클 목록 조회' })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    example: 1,
-    description: '페이지 번호',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    example: 10,
-    description: '페이지당 개수',
-  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({
     name: 'sort',
     required: false,
@@ -70,7 +60,6 @@ export class ArticleController {
   @ApiQuery({
     name: 'category',
     required: false,
-    example: 'IT',
     description: '카테고리 이름 (선택)',
   })
   @ApiResponse({
@@ -81,30 +70,52 @@ export class ArticleController {
   })
   @ApiResponse({ status: 500, description: '서버 오류 또는 목록 조회 실패' })
   @Get('')
-  async getArticles(@Query() dto: ArticleQueryDto) {
-    return this.articleService.getArticles(dto);
+  async getArticles(@Query() body: ArticleQueryDto) {
+    return this.articleService.getArticles(body);
   }
 
   @ApiOperation({ summary: '아티클 작성' })
-  @UseGuards(JwtAuthGuard)
   @Roles(UserRole.MENTOR)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    createMultiUploadInterceptor(ARTICLE_UPLOAD_FIELDS, 'uploads/article'),
+    createMultiUploadInterceptor(
+      [{ name: 'thumbnail', maxCount: 1 }],
+      'uploads/article',
+    ),
   )
   @ApiResponse({
     status: 200,
     description: '아티클 작성 성공',
     type: CreateArticleDto,
   })
+  @ApiResponse({
+    status: 404,
+    description: '멘토를 찾을 수 없습니다.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: '아티클 생성 중 오류가 발생했습니다.',
+  })
   @Post('')
   async createArticle(
     @Body() body: CreateArticleDto,
     @User('id') userId: string,
-    @UploadedFile() thumbnail?: Express.Multer.File,
+    @UploadedFiles() files?: { thumbnail?: Express.Multer.File[] },
   ) {
+    const thumbnail = files?.thumbnail?.[0];
     return this.articleService.createArticle(body, userId, thumbnail);
+  }
+
+  @ApiOperation({ summary: '좋아요 여부확인' })
+  @UseGuards(JwtAuthGuard)
+  @Get('liked')
+  async getLikedArticles(
+    @Query('ids', new ParseArrayPipe({ items: String })) ids: string[],
+    @User('id') userId: string,
+  ) {
+    return this.articleService.getLikedArticles(ids, userId);
   }
 
   @ApiOperation({ summary: '아티클 상세 조회 (조회수 증가)' })
@@ -120,6 +131,7 @@ export class ArticleController {
     @User('id') userId?: string,
     @Ip() ip?: string,
   ) {
+    console.log('userId', userId);
     const clientIp = ip || req.socket.remoteAddress || 'unknown';
     return this.articleService.getArticleDetail(id, userId, clientIp);
   }
@@ -129,7 +141,7 @@ export class ArticleController {
   @ApiBearerAuth('access-token')
   @Delete(':id')
   @ApiOperation({ summary: '아티클 삭제 (작성자 전용)' })
-  async deleteArticle(@Param('id') id: string, @User('id') userId?: string) {
+  async deleteArticle(@Param('id') id: string, @User('id') userId: string) {
     return this.articleService.deleteArticle(id, userId);
   }
 
@@ -156,6 +168,7 @@ export class ArticleController {
       thumbnail || null,
     );
   }
+
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: '좋아요 토글' })
@@ -166,13 +179,14 @@ export class ArticleController {
   })
   @ApiResponse({ status: 404, description: '아티클이 존재하지 않음' })
   @ApiResponse({ status: 500, description: '서버 오류' })
-  @Post(':id/like')
-  toggleArticleLike(
+  @Patch(':id/like')
+  async toggleArticleLike(
     @Param('id') articleId: string,
     @User('id') userId: string,
   ) {
     return this.articleService.likedArticle(articleId, userId);
   }
+
   @ApiOperation({ summary: '이미지 업로드 (아티클)' })
   @UseInterceptors(
     createMultiUploadInterceptor(

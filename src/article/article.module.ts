@@ -1,8 +1,7 @@
-import { Article, Mentors, Users } from '@/entities';
+import { Article, Mentors, Users, Like } from '@/entities';
 import { RedisService } from '@/redis/redis.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Like } from 'typeorm';
 import { ArticleController } from './article.controller';
 import { ArticleService } from './article.service';
 

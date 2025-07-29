@@ -1,7 +1,13 @@
+import {
+  MentorCareerLevel,
+  MentoringCategory,
+  MentorPosition,
+} from '@/common/enum/category.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayNotEmpty,
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsString,
   IsUrl,
@@ -27,28 +33,31 @@ export class CreateMentorDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: '프론트엔드',
+    example: MentorPosition.BACKEND,
     description: '직책',
-    required: false,
+    enum: MentorPosition,
   })
+  @IsEnum(MentorPosition)
   position: string;
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
   @ApiProperty({
-    example: ['it', 'marketing'],
+    example: [MentoringCategory.CONSULTING, MentoringCategory.DESIGN],
     description: '전문 분야 (다중 선택)',
-    required: true,
+    enum: MentoringCategory,
     type: [String],
   })
+  @IsEnum(MentoringCategory)
   expertise: string[];
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    example: '주니어(1~3년)',
+    example: MentorCareerLevel.JUNIOR,
     description: '연차',
-    required: true,
+    enum: MentorCareerLevel,
   })
+  @IsEnum(MentorCareerLevel)
   career: string;
   @IsUrl()
   @IsNotEmpty()
