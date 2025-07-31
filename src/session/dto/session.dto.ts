@@ -86,11 +86,11 @@ export class SessionListItemDto {
 export class SessionQueryDto extends PaginationDto {
   @ApiPropertyOptional({
     example: 'latest',
-    description: '정렬 기준: latest | mentor | rating',
+    description: '정렬 기준: latest | mentor | rating | priceAsc | priceDesc',
   })
   @IsOptional()
-  @IsIn(['latest', 'mentor', 'rating'])
-  sort?: 'latest' | 'mentor' | 'rating';
+  @IsIn(['latest', 'mentor', 'rating', 'priceDesc', 'priceAsc'])
+  sort?: 'latest' | 'mentor' | 'rating' | 'priceAsc' | 'priceDesc';
 
   @ApiPropertyOptional({
     example: MentoringCategory.IT,

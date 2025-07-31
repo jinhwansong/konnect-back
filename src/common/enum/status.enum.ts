@@ -19,6 +19,7 @@ export enum SocialLoginProvider {
 export enum LikeType {
   REVIEW = 'review',
   ARTICLE = 'article',
+  SESSION = 'session',
 }
 
 // 멘토링 현황

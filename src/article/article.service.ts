@@ -54,12 +54,19 @@ export class ArticleService {
     if (category) {
       article.andWhere('article.category = :category', { category });
     }
-
+    console.log(sort);
     switch (sort) {
       case 'likes':
         article
-          .orderBy('article.likeCount', 'DESC')
-          .addOrderBy('article.id', 'ASC');
+          .addSelect(
+            (subQuery) =>
+              subQuery
+                .select('COUNT(*)')
+                .from('likes', 'likes')
+                .where('likes.articleId = article.id'),
+            'likeCount',
+          )
+          .orderBy('likeCount', 'DESC');
         break;
       case 'latest':
       default:

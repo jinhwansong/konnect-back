@@ -12,6 +12,7 @@ import { Article } from './article.entity';
 import { MentoringReview } from './mentoring-review.entity';
 import { Users } from './user.entity';
 import { LikeType } from '@/common/enum/status.enum';
+import { MentoringSession } from './mentoring-session.entity';
 
 @Entity({ schema: 'konnect', name: 'likes' })
 export class Like {
@@ -53,4 +54,15 @@ export class Like {
   article?: Article;
   @Column({ nullable: true })
   articleId?: string;
+
+  @ApiProperty({ description: '좋아요 대상 (멘토링 세션)', required: false })
+  @ManyToOne(() => MentoringSession, (session) => session.likes, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'sessionId' })
+  session?: MentoringSession;
+
+  @Column({ nullable: true })
+  sessionId?: string;
 }

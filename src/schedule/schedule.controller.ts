@@ -24,8 +24,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
-  CreateMentoringScheduleDto,
-  UpdateMentoringScheduleDto,
+  BulkCreateMentoringScheduleDto,
+  BulkUpdateMentoringScheduleDto,
+  GetScheduleListResponseDto,
 } from './dto/schedule.dto';
 import { ScheduleService } from './schedule.service';
 import { PaginationDto } from '@/common/dto/page.dto';
@@ -56,12 +57,12 @@ export class ScheduleController {
   })
   async createSchedule(
     @User('id') userId: string,
-    @Body() body: CreateMentoringScheduleDto,
+    @Body() body: BulkCreateMentoringScheduleDto,
   ) {
-    return this.scheduleService.createSchedule(userId, body);
+    return this.scheduleService.createSchedule(userId, body.data);
   }
 
-  @Patch(':id')
+  @Patch('')
   @ApiOperation({ summary: '멘토 정기 스케줄 수정' })
   @ApiResponse({
     status: 200,
@@ -77,13 +78,12 @@ export class ScheduleController {
   })
   async updateSchedule(
     @User('id') userId: string,
-    @Param('id') scheduleId: string,
-    @Body() body: UpdateMentoringScheduleDto,
+    @Body() body: BulkUpdateMentoringScheduleDto,
   ) {
-    return this.scheduleService.updateSchedule(userId, scheduleId, body);
+    console.log('🔥 PATCH body:', body);
+    return this.scheduleService.updateSchedule(userId, body.data);
   }
 
-  @Delete(':id')
   @ApiOperation({ summary: '멘토 정기 스케줄 삭제' })
   @ApiResponse({
     status: 200,
@@ -97,6 +97,7 @@ export class ScheduleController {
     status: 404,
     description: '해당 스케줄을 찾을 수 없습니다.',
   })
+  @Delete(':id')
   async deleteSchedule(
     @Param('id') scheduleId: string,
     @User('id') userId: string,
@@ -104,16 +105,17 @@ export class ScheduleController {
     return this.scheduleService.deleteSchedule(userId, scheduleId);
   }
 
-  @Get('')
   @ApiOperation({ summary: '멘토 정기 스케줄 목록 조회' })
   @ApiResponse({
     status: 200,
     description: '멘토가 등록한 정기 스케줄 목록을 반환합니다.',
+    type: GetScheduleListResponseDto,
   })
   @ApiResponse({
     status: 404,
     description: '멘토 정보를 찾을 수 없습니다.',
   })
+  @Get('')
   async getMyScheduleList(@User('id') userId: string) {
     return this.scheduleService.getScheduleList(userId);
   }
@@ -131,7 +133,7 @@ export class ScheduleController {
     status: 500,
     description: '등록된 세션 목록을 찾을 수 없습니다.',
   })
-  @Get('')
+  @Get('reservations')
   async getMentorReservationList(
     @User('id') userId: string,
     @Query() dto: PaginationDto,

@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import striptags from 'striptags';
@@ -92,6 +96,14 @@ export class SessionService {
         session.orderBy('session.averageRating', 'DESC');
         break;
       case 'latest':
+        session.orderBy('session.createdAt', 'DESC');
+        break;
+      case 'priceAsc':
+        session.orderBy('session.price', 'ASC');
+        break;
+      case 'priceDesc':
+        session.orderBy('session.price', 'DESC');
+        break;
       default:
         session.orderBy('session.createdAt', 'DESC');
     }
@@ -151,5 +163,31 @@ export class SessionService {
       data,
     };
   }
-  async getSessionDetail(sessionId: string) {}
+  async getSessionDetail(sessionId: string) {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId },
+      relations: ['mentor', 'mentor.user'],
+    });
+    if (!session) {
+      throw new NotFoundException('세션을 찾을 수 없습니다.');
+    }
+    return {
+      id: session.id,
+      title: session.title,
+      description: session.description,
+      price: session.price,
+      duration: session.duration,
+      category: session.category,
+      rating: session.averageRating,
+      career: session.mentor.career,
+      position: session.mentor.position,
+      company: session.mentor.isCompanyHidden
+        ? '비공개'
+        : session.mentor.company,
+      nickname: session.mentor.user.nickname,
+      userId: session.mentor.user.id,
+      image: session.mentor.user.image,
+      createdAt: session.createdAt,
+    };
+  }
 }

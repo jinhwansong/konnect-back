@@ -62,7 +62,11 @@ export class ReservationController {
   ) {
     return this.reservationService.getAvailableTimes(id, date);
   }
-
+  @ApiOperation({ summary: '멘토링 예약 가능 시간 조회' })
+  @Get('available-days/:id')
+  async getAvailableDays(@Param('id') mentorId: string) {
+    return this.reservationService.getAvailableDays(mentorId);
+  }
   @ApiOperation({ summary: '멘토링 예약 등록' })
   @ApiResponse({
     status: 201,

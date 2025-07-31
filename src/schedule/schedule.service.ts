@@ -30,13 +30,20 @@ export class ScheduleService {
     private readonly httpService: HttpService,
   ) {}
 
-  async createSchedule(userId: string, body: CreateMentoringScheduleDto) {
+  async createSchedule(userId: string, body: CreateMentoringScheduleDto[]) {
     const mentor = await this.mentorRepository.findOne({
       where: { user: { id: userId } },
     });
     if (!mentor)
       throw new ForbiddenException('본인의 스케줄만 등록할 수 있습니다.');
-    const schedule = this.scheduleRepository.create({ ...body, mentor });
+    const schedule = body.map((item) => {
+      return this.scheduleRepository.create({
+        mentor,
+        dayOfWeek: item.dayOfWeek,
+        startTime: item.startTime,
+        endTime: item.endTime,
+      });
+    });
     await this.scheduleRepository.save(schedule);
 
     return { message: '정기 스케줄이 성공적으로 등록되었습니다.' };
@@ -44,24 +51,87 @@ export class ScheduleService {
 
   async updateSchedule(
     userId: string,
-    scheduleId: string,
-    body: UpdateMentoringScheduleDto,
+    schedules: UpdateMentoringScheduleDto[],
   ) {
-    const schedule = await this.scheduleRepository.findOne({
-      where: { id: scheduleId },
+    const mentor = await this.mentorRepository.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!mentor)
+      throw new ForbiddenException('본인의 스케줄만 등록할 수 있습니다.');
+
+    const existing = await this.scheduleRepository.find({
+      where: {
+        mentor: { user: { id: userId } },
+      },
       relations: { mentor: { user: true } },
     });
 
-    if (!schedule)
-      throw new NotFoundException('해당 스케줄을 찾을 수 없습니다.');
-    if (schedule.mentor.user.id !== userId) {
-      throw new ForbiddenException('본인의 스케줄만 수정할 수 있습니다.');
+    const incomingIds = schedules.map((s) => s.id).filter(Boolean);
+    const toDelete = existing.filter(
+      (item) =>
+        !incomingIds.includes(item.id) && item.mentor.user.id === userId,
+    );
+
+    if (toDelete.length) {
+      await this.scheduleRepository.remove(toDelete);
     }
 
-    Object.assign(schedule, body);
-    await this.scheduleRepository.save(schedule);
+    const updated = await this.updateExistingSchedules(userId, schedules);
+    const created = await this.createNewSchedules(mentor, schedules);
 
     return { message: '정기 스케줄이 성공적으로 수정되었습니다.' };
+  }
+
+  private async updateExistingSchedules(
+    userId: string,
+    schedules: UpdateMentoringScheduleDto[],
+  ) {
+    const result = [];
+
+    const toUpdate = schedules.filter((s) => s.id);
+    for (const dto of toUpdate) {
+      const schedule = await this.scheduleRepository.findOne({
+        where: { id: dto.id },
+        relations: { mentor: { user: true } },
+      });
+      if (!schedule)
+        throw new NotFoundException('해당 스케줄을 찾을 수 없습니다.');
+      if (schedule.mentor.user.id !== userId) {
+        throw new ForbiddenException('본인의 스케줄만 수정할 수 있습니다.');
+      }
+
+      this.assignScheduleFields(schedule, dto);
+      result.push(await this.scheduleRepository.save(schedule));
+    }
+
+    return result;
+  }
+  private async createNewSchedules(
+    mentor: Mentors,
+    schedules: UpdateMentoringScheduleDto[],
+  ) {
+    const result = [];
+
+    const toCreate = schedules.filter((s) => !s.id);
+    for (const dto of toCreate) {
+      const newSchedule = this.scheduleRepository.create({
+        mentor,
+        dayOfWeek: dto.dayOfWeek,
+        startTime: dto.startTime,
+        endTime: dto.endTime,
+      });
+      result.push(await this.scheduleRepository.save(newSchedule));
+    }
+
+    return result;
+  }
+  private assignScheduleFields(
+    target: MentoringSchedule,
+    source: Partial<UpdateMentoringScheduleDto>,
+  ) {
+    target.dayOfWeek = source.dayOfWeek;
+    target.startTime = source.startTime;
+    target.endTime = source.endTime;
   }
 
   async deleteSchedule(userId: string, scheduleId: string) {
@@ -77,7 +147,7 @@ export class ScheduleService {
     }
 
     await this.scheduleRepository.remove(schedule);
-    return { message: '정기 스케줄이 성공적으로 삭제되었습니다.' };
+    return { message: '해당 정기 스케줄이 성공적으로 삭제되었습니다.' };
   }
 
   async getScheduleList(userId: string) {

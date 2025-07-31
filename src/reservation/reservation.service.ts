@@ -162,4 +162,14 @@ export class ReservationService {
       message: '멘티 예약 내역 조회 성공',
     };
   }
+  async getAvailableDays(mentorId: string) {
+    const schedules = await this.scheduleRepository.find({
+      where: { mentor: { id: mentorId } },
+      select: ['dayOfWeek'],
+    });
+
+    const uniqueDays = [...new Set(schedules.map((s) => s.dayOfWeek))];
+
+    return { availableDays: uniqueDays };
+  }
 }

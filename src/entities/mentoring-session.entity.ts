@@ -12,6 +12,7 @@ import { Mentors } from './mentor.entity';
 import { MentoringReservation } from './mentoring-reservation.entity';
 import { MentoringReview } from './mentoring-review.entity';
 import { MentoringCategory } from '@/common/enum/category.enum';
+import { Like } from './like.entity';
 
 @Entity({ schema: 'konnect', name: 'mentoring_sessions' })
 export class MentoringSession {
@@ -50,4 +51,6 @@ export class MentoringSession {
   reservation: MentoringReservation[];
   @OneToMany(() => MentoringReview, (review) => review.session)
   reviews: MentoringReview[];
+  @OneToMany(() => Like, (like) => like.session)
+  likes: Like[];
 }

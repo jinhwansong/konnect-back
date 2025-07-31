@@ -12,6 +12,9 @@ export class MentorReservationListResponseDto {
   @ApiProperty({ description: '세션 제목', example: 'React 입문 강의' })
   title: string;
 
+  @ApiProperty({ description: '예약날짜', example: '2025-07-27' })
+  date: string;
+
   @ApiProperty({ description: '시작 시간', example: '14:00:00' })
   startTime: string;
 
