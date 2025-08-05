@@ -1,4 +1,4 @@
-import { JwtAuthGuard } from '@/auth/jwt.guard';
+import { JwtAuthGuard } from '@/common/guard/jwt.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { UserRole } from '@/common/enum/status.enum';
@@ -80,7 +80,6 @@ export class ScheduleController {
     @User('id') userId: string,
     @Body() body: BulkUpdateMentoringScheduleDto,
   ) {
-    console.log('🔥 PATCH body:', body);
     return this.scheduleService.updateSchedule(userId, body.data);
   }
 

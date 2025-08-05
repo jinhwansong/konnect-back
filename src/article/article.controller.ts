@@ -1,4 +1,4 @@
-import { JwtAuthGuard } from '@/auth/jwt.guard';
+import { JwtAuthGuard } from '@/common/guard/jwt.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { UserRole } from '@/common/enum/status.enum';
@@ -131,7 +131,6 @@ export class ArticleController {
     @User('id') userId?: string,
     @Ip() ip?: string,
   ) {
-    console.log('userId', userId);
     const clientIp = ip || req.socket.remoteAddress || 'unknown';
     return this.articleService.getArticleDetail(id, userId, clientIp);
   }

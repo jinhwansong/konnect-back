@@ -5,6 +5,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Users } from './user.entity';
@@ -16,9 +17,10 @@ export class SocialAccount {
   id: string;
   @Column('enum', {
     enum: SocialLoginProvider,
-    nullable: true,
+    nullable: false,
     default: SocialLoginProvider.KAKAO,
   })
+  @Unique(['provider', 'socialId'])
   provider: SocialLoginProvider;
   @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
   socialId: string;

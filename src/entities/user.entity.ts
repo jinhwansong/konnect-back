@@ -31,7 +31,7 @@ export class Users {
   @Column({
     type: 'varchar',
     length: 100,
-    nullable: false,
+    nullable: true,
   })
   password: string | null;
 
@@ -39,7 +39,7 @@ export class Users {
   nickname: string;
   @Column({ type: 'varchar', length: 30, nullable: false })
   name: string;
-  @Column({ type: 'varchar', length: 11, unique: true, nullable: false })
+  @Column({ type: 'varchar', length: 11, unique: true, nullable: true })
   phone: string;
 
   @Column({ type: 'text', nullable: true })

@@ -15,13 +15,6 @@ export class RedisService {
     this.client.connect();
   }
 
-  // RefreshToken 1일 저장
-  async saveRefreshToken(userId: string, refreshToken: string) {
-    await this.client.set(`refresh:${userId}`, refreshToken, {
-      EX: 60 * 60 * 24,
-    });
-  }
-
   // 인증코드 저장
   async saveEmailCode(email: string, code: string) {
     await this.client.set(`verify:${email}`, code, { EX: 60 * 3 });
@@ -36,16 +29,6 @@ export class RedisService {
   // 인증코드 삭제 (성공 시)
   async deleteEmailCode(email: string) {
     return await this.client.del(`verify:${email}`);
-  }
-
-  // RefreshToken 조회
-  async getRefreshToken(userId: string) {
-    return await this.client.get(`refresh:${userId}`);
-  }
-
-  // RefreshToken 삭제
-  async deleteRefreshToken(userId: string) {
-    return await this.client.del(`refresh:${userId}`);
   }
 
   // 채팅 저장 1시간

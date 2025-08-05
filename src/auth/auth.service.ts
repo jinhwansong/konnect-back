@@ -2,12 +2,12 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '@/users/users.service';
-import { JoinDto, LoginDto } from './dto/auth.dto';
+import { JoinDto, LoginDto, SocialLoginDto } from './dto/auth.dto';
 import { RedisService } from '@/redis/redis.service';
 import { SocialLoginProvider, UserRole } from '@/common/enum/status.enum';
 import { sendEmailDto, verifyCodeDto } from './dto/email.dto';
@@ -17,7 +17,6 @@ import { MailService } from '@/mail/mail.service';
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly mailService: MailService,
   ) {}
@@ -42,60 +41,34 @@ export class AuthService {
       nickname,
     });
   }
-  async login(body: LoginDto, res) {
-    const { email, password } = body;
-    const user = await this.usersService.findByEmail(email);
-    if (!user) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
-    }
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
-    }
-    const { accessToken, refreshToken } = this.createToken(
-      user.id,
-      user.email,
-      user.role,
-    );
-    await this.saveRefreshToken(user.id, refreshToken);
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-    res.status(200).json({
-      message: '로그인 되었습니다.',
-      accessToken,
-      email,
-      name: user.name,
-      nickname: user.nickname,
-      image: user.image,
-      phone: user.phone,
-      role: user.role,
-    });
-  }
-  async refresh(refreshToken: string) {
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh Token이 없습니다.');
-    }
+
+  async login(body: LoginDto) {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.REFRESH_SECRET,
-      });
-      const savedToken = await this.redisService.getRefreshToken(payload.id);
-      if (savedToken !== refreshToken) {
-        throw new UnauthorizedException('Refresh Token이 유효하지 않습니다.');
+      const { email, password } = body;
+      const user = await this.usersService.findByEmail(email);
+
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+        throw new UnauthorizedException(
+          '이메일 또는 비밀번호가 일치하지 않습니다.',
+        );
       }
-      // 새로운 토큰 생성
-      const accessToken = this.jwtService.sign(
-        { id: payload.id, email: payload.email, role: payload.role },
-        { secret: process.env.COOKIE_SECRET, expiresIn: '15m' },
-      );
-      return { message: '새로운 access Token이 발급되었습니다.', accessToken };
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        nickname: user.nickname,
+        image: user.image,
+        phone: user.phone,
+        role: user.role,
+      };
     } catch (error) {
-      throw new UnauthorizedException('Refresh Token이 유효하지 않습니다.');
+      throw error instanceof UnauthorizedException
+        ? error
+        : new UnauthorizedException('로그인 중 오류가 발생했습니다.');
     }
   }
+
   async logout(req, res) {
     const user = req.user;
     if (!user || !user.id) {
@@ -103,53 +76,31 @@ export class AuthService {
         .status(400)
         .json({ message: '사용자 정보가 존재하지 않습니다.' });
     }
-    await this.redisService.deleteRefreshToken(user.id);
-    res.clearCookie('refreshToken');
     return res.status(200).json({ message: '로그아웃 되었습니다.' });
   }
-  async socialLogin(
-    provider: SocialLoginProvider,
-    socialId: string,
-    email: string,
-    name: string,
-  ) {
-    let user = await this.usersService.findUserBySocialId(provider, socialId);
-    if (!user) {
-      user = await this.usersService.createSocialUser(
-        email,
-        name,
-        provider,
-        socialId,
+
+  async socialLogin(body: SocialLoginDto) {
+    try {
+      const { provider, socialId, email, name, image } = body;
+      let user = await this.usersService.findUserBySocialId(provider, socialId);
+      if (!user) {
+        user = await this.usersService.createSocialUser(
+          email,
+          name,
+          provider,
+          socialId,
+          image,
+        );
+      }
+      return user;
+    } catch (error) {
+      console.error('[socialLogin error]', error);
+      throw new InternalServerErrorException(
+        '소셜 로그인 처리 중 오류가 발생했습니다.',
       );
     }
-    const { accessToken, refreshToken } = this.createToken(
-      user.id,
-      user.email,
-      user.role,
-    );
-    await this.saveRefreshToken(user.id, refreshToken);
-    return {
-      accessToken,
-      refreshToken,
-      user,
-    };
   }
-  createToken(userId: string, email: string, role: UserRole) {
-    // Access Token
-    const accessToken = this.jwtService.sign(
-      { id: userId, email, role },
-      { secret: process.env.COOKIE_SECRET, expiresIn: '15m' },
-    );
-    // refreshToken
-    const refreshToken = this.jwtService.sign(
-      { id: userId, email, role },
-      { secret: process.env.REFRESH_SECRET, expiresIn: '1d' },
-    );
-    return { accessToken, refreshToken };
-  }
-  async saveRefreshToken(userId: string, refreshToken: string) {
-    return await this.redisService.saveRefreshToken(userId, refreshToken);
-  }
+
   async duplicateEmail(email: string) {
     const exUser = await this.usersService.findByEmail(email);
     if (exUser) {

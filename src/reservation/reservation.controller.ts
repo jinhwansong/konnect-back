@@ -1,4 +1,4 @@
-import { JwtAuthGuard } from '@/auth/jwt.guard';
+import { JwtAuthGuard } from '@/common/guard/jwt.guard';
 import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';
 import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNull.Interceptor';

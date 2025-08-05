@@ -1,5 +1,5 @@
 import { UserDto } from '@/auth/dto/auth.dto';
-import { JwtAuthGuard } from '@/auth/jwt.guard';
+import { JwtAuthGuard } from '@/common/guard/jwt.guard';
 import { User } from '@/common/decorators/user.decorator';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import {

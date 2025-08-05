@@ -54,7 +54,6 @@ export class ArticleService {
     if (category) {
       article.andWhere('article.category = :category', { category });
     }
-    console.log(sort);
     switch (sort) {
       case 'likes':
         article

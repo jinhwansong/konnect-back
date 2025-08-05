@@ -1,5 +1,5 @@
 import { UserListDto } from '@/admin/dto/user.dto';
-import { JwtAuthGuard } from '@/auth/jwt.guard';
+import { JwtAuthGuard } from '@/common/guard/jwt.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { User } from '@/common/decorators/user.decorator';
 import { PaginationDto } from '@/common/dto/page.dto';

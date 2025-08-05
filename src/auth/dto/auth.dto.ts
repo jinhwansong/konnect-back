@@ -1,6 +1,13 @@
-import { UserRole } from '@/common/enum/status.enum';
+import { SocialLoginProvider, UserRole } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBase64, IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import {
+  IsBase64,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 
 export class JoinDto {
   @IsEmail()
@@ -115,3 +122,42 @@ export class UserDto {
   image: string;
 }
 
+export class SocialLoginDto {
+  @IsString()
+  @ApiProperty({
+    example: 'KAKAO',
+    description: '소셜 로그인 제공자 (KAKAO, NAVER, GOOGLE 등)',
+    enum: SocialLoginProvider,
+  })
+  provider: SocialLoginProvider;
+
+  @IsString()
+  @ApiProperty({
+    example: '123456789',
+    description: '소셜 플랫폼에서의 사용자 고유 ID',
+  })
+  socialId: string;
+
+  @IsEmail()
+  @ApiProperty({
+    example: 'user@example.com',
+    description: '사용자 이메일 주소',
+  })
+  email: string;
+
+  @IsString()
+  @ApiProperty({
+    example: '홍길동',
+    description: '사용자 이름',
+  })
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    example: 'https://example.com/avatar.jpg',
+    description: '프로필 이미지 URL',
+    required: false,
+  })
+  image?: string;
+}

@@ -1,8 +1,9 @@
-import { SocialLoginProvider, UserRole } from '@/common/enum/status.enum';
-import { SocialAccount, Users } from '@/entities';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import { SocialAccount, Users } from '@/entities';
+import { SocialLoginProvider, UserRole } from '@/common/enum/status.enum';
 
 @Injectable()
 export class UsersService {
@@ -54,14 +55,16 @@ export class UsersService {
     name: string,
     provider: SocialLoginProvider,
     socialId: string,
+    image?: string,
   ) {
+    const nickname = `user_${uuidv4().slice(0, 8)}`;
     const newUser = this.userRepository.create({
       email,
       name,
-      nickname: name,
+      nickname,
       role: UserRole.MENTEE,
       password: null,
-      image: null,
+      image: image ?? null,
     });
     const savedUser = await this.userRepository.save(newUser);
 
