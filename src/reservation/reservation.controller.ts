@@ -62,11 +62,26 @@ export class ReservationController {
   ) {
     return this.reservationService.getAvailableTimes(id, date);
   }
-  @ApiOperation({ summary: '멘토링 예약 가능 시간 조회' })
+
+  @ApiResponse({
+    status: 200,
+    description: '예약 가능한 요일 리스트',
+    schema: {
+      example: {
+        availableDays: ['MONDAY', 'WEDNESDAY', 'FRIDAY'],
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: '해당 멘토의 스케줄이 존재하지 않습니다.',
+  })
+  @ApiOperation({ summary: '멘토링 예약 가능 날짜 조회' })
   @Get('available-days/:id')
   async getAvailableDays(@Param('id') mentorId: string) {
     return this.reservationService.getAvailableDays(mentorId);
   }
+
   @ApiOperation({ summary: '멘토링 예약 등록' })
   @ApiResponse({
     status: 201,

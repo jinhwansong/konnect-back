@@ -3,11 +3,13 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import dotenv from 'dotenv';
-import path from 'path';
+import path, { join } from 'path';
 import { AppModule } from './app.module';
 import { createUploadFolder } from './common/util/upload.folder';
 import { HttpExceptionFilter } from './httpException.filter';
 import cookieParser from 'cookie-parser';
+import { existsSync, writeFileSync } from 'fs';
+import { Request, Response } from 'express';
 
 declare const module: any;
 dotenv.config();
@@ -33,7 +35,9 @@ async function bootstrap() {
   // 스웨거 설정
   const config = new DocumentBuilder()
     .setTitle('커넥트 api문서')
-    .setDescription('커넥트 개발을 위한 api문서')
+    .setDescription(
+      '커넥트 개발을 위한 api문서 \n\n🔗 OpenAPI 명세 다운로드: /openapi-spec.json`,',
+    )
     .setVersion('1.0')
     // 스웨어에서 로그인 할때
     .addBearerAuth(
@@ -48,7 +52,10 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+  app.useStaticAssets(join(__dirname, '..'));
+  writeFileSync('./openapi-spec.json', JSON.stringify(document, null, 2));
   const port = process.env.PORT;
+
   await app.listen(port);
   if (module.hot) {
     module.hot.accept();

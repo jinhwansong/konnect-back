@@ -185,7 +185,7 @@ export class SessionService {
         ? '비공개'
         : session.mentor.company,
       nickname: session.mentor.user.nickname,
-      userId: session.mentor.user.id,
+      userId: session.mentor.id,
       image: session.mentor.user.image,
       createdAt: session.createdAt,
     };

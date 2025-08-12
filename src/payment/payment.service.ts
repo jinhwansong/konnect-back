@@ -22,16 +22,32 @@ export class PaymentService {
   ) {}
 
   async confirmPayment(body: ConfirmPaymentDto, userId: string) {
+    // 사용자 조회
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     try {
       // 중복 결제 방지
       const exist = await this.paymentRepository.findOne({
-        where: { orderId: body.orderId },
+        where: { orderId: body.orderId, status: PaymentStatus.SUCCESS },
       });
       if (exist) {
         return {
           message: '이미 결제 완료된 예약입니다.',
           receiptUrl: exist.receiptUrl,
         };
+      }
+      // 예약 정보 조회
+      const reservation = await this.reservationRepository.findOne({
+        where: { id: body.orderId },
+        relations: { session: true },
+      });
+
+      if (!reservation) {
+        throw new BadRequestException('해당 예약을 찾을 수 없습니다.');
+      }
+      if (body.price !== reservation.session.price) {
+        throw new BadRequestException(
+          '결제 금액이 예약 금액과 일치하지 않습니다.',
+        );
       }
       const res = await firstValueFrom(
         this.httpService.post(
@@ -51,37 +67,32 @@ export class PaymentService {
           },
         ),
       );
-      // 예약 정보 조회
-      const reservation = await this.reservationRepository.findOne({
-        where: { id: body.orderId },
+
+      await this.dataSource.transaction(async (manager) => {
+        const payments = manager.getRepository(Payment);
+        const reservations = manager.getRepository(MentoringReservation);
+
+        // 결제 정보 저장
+        const payment = payments.create({
+          paymentKey: body.paymentKey,
+          orderId: body.orderId,
+          price: body.price,
+          receiptUrl: res.data.receipt.url,
+          status: PaymentStatus.SUCCESS,
+          user,
+        });
+        await payments.save(payment);
+        await reservations.update(
+          { id: body.orderId },
+          { status: MentoringStatus.CONFIRMED, paidAt: new Date() },
+        );
       });
 
-      if (!reservation) {
-        throw new BadRequestException('해당 예약을 찾을 수 없습니다.');
-      }
-
-      // 사용자 조회
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-
-      // 결제 정보 저장
-      const payment = this.paymentRepository.create({
-        paymentKey: body.paymentKey,
-        orderId: body.orderId,
-        price: body.price,
-        receiptUrl: res.data.receipt.url,
-        status: PaymentStatus.SUCCESS,
-        user,
-        reservation,
-      });
-
-      await this.paymentRepository.save(payment);
-      reservation.status = MentoringStatus.CONFIRMED;
-      await this.reservationRepository.save(reservation);
       return {
         message: '결제에 성공했습니다.',
-        receiptUrl: payment.receiptUrl,
       };
     } catch (error) {
+      console.log('error', error);
       // Toss 응답이 있는 경우: 잔액 부족, 카드 거절 등
       const reason = error?.response?.data?.message || '알 수 없는 오류';
       const code = error?.response?.data?.code || 'UNKNOWN';
@@ -89,7 +100,6 @@ export class PaymentService {
       const reservation = await this.reservationRepository.findOne({
         where: { id: body.orderId },
       });
-      const user = await this.userRepository.findOne({ where: { id: userId } });
 
       const failLog = this.paymentRepository.create({
         orderId: body.orderId,

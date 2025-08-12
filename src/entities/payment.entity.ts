@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -45,5 +46,6 @@ export class Payment {
   @OneToOne(() => MentoringReservation, (reservation) => reservation.payments, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn()
   reservation: MentoringReservation;
 }

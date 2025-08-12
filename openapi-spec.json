@@ -1,0 +1,3811 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/user": {
+      "get": {
+        "operationId": "UsersController_profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "사용자 정보 입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 에러"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "회원정보",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/auth/join": {
+      "post": {
+        "operationId": "AuthController_join",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "회원가입이 완료되었습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (이메일 중복 등)"
+          },
+          "500": {
+            "description": "서버 에러"
+          }
+        },
+        "summary": "회원가입",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "로그인 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "이메일 또는 비밀번호가 일치하지 않습니다."
+          },
+          "500": {
+            "description": "서버 에러"
+          }
+        },
+        "summary": "사용자 로그인",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/social": {
+      "post": {
+        "operationId": "AuthController_socialRegister",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "소셜 사용자 등록 또는 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "소셜 로그인 등록",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/duplicateEmail": {
+      "post": {
+        "operationId": "AuthController_duplicateEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/duplicateEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "사용 가능한 이메일입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/duplicateEmailDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "이미 사용 중인 이메일입니다."
+          }
+        },
+        "summary": "이메일 중복 검사",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/duplicateNickname": {
+      "post": {
+        "operationId": "AuthController_duplicateNickname",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/duplicateNicknameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "사용 가능한 닉네임입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/duplicateNicknameDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "이미 사용 중인 닉네임입니다."
+          }
+        },
+        "summary": "닉네임 중복 검사",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/email/verify/send": {
+      "post": {
+        "operationId": "AuthController_sendCode",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/sendEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "인증 코드가 이메일로 전송되었습니다."
+          },
+          "400": {
+            "description": "이미 인증 코드가 발송되어 있음 or 이메일 오류"
+          }
+        },
+        "summary": "이메일 인증보내기",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/email/verify/confirm": {
+      "post": {
+        "operationId": "AuthController_confirmCode",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/verifyCodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "이메일 인증 완료"
+          },
+          "400": {
+            "description": "인증 코드가 없거나, 일치하지 않거나, 만료됨"
+          }
+        },
+        "summary": "이메일 인증확인",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "로그아웃 되었습니다."
+          },
+          "401": {
+            "description": "인증되지 않은 사용자입니다."
+          },
+          "500": {
+            "description": "서버 에러"
+          }
+        },
+        "summary": "사용자 로그아웃",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/mentor/apply": {
+      "post": {
+        "operationId": "MentorsController_applyMentor",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMentorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "멘토 신청 완료"
+          },
+          "500": {
+            "description": "멘토 신청 중 오류가 발생했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 신청",
+        "tags": [
+          "Mentor"
+        ]
+      }
+    },
+    "/mentor/public": {
+      "patch": {
+        "operationId": "MentorsController_updatePublicStatus",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMentorPublicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "공개 여부가 수정되었습니다."
+          },
+          "404": {
+            "description": "멘토 정보를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 세션 공개 여부 설정",
+        "tags": [
+          "Mentor"
+        ]
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "operationId": "AdminController_getUserList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "사용자 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserListDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "사용자 목록 를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "사용자 목록 조회",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/mentors": {
+      "get": {
+        "operationId": "AdminController_getMentorList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "멘토 신청 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MentorListDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "멘토 신청 정보를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 신청 목록 조회",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/mentors/{id}": {
+      "get": {
+        "operationId": "AdminController_getMentorDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "멘토 상세 정보",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentorDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "해당 멘토를 찾을 수 없습니다."
+          },
+          "500": {
+            "description": "멘토 상세 정보를 불러오는 데 실패했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 상세 정보 조회",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/mentors/{id}/approve": {
+      "post": {
+        "operationId": "AdminController_approveMentor",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveOrRejectMentorDto"
+              },
+              "examples": {
+                "승인": {
+                  "summary": "멘토 승인",
+                  "value": {
+                    "status": "approved"
+                  }
+                },
+                "거절": {
+                  "summary": "멘토 거절",
+                  "value": {
+                    "status": "rejected",
+                    "reason": "포트폴리오 기준 미달"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "멘토 승인 또는 거절 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "멘토가 승인되었습니다."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "거절 시 사유 누락 등 잘못된 요청"
+          },
+          "403": {
+            "description": "관리자만 접근 가능한 요청"
+          },
+          "404": {
+            "description": "멘토 또는 관리자 계정 없음"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "승인/거절",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/mentoring": {
+      "post": {
+        "operationId": "MentoringController_createSession",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMentoringSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "멘토링 세션이 등록되었습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentoringSessionResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "승인된 멘토만 세션을 등록할 수 있습니다."
+          },
+          "404": {
+            "description": "멘토를 찾을 수 없습니다."
+          },
+          "500": {
+            "description": "멘토링 세션 등록 중 오류가 발생했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 세션 등록",
+        "tags": [
+          "Mentoring"
+        ]
+      },
+      "get": {
+        "operationId": "MentoringController_getSession",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "등록된 세션 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MentoringSessionResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "등록된 세션 목록을 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토가 등록한 세션 목록 조회",
+        "tags": [
+          "Mentoring"
+        ]
+      }
+    },
+    "/mentoring/{id}": {
+      "get": {
+        "operationId": "MentoringController_getSessionDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentoringSessionResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "세션을 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토가 등록한 세션 상세 조회",
+        "tags": [
+          "Mentoring"
+        ]
+      },
+      "patch": {
+        "operationId": "MentoringController_updateSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMentoringSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 세션 수정",
+        "tags": [
+          "Mentoring"
+        ]
+      },
+      "delete": {
+        "operationId": "MentoringController_deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 세션 삭제",
+        "tags": [
+          "Mentoring"
+        ]
+      }
+    },
+    "/mentoring/{id}/public": {
+      "patch": {
+        "operationId": "MentoringController_updatePublic",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSessionPublicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 세션별 공개 여부",
+        "tags": [
+          "Mentoring"
+        ]
+      }
+    },
+    "/mentoring/upload-image": {
+      "post": {
+        "operationId": "MentoringController_uploadSessionEditorImages",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "이미지 업로드 (세션)",
+        "tags": [
+          "Mentoring"
+        ]
+      }
+    },
+    "/schedule": {
+      "post": {
+        "operationId": "ScheduleController_createSchedule",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateMentoringScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "정기 스케줄이 성공적으로 등록되었습니다."
+          },
+          "403": {
+            "description": "본인의 스케줄만 등록할 수 있습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 정기 스케줄 등록",
+        "tags": [
+          "Schedule"
+        ]
+      },
+      "patch": {
+        "operationId": "ScheduleController_updateSchedule",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateMentoringScheduleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "정기 스케줄이 성공적으로 수정되었습니다."
+          },
+          "403": {
+            "description": "본인의 스케줄만 수정할 수 있습니다."
+          },
+          "404": {
+            "description": "해당 스케줄을 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 정기 스케줄 수정",
+        "tags": [
+          "Schedule"
+        ]
+      },
+      "get": {
+        "operationId": "ScheduleController_getMyScheduleList",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "멘토가 등록한 정기 스케줄 목록을 반환합니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetScheduleListResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "멘토 정보를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 정기 스케줄 목록 조회",
+        "tags": [
+          "Schedule"
+        ]
+      }
+    },
+    "/schedule/{id}": {
+      "delete": {
+        "operationId": "ScheduleController_deleteSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "정기 스케줄이 성공적으로 삭제되었습니다."
+          },
+          "403": {
+            "description": "본인의 스케줄만 삭제할 수 있습니다."
+          },
+          "404": {
+            "description": "해당 스케줄을 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 정기 스케줄 삭제",
+        "tags": [
+          "Schedule"
+        ]
+      }
+    },
+    "/schedule/reservations": {
+      "get": {
+        "operationId": "ScheduleController_getMentorReservationList",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "등록된 세션 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MentorReservationListResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "등록된 세션 목록을 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 예약 목록 조회",
+        "tags": [
+          "Schedule"
+        ]
+      }
+    },
+    "/schedule/reservations/{id}": {
+      "get": {
+        "operationId": "ScheduleController_getMentorReservationDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "예약 상세 정보 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentorReservationDetailResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 예약 상세 조회",
+        "tags": [
+          "Schedule"
+        ]
+      }
+    },
+    "/schedule/reservations/{id}/status": {
+      "patch": {
+        "operationId": "ScheduleController_updateReservationStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "예약 상태 변경 요청",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              },
+              "examples": {
+                "수락": {
+                  "summary": "예약 수락",
+                  "value": {
+                    "status": "confirmed"
+                  }
+                },
+                "거절": {
+                  "summary": "예약 거절 + 환불 처리",
+                  "value": {
+                    "status": "rejected",
+                    "rejectReason": "일정이 맞지 않아 진행이 어렵습니다."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "예약 상태 변경 성공"
+          },
+          "400": {
+            "description": "요청 형식 또는 조건 오류"
+          },
+          "403": {
+            "description": "권한 없음"
+          },
+          "404": {
+            "description": "예약 없음"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 예약 수락/거절 처리",
+        "tags": [
+          "Schedule"
+        ]
+      }
+    },
+    "/reservation/available-times/{id}": {
+      "get": {
+        "operationId": "ReservationController_getAvailableTimes",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2025-07-08",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "예약 가능한 시간 목록을 반환합니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "availableTime": [
+                      {
+                        "startTime": "14:00",
+                        "endTime": "15:00"
+                      },
+                      {
+                        "startTime": "15:00",
+                        "endTime": "16:00"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "세션 또는 멘토를 찾을 수 없습니다."
+          },
+          "500": {
+            "description": "멘토링 예약 가능 시간 조회 중 오류가 발생했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 예약 가능 시간 조회",
+        "tags": [
+          "Reservation"
+        ]
+      }
+    },
+    "/reservation/available-days/{id}": {
+      "get": {
+        "operationId": "ReservationController_getAvailableDays",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "예약 가능한 요일 리스트",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "availableDays": [
+                      "MONDAY",
+                      "WEDNESDAY",
+                      "FRIDAY"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "해당 멘토의 스케줄이 존재하지 않습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 예약 가능 날짜 조회",
+        "tags": [
+          "Reservation"
+        ]
+      }
+    },
+    "/reservation": {
+      "post": {
+        "operationId": "ReservationController_createReservation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "예약이 등록되고 결제를 유도합니다."
+          },
+          "404": {
+            "description": "세션 또는 유저 정보를 찾을 수 없습니다."
+          },
+          "409": {
+            "description": "해당 시간은 이미 예약되었습니다."
+          },
+          "500": {
+            "description": "멘토링 예약 중 오류가 발생했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 예약 등록",
+        "tags": [
+          "Reservation"
+        ]
+      }
+    },
+    "/reservation/my": {
+      "get": {
+        "operationId": "ReservationController_getMyReservations",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 개수 (기본값: 10)",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "멘티 예약 내역을 조회합니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReservationItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "예약 내역 조회 중 오류가 발생했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘티 예약 내역 조회",
+        "tags": [
+          "Reservation"
+        ]
+      }
+    },
+    "/payment/confirm": {
+      "post": {
+        "operationId": "PaymentController_confirmPayment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "결제 성공 시 Toss confirm 처리",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/payment/mentor-income": {
+      "get": {
+        "operationId": "PaymentController_getMentorIncome",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "멘토 수입 내역",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MentorIComeResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "멘토 수입 내역 목록을 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 수입 내역 조회",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/payment/mentee-income": {
+      "get": {
+        "operationId": "PaymentController_getMenteeIncome",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "멘티 결제 내역",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MenteePaymentHistoryDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "멘티 결제 내역 목록을 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘티 결제 내역 조회",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/payment/refund": {
+      "post": {
+        "operationId": "PaymentController_refundPayment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "결제 환불",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/review": {
+      "post": {
+        "operationId": "ReviewController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "후기 작성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateReviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청. 유효하지 않은 예약 ID이거나 예약 상태가 완료되지 않음."
+          },
+          "404": {
+            "description": "예약 또는 유저를 찾을 수 없음."
+          },
+          "409": {
+            "description": "이미 후기를 작성한 예약입니다."
+          },
+          "500": {
+            "description": "후기 작성 중 서버 오류가 발생했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 후기 작성",
+        "tags": [
+          "Review"
+        ]
+      }
+    },
+    "/review/{id}": {
+      "patch": {
+        "operationId": "ReviewController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "후기 수정 성공"
+          },
+          "403": {
+            "description": "작성자 본인만 수정 가능"
+          },
+          "404": {
+            "description": "리뷰를 찾을 수 없음"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "후기 수정",
+        "tags": [
+          "Review"
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewController_Delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "후기 삭제 성공"
+          },
+          "403": {
+            "description": "작성자 본인만 삭제 가능"
+          },
+          "404": {
+            "description": "리뷰를 찾을 수 없음"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          },
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "후기 삭제",
+        "tags": [
+          "Review"
+        ]
+      }
+    },
+    "/review/my": {
+      "get": {
+        "operationId": "ReviewController_getMyReviews",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 개수 (기본값: 10)",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "내가 쓴 후기 조회",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewMyListItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "해당 세션을 찾을 수 없습니다."
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          },
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "내가 쓴 후기 조회",
+        "tags": [
+          "Review"
+        ]
+      }
+    },
+    "/review/{id}/like": {
+      "post": {
+        "operationId": "ReviewController_toggleReviewLike",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "좋아요 상태 토글 완료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleLikeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리뷰가 존재하지 않음"
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          },
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "좋아요 토글",
+        "tags": [
+          "Review"
+        ]
+      }
+    },
+    "/article": {
+      "get": {
+        "operationId": "ArticleController_getArticles",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "정렬 기준: latest | likes",
+            "schema": {
+              "default": "latest",
+              "example": "latest",
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "카테고리 이름 (선택)",
+            "schema": {
+              "example": "book",
+              "type": "string",
+              "enum": [
+                "career",
+                "job",
+                "study",
+                "tech",
+                "lifestyle",
+                "mentoring",
+                "notice",
+                "startup",
+                "portfolio",
+                "book",
+                "etc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "아티클 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArticleListItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류 또는 목록 조회 실패"
+          }
+        },
+        "summary": "아티클 목록 조회",
+        "tags": [
+          "Article"
+        ]
+      },
+      "post": {
+        "operationId": "ArticleController_createArticle",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "아티클 작성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateArticleDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "멘토를 찾을 수 없습니다."
+          },
+          "500": {
+            "description": "아티클 생성 중 오류가 발생했습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "아티클 작성",
+        "tags": [
+          "Article"
+        ]
+      }
+    },
+    "/article/liked": {
+      "get": {
+        "operationId": "ArticleController_getLikedArticles",
+        "parameters": [
+          {
+            "name": "ids",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "좋아요 여부확인",
+        "tags": [
+          "Article"
+        ]
+      }
+    },
+    "/article/{id}": {
+      "get": {
+        "operationId": "ArticleController_getArticleDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "아티클 상세 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "아티클 상세 조회 (조회수 증가)",
+        "tags": [
+          "Article"
+        ]
+      },
+      "delete": {
+        "operationId": "ArticleController_deleteArticle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "아티클 삭제 (작성자 전용)",
+        "tags": [
+          "Article"
+        ]
+      },
+      "patch": {
+        "operationId": "ArticleController_updateArticle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "아티클 수정",
+        "tags": [
+          "Article"
+        ]
+      }
+    },
+    "/article/{id}/like": {
+      "patch": {
+        "operationId": "ArticleController_toggleArticleLike",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "좋아요 상태 토글 완료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToggleLikeResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "아티클이 존재하지 않음"
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "좋아요 토글",
+        "tags": [
+          "Article"
+        ]
+      }
+    },
+    "/article/upload-image": {
+      "post": {
+        "operationId": "ArticleController_uploadArticleEditorImages",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "이미지 업로드 (아티클)",
+        "tags": [
+          "Article"
+        ]
+      }
+    },
+    "/session/{id}/reviews": {
+      "get": {
+        "operationId": "SessionController_getReviews",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 개수 (기본값: 10)",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "세션에 등록된 후기 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewListItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "해당 세션을 찾을 수 없습니다."
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        },
+        "summary": "세션별 후기 조회",
+        "tags": [
+          "Session"
+        ]
+      }
+    },
+    "/session": {
+      "get": {
+        "operationId": "SessionController_getSession",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 항목 수",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "latest | mentor | rating",
+            "schema": {
+              "example": "latest",
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "카테고리 이름 (선택)",
+            "schema": {
+              "example": "it",
+              "type": "string",
+              "enum": [
+                "hr",
+                "marketing",
+                "pr",
+                "sales",
+                "finance",
+                "planning",
+                "it",
+                "ux_ui",
+                "design",
+                "consulting",
+                "manufacturing",
+                "etc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "등록된 세션 목록",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionListItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "등록된 세션 목록을 찾을 수 없습니다."
+          }
+        },
+        "summary": "멘토가 등록한 세션 목록 조회",
+        "tags": [
+          "Session"
+        ]
+      }
+    },
+    "/session/{id}": {
+      "get": {
+        "operationId": "SessionController_getSessionDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "404": {
+            "description": "세션을 찾을 수 없습니다."
+          }
+        },
+        "summary": "멘토가 등록한 세션 상세 조회",
+        "tags": [
+          "Session"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "커넥트 api문서",
+    "description": "커넥트 개발을 위한 api문서 \n\n🔗 OpenAPI 명세 다운로드: /openapi-spec.json`,",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "JWT Bearer Token"
+      }
+    },
+    "schemas": {
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "이메일 (로그인용)"
+          },
+          "nickname": {
+            "type": "string",
+            "example": "john_doe",
+            "description": "닉네임"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "사용자 이름"
+          },
+          "phone": {
+            "type": "string",
+            "example": "01012345678",
+            "description": "휴대폰번호 (형식: 01012345678)"
+          },
+          "role": {
+            "type": "string",
+            "example": "mentee",
+            "description": "사용자 등급 (MENTOR, MENTEE, ADMIN)",
+            "enum": [
+              "mentee",
+              "mentor",
+              "admin"
+            ]
+          },
+          "image": {
+            "type": "string",
+            "example": "https://example.com/profile.jpg",
+            "description": "프로필 이미지 URL"
+          }
+        },
+        "required": [
+          "email",
+          "nickname",
+          "name",
+          "role"
+        ]
+      },
+      "JoinDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "이메일 (로그인용)"
+          },
+          "nickname": {
+            "type": "string",
+            "example": "john_doe",
+            "description": "닉네임"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "사용자 이름"
+          },
+          "phone": {
+            "type": "string",
+            "example": "01012345678",
+            "description": "휴대폰번호 (형식: 01012345678)"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ssw0rd!",
+            "description": "비밀번호 (8자 이상, 영문자, 숫자, 특수문자 포함)"
+          }
+        },
+        "required": [
+          "email",
+          "nickname",
+          "name",
+          "password"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "이메일 (로그인용)"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ssw0rd!",
+            "description": "비밀번호 (8자 이상, 영문자, 숫자, 특수문자 포함)"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "SocialLoginDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "KAKAO",
+            "description": "소셜 로그인 제공자 (KAKAO, NAVER, GOOGLE 등)",
+            "enum": [
+              "google",
+              "kakao",
+              "naver"
+            ]
+          },
+          "socialId": {
+            "type": "string",
+            "example": "123456789",
+            "description": "소셜 플랫폼에서의 사용자 고유 ID"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "사용자 이메일 주소"
+          },
+          "name": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "사용자 이름"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://example.com/avatar.jpg",
+            "description": "프로필 이미지 URL"
+          }
+        },
+        "required": [
+          "provider",
+          "socialId",
+          "email",
+          "name"
+        ]
+      },
+      "duplicateEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "이메일 (로그인용)"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "duplicateNicknameDto": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "example": "john_doe",
+            "description": "닉네임"
+          }
+        },
+        "required": [
+          "nickname"
+        ]
+      },
+      "sendEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "인증용 이메일"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "verifyCodeDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "인증용 이메일"
+          },
+          "code": {
+            "type": "string",
+            "example": "123456",
+            "description": "이메일로 전송된 인증 코드"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "CreateMentorDto": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "example": "Google",
+            "description": "소속 회사명"
+          },
+          "introduce": {
+            "type": "string",
+            "example": "10년차 프론트엔드 개발자입니다.",
+            "description": "멘토 자기소개"
+          },
+          "position": {
+            "type": "string",
+            "example": "backend",
+            "description": "직책",
+            "enum": [
+              "backend",
+              "frontend",
+              "fullstack",
+              "mobile",
+              "devops",
+              "security",
+              "data_engineer",
+              "data_scientist",
+              "pm_po",
+              "ux_designer",
+              "ui_designer",
+              "planner",
+              "marketing",
+              "hr",
+              "cs",
+              "finance",
+              "etc"
+            ]
+          },
+          "expertise": {
+            "type": "array",
+            "example": [
+              "consulting",
+              "design"
+            ],
+            "description": "전문 분야 (다중 선택)",
+            "items": {
+              "type": "string",
+              "enum": [
+                "hr",
+                "marketing",
+                "pr",
+                "sales",
+                "finance",
+                "planning",
+                "it",
+                "ux_ui",
+                "design",
+                "consulting",
+                "manufacturing",
+                "etc"
+              ]
+            }
+          },
+          "career": {
+            "type": "string",
+            "example": "junior",
+            "description": "연차",
+            "enum": [
+              "junior",
+              "middle",
+              "senior",
+              "lead"
+            ]
+          },
+          "portfolio": {
+            "type": "string",
+            "example": "https://portfolio.example.com",
+            "description": "포트폴리오 페이지 url"
+          }
+        },
+        "required": [
+          "introduce",
+          "position",
+          "expertise",
+          "career",
+          "portfolio"
+        ]
+      },
+      "UpdateMentorPublicDto": {
+        "type": "object",
+        "properties": {
+          "isPublic": {
+            "type": "boolean",
+            "description": "세션 공개 여부",
+            "example": true
+          }
+        },
+        "required": [
+          "isPublic"
+        ]
+      },
+      "UserListDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "b1a8f3e1-3b0f-4e9b-98a2-c4f0e6d3a3b4",
+            "description": "사용자 UUID"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "이메일"
+          },
+          "nickname": {
+            "type": "string",
+            "example": "john_doe",
+            "description": "닉네임"
+          },
+          "name": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "이름"
+          },
+          "role": {
+            "type": "string",
+            "example": "mentee",
+            "description": "사용자 등급 (MENTOR, MENTEE, ADMIN)",
+            "enum": [
+              "mentee",
+              "mentor",
+              "admin"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z",
+            "description": "가입일"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "nickname",
+          "name",
+          "role",
+          "createdAt"
+        ]
+      },
+      "MentorListDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "b1a8f3e1-3b0f-4e9b-98a2-c4f0e6d3a3b4",
+            "description": "사용자 UUID"
+          },
+          "expertise": {
+            "type": "string",
+            "example": "React, Next.js",
+            "description": "전문 분야"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "이메일 (로그인용)"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "사용자 이름"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending",
+            "description": "승인 여부",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-05-09T12:34:56Z",
+            "description": "멘토 등록일"
+          }
+        },
+        "required": [
+          "id",
+          "expertise",
+          "email",
+          "name",
+          "status"
+        ]
+      },
+      "MentorDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "b1a8f3e1-3b0f-4e9b-98a2-c4f0e6d3a3b4",
+            "description": "사용자 UUID"
+          },
+          "expertise": {
+            "type": "string",
+            "example": "React, Next.js",
+            "description": "전문 분야"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com",
+            "description": "이메일 (로그인용)"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe",
+            "description": "사용자 이름"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending",
+            "description": "승인 여부",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2023-05-09T12:34:56Z",
+            "description": "멘토 등록일"
+          },
+          "company": {
+            "type": "string",
+            "example": "Google",
+            "description": "소속 회사명"
+          },
+          "introduce": {
+            "type": "string",
+            "example": "10년차 프론트엔드 개발자입니다.",
+            "description": "멘토 자기소개"
+          },
+          "position": {
+            "type": "string",
+            "example": "프론트엔드",
+            "description": "직책"
+          },
+          "career": {
+            "type": "string",
+            "example": "주니어(1~3년)",
+            "description": "연차"
+          },
+          "portfolio": {
+            "type": "string",
+            "example": "https://portfolio.example.com",
+            "description": "포트폴리오 페이지 url"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://example.com/profile.jpg",
+            "description": "프로필 이미지 URL"
+          },
+          "phone": {
+            "type": "string",
+            "example": "01012345678",
+            "description": "휴대폰번호 (형식: 01012345678)"
+          }
+        },
+        "required": [
+          "id",
+          "expertise",
+          "email",
+          "name",
+          "status",
+          "introduce",
+          "career",
+          "portfolio"
+        ]
+      },
+      "ApproveOrRejectMentorDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateMentoringSessionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "React 기초 강의"
+          },
+          "description": {
+            "type": "string",
+            "example": "React 기본 개념과 실습 중심의 수업입니다."
+          },
+          "price": {
+            "type": "number",
+            "example": 50000,
+            "description": "가격 (₩)"
+          },
+          "duration": {
+            "type": "number",
+            "example": 60,
+            "description": "수업 시간 (분 단위)"
+          },
+          "category": {
+            "type": "string",
+            "example": "it",
+            "enum": [
+              "hr",
+              "marketing",
+              "pr",
+              "sales",
+              "finance",
+              "planning",
+              "it",
+              "ux_ui",
+              "design",
+              "consulting",
+              "manufacturing",
+              "etc"
+            ],
+            "description": "멘토링 카테고리"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "price",
+          "duration",
+          "category"
+        ]
+      },
+      "MentoringSessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "React 기초 강의"
+          },
+          "description": {
+            "type": "string",
+            "example": "React 기본 개념과 실습 중심의 수업입니다."
+          },
+          "price": {
+            "type": "number",
+            "example": 50000,
+            "description": "가격 (₩)"
+          },
+          "duration": {
+            "type": "number",
+            "example": 60,
+            "description": "수업 시간 (분 단위)"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "example": "it",
+            "enum": [
+              "hr",
+              "marketing",
+              "pr",
+              "sales",
+              "finance",
+              "planning",
+              "it",
+              "ux_ui",
+              "design",
+              "consulting",
+              "manufacturing",
+              "etc"
+            ],
+            "description": "멘토링 카테고리"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "price",
+          "duration",
+          "createdAt",
+          "category"
+        ]
+      },
+      "UpdateMentoringSessionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "duration": {
+            "type": "number"
+          }
+        }
+      },
+      "UpdateSessionPublicDto": {
+        "type": "object",
+        "properties": {
+          "isPublic": {
+            "type": "boolean",
+            "example": true,
+            "description": "공개 여부"
+          }
+        },
+        "required": [
+          "isPublic"
+        ]
+      },
+      "CreateMentoringScheduleDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "string",
+            "enum": [
+              "MONDAY",
+              "TUESDAY",
+              "WEDNESDAY",
+              "THURSDAY",
+              "FRIDAY",
+              "SATURDAY",
+              "SUNDAY"
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "example": "10:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00"
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "BulkCreateMentoringScheduleDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateMentoringScheduleDto"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "UpdateMentoringScheduleDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "string",
+            "enum": [
+              "MONDAY",
+              "TUESDAY",
+              "WEDNESDAY",
+              "THURSDAY",
+              "FRIDAY",
+              "SATURDAY",
+              "SUNDAY"
+            ]
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "정기스케줄 ID",
+            "example": "b2a9c1ef-27f4-4c02-ae34-0fcecc30c9f1"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "BulkUpdateMentoringScheduleDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateMentoringScheduleDto"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ScheduleItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "string",
+            "enum": [
+              "MONDAY",
+              "TUESDAY",
+              "WEDNESDAY",
+              "THURSDAY",
+              "FRIDAY",
+              "SATURDAY",
+              "SUNDAY"
+            ],
+            "example": "MONDAY"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "10:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00"
+          },
+          "id": {
+            "type": "string",
+            "example": "c846...uuid"
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "startTime",
+          "endTime",
+          "id"
+        ]
+      },
+      "GetScheduleListResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "멘토가 등록한 정기 스케줄 목록을 반환합니다."
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "message",
+          "data"
+        ]
+      },
+      "MentorReservationListResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "예약 ID",
+            "example": "b2a9c1ef-27f4-4c02-ae34-0fcecc30c9f1"
+          },
+          "title": {
+            "type": "string",
+            "description": "세션 제목",
+            "example": "React 입문 강의"
+          },
+          "date": {
+            "type": "string",
+            "description": "예약날짜",
+            "example": "2025-07-27"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "시작 시간",
+            "example": "14:00:00"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "종료 시간",
+            "example": "15:00:00"
+          },
+          "status": {
+            "type": "string",
+            "description": "예약 상태",
+            "example": "pending",
+            "enum": [
+              "pending",
+              "confirmed",
+              "rejected"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "예약 생성 시간",
+            "example": "2025-07-27T14:32:00.000Z"
+          },
+          "menteeName": {
+            "type": "string",
+            "description": "멘티 이름",
+            "example": "김철수"
+          },
+          "menteeEmail": {
+            "type": "string",
+            "description": "멘티 이메일",
+            "example": "mentee@example.com"
+          },
+          "menteePhone": {
+            "type": "string",
+            "description": "멘티 전화번호",
+            "example": "010-1234-5678"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "date",
+          "startTime",
+          "endTime",
+          "status",
+          "createdAt",
+          "menteeName",
+          "menteeEmail",
+          "menteePhone"
+        ]
+      },
+      "MentorReservationDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "예약 ID",
+            "example": "b2a9c1ef-27f4-4c02-ae34-0fcecc30c9f1"
+          },
+          "title": {
+            "type": "string",
+            "description": "세션 제목",
+            "example": "React 입문 강의"
+          },
+          "date": {
+            "type": "string",
+            "description": "예약 날짜",
+            "example": "2025-07-30"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "시작 시간",
+            "example": "14:00:00"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "종료 시간",
+            "example": "15:00:00"
+          },
+          "question": {
+            "type": "string",
+            "description": "멘티가 남긴 사전 질문",
+            "example": "포트폴리오에 뭐 넣어야 할까요?"
+          },
+          "rejectReason": {
+            "type": "string",
+            "description": "거절 사유",
+            "example": "요청 시간에 일정이 겹칩니다."
+          },
+          "status": {
+            "type": "string",
+            "description": "예약 상태",
+            "example": "pending",
+            "enum": [
+              "pending",
+              "confirmed",
+              "rejected"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "예약 생성 시간",
+            "example": "2025-07-27T14:32:00.000Z"
+          },
+          "menteeName": {
+            "type": "string",
+            "description": "멘티 이름",
+            "example": "김철수"
+          },
+          "menteeEmail": {
+            "type": "string",
+            "description": "멘티 이메일",
+            "example": "mentee@example.com"
+          },
+          "menteePhone": {
+            "type": "string",
+            "description": "멘티 전화번호",
+            "example": "010-1234-5678"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "date",
+          "startTime",
+          "endTime",
+          "question",
+          "status",
+          "createdAt",
+          "menteeName",
+          "menteeEmail",
+          "menteePhone"
+        ]
+      },
+      "CreateReservationDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2025-07-08",
+            "description": "예약 날짜 (YYYY-MM-DD)"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "10:00",
+            "description": "시작 시간 (HH:mm)"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "11:00",
+            "description": "종료 시간 (HH:mm)"
+          },
+          "sessionId": {
+            "type": "string",
+            "example": "세션 ID",
+            "description": "멘토링 세션 ID"
+          },
+          "question": {
+            "type": "string",
+            "example": "React를 학습할 때 어떤 순서로 접근해야 하나요?",
+            "description": "사전 질문"
+          }
+        },
+        "required": [
+          "date",
+          "startTime",
+          "endTime",
+          "sessionId",
+          "question"
+        ]
+      },
+      "ReservationItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-5678-90ef-ghij-klmnopqrstuv"
+          },
+          "date": {
+            "type": "string",
+            "example": "2025-07-10"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "14:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "15:00"
+          },
+          "status": {
+            "type": "string",
+            "example": "CONFIRMED",
+            "description": "예약 상태"
+          },
+          "sessionTitle": {
+            "type": "string",
+            "example": "포트폴리오 피드백"
+          },
+          "mentorName": {
+            "type": "string",
+            "example": "김멘토"
+          },
+          "receiptUrl": {
+            "type": "string",
+            "example": "https://toss.im/receipt/12345",
+            "description": "결제 영수증 URL"
+          },
+          "hasReview": {
+            "type": "boolean",
+            "example": false,
+            "description": "후기 작성 여부"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "startTime",
+          "endTime",
+          "status",
+          "sessionTitle",
+          "mentorName",
+          "hasReview"
+        ]
+      },
+      "ConfirmPaymentDto": {
+        "type": "object",
+        "properties": {
+          "paymentKey": {
+            "type": "string",
+            "description": "Toss에서 받은 고유 결제 키",
+            "example": "pay_abcdefg1234567"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "주문 ID",
+            "example": "ord_20250708123456"
+          },
+          "price": {
+            "type": "number",
+            "description": "결제 금액",
+            "example": 50000
+          }
+        },
+        "required": [
+          "paymentKey",
+          "orderId",
+          "price"
+        ]
+      },
+      "MentorIComeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "payment-uuid",
+            "description": "결제 ID"
+          },
+          "price": {
+            "type": "number",
+            "example": 30000,
+            "description": "결제 금액"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-07-08T12:34:56.000Z",
+            "description": "결제 일시"
+          },
+          "menteeName": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "멘티 이름"
+          },
+          "programTitle": {
+            "type": "string",
+            "example": "나를 위한 JavaScript 특강",
+            "description": "멘토링 제목"
+          }
+        },
+        "required": [
+          "id",
+          "price",
+          "createdAt",
+          "menteeName",
+          "programTitle"
+        ]
+      },
+      "MenteePaymentHistoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "payment-uuid",
+            "description": "결제 ID"
+          },
+          "price": {
+            "type": "number",
+            "example": 30000,
+            "description": "결제 금액"
+          },
+          "orderId": {
+            "type": "string",
+            "example": "ord_202407081234",
+            "description": "주문 ID"
+          },
+          "status": {
+            "type": "string",
+            "example": "success",
+            "enum": [
+              "pending",
+              "success",
+              "failed",
+              "refunded"
+            ],
+            "description": "결제 상태"
+          },
+          "receiptUrl": {
+            "type": "string",
+            "example": "https://toss.im/receipt/123456",
+            "description": "영수증 URL"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-07-08T12:34:56.000Z",
+            "description": "결제 일시"
+          },
+          "mentorName": {
+            "type": "string",
+            "example": "김멘토",
+            "description": "멘토 이름"
+          },
+          "programTitle": {
+            "type": "string",
+            "example": "포트폴리오 피드백 세션",
+            "description": "멘토링 제목"
+          }
+        },
+        "required": [
+          "id",
+          "price",
+          "orderId",
+          "status",
+          "receiptUrl",
+          "createdAt",
+          "mentorName",
+          "programTitle"
+        ]
+      },
+      "RefundPaymentDto": {
+        "type": "object",
+        "properties": {
+          "paymentKey": {
+            "type": "string",
+            "description": "Toss에서 받은 고유 결제 키",
+            "example": "pay_abcdefg1234567"
+          }
+        },
+        "required": [
+          "paymentKey"
+        ]
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateReviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid"
+          },
+          "content": {
+            "type": "string",
+            "example": "정말 좋았습니다."
+          },
+          "rating": {
+            "type": "number",
+            "example": 5
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-07-07T10:00:00Z"
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "rating",
+          "createdAt"
+        ]
+      },
+      "UpdateReviewDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "ReviewMyListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "review-uuid"
+          },
+          "content": {
+            "type": "string",
+            "example": "정말 좋았습니다!"
+          },
+          "rating": {
+            "type": "number",
+            "example": 5
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-07-07T10:00:00Z"
+          },
+          "likeCount": {
+            "type": "number",
+            "example": 3,
+            "description": "좋아요 수"
+          },
+          "sessionTitle": {
+            "type": "string",
+            "example": "리액트강의"
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "rating",
+          "createdAt",
+          "likeCount",
+          "sessionTitle"
+        ]
+      },
+      "ToggleLikeResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "좋아요 추가됨"
+          },
+          "liked": {
+            "type": "boolean",
+            "example": true,
+            "description": "true = 좋아요 됨, false = 좋아요 취소됨"
+          }
+        },
+        "required": [
+          "message",
+          "liked"
+        ]
+      },
+      "ArticleListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "uuid-1234"
+          },
+          "title": {
+            "type": "string",
+            "example": "제목입니다.",
+            "description": "아티클 제목"
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "example": "/uploads/article/thumbnail.jpg",
+            "nullable": true
+          },
+          "views": {
+            "type": "number",
+            "example": 53
+          },
+          "likeCount": {
+            "type": "number",
+            "example": 12
+          },
+          "category": {
+            "type": "string",
+            "example": "book",
+            "description": "아티클 카테고리",
+            "enum": [
+              "career",
+              "job",
+              "study",
+              "tech",
+              "lifestyle",
+              "mentoring",
+              "notice",
+              "startup",
+              "portfolio",
+              "book",
+              "etc"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "thumbnailUrl",
+          "views",
+          "likeCount",
+          "category",
+          "createdAt"
+        ]
+      },
+      "CreateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "제목입니다."
+          },
+          "content": {
+            "type": "string",
+            "example": "내용입니다."
+          },
+          "category": {
+            "type": "string",
+            "example": "book",
+            "description": "아티클 카테고리",
+            "enum": [
+              "career",
+              "job",
+              "study",
+              "tech",
+              "lifestyle",
+              "mentoring",
+              "notice",
+              "startup",
+              "portfolio",
+              "book",
+              "etc"
+            ]
+          },
+          "thumbnail": {
+            "type": "string",
+            "format": "binary",
+            "description": "썸네일 이미지 파일"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "category"
+        ]
+      },
+      "ArticleDetailDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "아티클 제목입니다."
+          },
+          "content": {
+            "type": "string",
+            "example": "<p>아티클 내용입니다.</p><img src=\"...\">"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-07-08T15:30:00.000Z"
+          },
+          "views": {
+            "type": "number",
+            "example": 123,
+            "description": "조회수"
+          },
+          "likeCount": {
+            "type": "number",
+            "example": 7,
+            "description": "좋아요 수"
+          },
+          "authorNickname": {
+            "type": "string",
+            "example": "라이언",
+            "description": "작성자 닉네임"
+          },
+          "authorImage": {
+            "type": "string",
+            "example": "https://cdn.konnect.com/profile.jpg",
+            "description": "작성자 프로필 이미지 URL"
+          },
+          "authorId": {
+            "type": "string",
+            "example": "uuid-author-id",
+            "description": "작성자 ID"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "createdAt",
+          "views",
+          "likeCount",
+          "authorNickname",
+          "authorImage",
+          "authorId"
+        ]
+      },
+      "ReviewListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "review-uuid"
+          },
+          "content": {
+            "type": "string",
+            "example": "정말 좋았습니다!"
+          },
+          "rating": {
+            "type": "number",
+            "example": 5
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-07-07T10:00:00Z"
+          },
+          "likeCount": {
+            "type": "number",
+            "example": 3,
+            "description": "좋아요 수"
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "rating",
+          "createdAt",
+          "likeCount"
+        ]
+      },
+      "MentorInfo": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "description": "멘토 닉네임",
+            "example": "라이언"
+          },
+          "image": {
+            "type": "string",
+            "description": "멘토 프로필 이미지 URL",
+            "example": "https://..."
+          },
+          "position": {
+            "type": "string",
+            "description": "멘토 직책",
+            "example": "프론트엔드 개발자"
+          },
+          "career": {
+            "type": "string",
+            "description": "경력",
+            "example": "3년"
+          },
+          "company": {
+            "type": "string",
+            "description": "회사명 (비공개 시 null)",
+            "example": "비공개 또는 삼성전자"
+          }
+        },
+        "required": [
+          "nickname",
+          "image",
+          "position",
+          "career",
+          "company"
+        ]
+      },
+      "ReviewPreview": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "리뷰 내용",
+            "example": "정말 친절하셨어요!"
+          },
+          "rating": {
+            "type": "number",
+            "description": "평점",
+            "example": 5
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "작성일",
+            "example": "2025-07-07T14:12:00.000Z"
+          },
+          "nickname": {
+            "type": "string",
+            "description": "작성자 닉네임",
+            "example": "홍길동"
+          }
+        },
+        "required": [
+          "content",
+          "rating",
+          "createdAt",
+          "nickname"
+        ]
+      },
+      "SessionListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "세션 ID",
+            "example": "uuid값"
+          },
+          "title": {
+            "type": "string",
+            "description": "세션 제목",
+            "example": "리액트 마스터 클래스"
+          },
+          "description": {
+            "type": "string",
+            "description": "세션 설명",
+            "example": "입문자를 위한 리액트 기초 강의입니다."
+          },
+          "price": {
+            "type": "number",
+            "description": "가격 (원)",
+            "example": 30000
+          },
+          "duration": {
+            "type": "number",
+            "description": "멘토링 시간 (분)",
+            "example": 60
+          },
+          "category": {
+            "type": "string",
+            "description": "카테고리 (선택)",
+            "example": "프론트엔드"
+          },
+          "averageRating": {
+            "type": "number",
+            "description": "평점 평균 (선택)",
+            "example": 4.8
+          },
+          "mentor": {
+            "$ref": "#/components/schemas/MentorInfo"
+          },
+          "previewReviews": {
+            "description": "리뷰 미리보기 3개 (최신순)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewPreview"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "price",
+          "duration",
+          "mentor",
+          "previewReviews"
+        ]
+      }
+    }
+  }
+}

@@ -40,6 +40,9 @@ export class MentoringReservation {
 
   @Column({ type: 'timestamp', nullable: true })
   expiresAt: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  paidAt: Date;
   @Column({ type: 'text', nullable: true })
   rejectReason?: string;
 
