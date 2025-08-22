@@ -60,7 +60,7 @@ export class PaymentService {
           {
             headers: {
               Authorization: `Basic ${Buffer.from(
-                `${process.env.TOSS_SECRET}:`,
+                `${process.env.TOSS_SECRET_KEY}:`,
               ).toString('base64')}`,
               'Content-Type': 'application/json',
             },
@@ -80,6 +80,7 @@ export class PaymentService {
           receiptUrl: res.data.receipt.url,
           status: PaymentStatus.SUCCESS,
           user,
+          reservation,
         });
         await payments.save(payment);
         await reservations.update(
@@ -92,7 +93,6 @@ export class PaymentService {
         message: '결제에 성공했습니다.',
       };
     } catch (error) {
-      console.log('error', error);
       // Toss 응답이 있는 경우: 잔액 부족, 카드 거절 등
       const reason = error?.response?.data?.message || '알 수 없는 오류';
       const code = error?.response?.data?.code || 'UNKNOWN';
@@ -122,23 +122,38 @@ export class PaymentService {
   ) {
     const [payment, total] = await this.paymentRepository
       .createQueryBuilder('payment')
-      .leftJoin('payment.reservation', 'reservation')
-      .leftJoin('reservation.session', 'session')
-      .leftJoin('session.mentor', 'mentor')
-      .leftJoin('payment.user', 'mentee')
+      .leftJoinAndSelect('payment.user', 'mentee')
+      .leftJoinAndSelect('payment.reservation', 'reservation')
+      .leftJoinAndSelect('reservation.session', 'session')
+      .leftJoinAndSelect('session.mentor', 'mentor')
       .where('mentor.user.id = :userId', { userId })
       .andWhere('payment.status = :status', { status: PaymentStatus.SUCCESS })
       .orderBy('payment.createdAt', 'DESC')
-      .select([
-        'payment.id',
-        'payment.price',
-        'payment.createdAt',
-        'mentee.name',
-        'session.title',
-      ])
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
+    // 누적된 돈
+    const { totalIncome } = await this.paymentRepository
+      .createQueryBuilder('payment')
+      .leftJoin('payment.reservation', 'reservation')
+      .leftJoin('reservation.session', 'session')
+      .leftJoin('session.mentor', 'mentor')
+      .where('mentor.user.id = :userId', { userId })
+      .andWhere('payment.status = :status', { status: PaymentStatus.SUCCESS })
+      .select('COALESCE(SUM(payment.price), 0)', 'totalIncome')
+      .getRawOne();
+    // 이번달에 번돈
+    const { monthlyIncome } = await this.paymentRepository
+      .createQueryBuilder('payment')
+      .leftJoin('payment.reservation', 'reservation')
+      .leftJoin('reservation.session', 'session')
+      .leftJoin('session.mentor', 'mentor')
+      .where('mentor.user.id = :userId', { userId })
+      .andWhere('payment.status = :status', { status: PaymentStatus.SUCCESS })
+      .andWhere('MONTH(payment.createdAt) = MONTH(CURRENT_DATE())')
+      .andWhere('YEAR(payment.createdAt) = YEAR(CURRENT_DATE())')
+      .select('COALESCE(SUM(payment.price), 0)', 'monthlyIncome')
+      .getRawOne();
     const income = payment.map((p) => ({
       id: p.id,
       price: p.price,
@@ -150,6 +165,8 @@ export class PaymentService {
     return {
       totalPage: Math.ceil(total / limit),
       items: income,
+      totalIncome,
+      monthlyIncome,
       message: '멘토 수입 내역을 조회했습니다.',
     };
   }
@@ -160,23 +177,14 @@ export class PaymentService {
   ) {
     const [payment, total] = await this.paymentRepository
       .createQueryBuilder('payment')
-      .leftJoin('payment.reservation', 'reservation')
-      .leftJoin('reservation.session', 'session')
-      .leftJoin('session.mentor', 'mentor')
-      .leftJoin('mentor.user', 'mentorUser')
+      .leftJoinAndSelect('payment.reservation', 'reservation')
+      .leftJoinAndSelect('reservation.session', 'session')
+      .leftJoinAndSelect('session.mentor', 'mentor')
+      .leftJoinAndSelect('mentor.user', 'mentorUser')
       .where('payment.user.id = :userId', { userId })
       .andWhere('payment.status = :status', { status: PaymentStatus.SUCCESS })
       .orderBy('payment.createdAt', 'DESC')
-      .select([
-        'payment.id',
-        'payment.price',
-        'payment.receiptUrl',
-        'payment.createdAt',
-        'payment.orderId',
-        'payment.status',
-        'mentorUser.name',
-        'session.title',
-      ])
+
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
@@ -189,20 +197,21 @@ export class PaymentService {
       mentorName: p.reservation.session.mentor.user.name,
       programTitle: p.reservation.session.title,
       createdAt: p.createdAt,
+      paymentKey: p.paymentKey,
     }));
 
     return {
       totalPage: Math.ceil(total / limit),
       items: income,
-      message: '멘토 수입 내역을 조회했습니다.',
+      message: '멘티 거래 내역을 조회했습니다.',
     };
   }
 
   async refundPayment(userId: string, body: RefundPaymentDto) {
     return this.dataSource.transaction(async (manager) => {
       const payment = await this.paymentRepository.findOne({
-        where: { paymentKey: body.paymentKey, user: { id: userId } },
-        relations: ['reservation'],
+        where: { paymentKey: body.paymentKey },
+        relations: ['reservation', 'user'],
       });
       if (!payment || payment.user.id !== userId) {
         throw new BadRequestException(
@@ -241,11 +250,11 @@ export class PaymentService {
       await manager.save(payment);
 
       payment.reservation.status = MentoringStatus.CANCELLED;
+      payment.reservation.rejectReason = '구매자가 취소를 원함';
       await manager.save(payment.reservation);
 
       return {
         message: '환불 및 예약이 취소되었습니다.',
-        status: PaymentStatus.REFUNDED,
       };
     });
   }

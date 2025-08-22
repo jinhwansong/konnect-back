@@ -24,6 +24,7 @@ import {
   ReservationItemDto,
 } from './dto/reservation.dto';
 import { ReservationService } from './reservation.service';
+import { DonePaymentResponseDto } from './dto/reservation.response.dto';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Reservation')
@@ -136,5 +137,19 @@ export class ReservationController {
     @Query() query: PaginationDto,
   ) {
     return this.reservationService.getMyReservations(userId, query);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiResponse({
+    description: '결제 완료 후 예약 확정 정보',
+    type: DonePaymentResponseDto,
+  })
+  @Get('done/:orderId')
+  @ApiOperation({ summary: '결제 완료 페이지 - 예약 확정' })
+  async donePayment(
+    @User('id') userId: string,
+    @Param('orderId') orderId: string,
+  ) {
+    return this.reservationService.confirmReservation(userId, orderId);
   }
 }

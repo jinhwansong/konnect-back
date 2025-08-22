@@ -15,11 +15,6 @@ import { PaymentStatus } from '@/common/enum/status.enum';
 
 @Entity({ schema: 'konnect', name: 'payment' })
 export class Payment {
-  @ApiProperty({
-    example: 'b1a8f3e1-3b0f-4e9b-98a2-c4f0e6d3a3b4',
-    description: '결제 UUID',
-    required: true,
-  })
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

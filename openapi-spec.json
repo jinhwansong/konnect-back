@@ -1342,6 +1342,42 @@
         ]
       }
     },
+    "/reservation/done/{orderId}": {
+      "get": {
+        "operationId": "ReservationController_donePayment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "결제 완료 후 예약 확정 정보",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonePaymentResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "결제 완료 페이지 - 예약 확정",
+        "tags": [
+          "Reservation"
+        ]
+      }
+    },
     "/payment/confirm": {
       "post": {
         "operationId": "PaymentController_confirmPayment",
@@ -3259,6 +3295,49 @@
           "sessionTitle",
           "mentorName",
           "hasReview"
+        ]
+      },
+      "DonePaymentResponseDto": {
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "description": "예약 ID",
+            "example": "6f4c1c3d-89ab-4c3d-b3f2-1f9a3a2b7e6f"
+          },
+          "mentorName": {
+            "type": "string",
+            "description": "멘토 이름",
+            "example": "홍길동"
+          },
+          "date": {
+            "type": "string",
+            "description": "예약 날짜",
+            "example": "2025-08-21"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "시작 시간",
+            "example": "10:00"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "종료 시간",
+            "example": "11:00"
+          },
+          "meetingUrl": {
+            "type": "string",
+            "description": "화상 미팅 URL (아직 생성 안됐으면 null)",
+            "example": "https://meet.konnect.com/abc123",
+            "nullable": true
+          }
+        },
+        "required": [
+          "reservationId",
+          "mentorName",
+          "date",
+          "startTime",
+          "endTime"
         ]
       },
       "ConfirmPaymentDto": {

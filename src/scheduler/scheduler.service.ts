@@ -6,11 +6,10 @@ import { LessThan, Repository } from 'typeorm';
 
 @Injectable()
 export class SchedulerService {
-    constructor(
+  constructor(
     @InjectRepository(MentoringReservation)
     private readonly reservationRepository: Repository<MentoringReservation>,
   ) {}
-
 
   async expirePendingReservations() {
     const now = new Date();
@@ -25,8 +24,9 @@ export class SchedulerService {
     if (expired.length === 0) return;
 
     for (const reservation of expired) {
-      reservation.status = MentoringStatus.CANCELLED;
-      await this.reservationRepository.save(reservation);
+      await this.reservationRepository.update(reservation.id, {
+        status: MentoringStatus.EXPIRED,
+      });
     }
   }
 }

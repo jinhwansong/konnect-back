@@ -1,6 +1,5 @@
-import { MentoringStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class MentorReservationListResponseDto {
   @ApiProperty({
@@ -101,19 +100,10 @@ export class MentorReservationDetailResponseDto {
 
 export class UpdateReservationStatusDto {
   @ApiProperty({
-    description: '변경할 예약 상태',
-    enum: MentoringStatus,
-    example: MentoringStatus.CONFIRMED,
-  })
-  @IsEnum(MentoringStatus)
-  status: MentoringStatus;
-
-  @ApiProperty({
     description: '거절 사유 (status가 rejected일 때만 필수)',
     example: '해당 시간에 다른 일정이 있습니다.',
     required: false,
   })
-  @IsOptional()
   @IsString()
-  rejectReason?: string;
+  rejectReason: string;
 }

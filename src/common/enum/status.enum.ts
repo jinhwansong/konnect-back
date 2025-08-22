@@ -25,6 +25,7 @@ export enum LikeType {
 // 멘토링 현황
 export enum MentoringStatus {
   PENDING = 'pending',
+  EXPIRED = 'expired',
   CONFIRMED = 'confirmed',
   CANCELLED = 'cancelled',
   COMPLETED = 'completed',

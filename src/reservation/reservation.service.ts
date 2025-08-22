@@ -9,6 +9,7 @@ import {
 } from '@/entities';
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -233,7 +234,40 @@ export class ReservationService {
       throw new NotFoundException('해당 멘토의 예약 가능한 스케줄이 없습니다.');
     }
     const uniqueDays = [...new Set(schedules.map((s) => s.dayOfWeek))];
+    const todayIndex = new Date().getDay();
+    const dayMap: Record<number, DayOfWeek> = {
+      0: DayOfWeek.SUNDAY,
+      1: DayOfWeek.MONDAY,
+      2: DayOfWeek.TUESDAY,
+      3: DayOfWeek.WEDNESDAY,
+      4: DayOfWeek.THURSDAY,
+      5: DayOfWeek.FRIDAY,
+      6: DayOfWeek.SATURDAY,
+    };
+    const todayEnum = dayMap[todayIndex];
+    const filterDays = uniqueDays.filter((day) => day !== todayEnum);
+    return { data: filterDays };
+  }
 
-    return { data: uniqueDays };
+  async confirmReservation(userId: string, orderId: string) {
+    const reservation = await this.reservationRepository.findOne({
+      where: { id: orderId },
+      relations: ['mentee', 'session', 'session.mentor', 'session.mentor.user'],
+    });
+    if (!reservation) {
+      throw new NotFoundException('예약을 찾을 수 없습니다.');
+    }
+
+    if (reservation.mentee.id !== userId) {
+      throw new ForbiddenException('본인의 예약만 확인할 수 있습니다.');
+    }
+    return {
+      reservationId: reservation.id,
+      mentorName: reservation.session.mentor.user.name,
+      date: reservation.date,
+      startTime: reservation.startTime,
+      endTime: reservation.endTime,
+      // meetingUrl: reservation.meetingUrl,
+    };
   }
 }
