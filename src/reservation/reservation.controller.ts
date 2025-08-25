@@ -21,10 +21,12 @@ import {
 } from '@nestjs/swagger';
 import {
   CreateReservationDto,
+  ReservationClearItemDto,
   ReservationItemDto,
 } from './dto/reservation.dto';
 import { ReservationService } from './reservation.service';
 import { DonePaymentResponseDto } from './dto/reservation.response.dto';
+import { JoinRoomResponseDto } from './dto/room.dtd';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Reservation')
@@ -108,7 +110,7 @@ export class ReservationController {
     return this.reservationService.createReservation(userId, body);
   }
 
-  @ApiOperation({ summary: '멘티 예약 내역 조회' })
+  @ApiOperation({ summary: '멘티 진행중인 예약 내역 조회' })
   @ApiQuery({
     name: 'page',
     required: false,
@@ -139,7 +141,37 @@ export class ReservationController {
     return this.reservationService.getMyReservations(userId, query);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '멘티 완료된 예약 내역 조회' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    example: 1,
+    description: '페이지 번호 (기본값: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    example: 10,
+    description: '페이지당 개수 (기본값: 10)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '멘티 예약 내역을 조회합니다.',
+    type: ReservationClearItemDto,
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 500,
+    description: '예약 내역 조회 중 오류가 발생했습니다.',
+  })
+  @Get('my')
+  async getMyClearReservations(
+    @User('id') userId: string,
+    @Query() query: PaginationDto,
+  ) {
+    return this.reservationService.getMyClearReservations(userId, query);
+  }
+
   @ApiResponse({
     description: '결제 완료 후 예약 확정 정보',
     type: DonePaymentResponseDto,
@@ -151,5 +183,24 @@ export class ReservationController {
     @Param('orderId') orderId: string,
   ) {
     return this.reservationService.confirmReservation(userId, orderId);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: '입장 가능한 경우 meetingUrl 반환',
+    type: JoinRoomResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: '입장 권한이 없거나 아직 시간이 안 됨',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '예약을 찾을 수 없음',
+  })
+  @Get('joinRoom/:roomId')
+  @ApiOperation({ summary: '멘토링 방 입장' })
+  async joinRoom(@User('id') userId: string, @Param('roomId') roomId: string) {
+    return this.reservationService.joinRoom(userId, roomId);
   }
 }

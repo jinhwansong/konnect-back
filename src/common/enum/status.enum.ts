@@ -38,3 +38,14 @@ export enum PaymentStatus {
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
+
+export enum ChatRoomStatus {
+  WAITING = 'waiting',
+  PROGRESS = 'progress',
+  CLOSED = 'closed',
+}
+
+export enum ChatMessageType {
+  TEXT = 'text',
+  SYSTEM = 'system',
+}

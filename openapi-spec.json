@@ -1288,7 +1288,7 @@
     },
     "/reservation/my": {
       "get": {
-        "operationId": "ReservationController_getMyReservations",
+        "operationId": "ReservationController_getMyClearReservations",
         "parameters": [
           {
             "name": "page",
@@ -1321,7 +1321,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ReservationItemDto"
+                    "$ref": "#/components/schemas/ReservationClearItemDto"
                   }
                 }
               }
@@ -1336,7 +1336,7 @@
             "access-token": []
           }
         ],
-        "summary": "멘티 예약 내역 조회",
+        "summary": "멘티 완료된 예약 내역 조회",
         "tags": [
           "Reservation"
         ]
@@ -1373,6 +1373,48 @@
           }
         ],
         "summary": "결제 완료 페이지 - 예약 확정",
+        "tags": [
+          "Reservation"
+        ]
+      }
+    },
+    "/reservation/joinRoom/{roomId}": {
+      "get": {
+        "operationId": "ReservationController_joinRoom",
+        "parameters": [
+          {
+            "name": "roomId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "입장 가능한 경우 meetingUrl 반환",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinRoomResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "입장 권한이 없거나 아직 시간이 안 됨"
+          },
+          "404": {
+            "description": "예약을 찾을 수 없음"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토링 방 입장",
         "tags": [
           "Reservation"
         ]
@@ -3264,7 +3306,7 @@
           },
           "status": {
             "type": "string",
-            "example": "CONFIRMED",
+            "example": "confirmed",
             "description": "예약 상태"
           },
           "sessionTitle": {
@@ -3275,15 +3317,19 @@
             "type": "string",
             "example": "김멘토"
           },
-          "receiptUrl": {
+          "roomId": {
             "type": "string",
-            "example": "https://toss.im/receipt/12345",
-            "description": "결제 영수증 URL"
+            "example": "uuid"
           },
-          "hasReview": {
-            "type": "boolean",
-            "example": false,
-            "description": "후기 작성 여부"
+          "canEnter": {
+            "type": "string",
+            "example": "waiting",
+            "enum": [
+              "waiting",
+              "progress",
+              "closed"
+            ],
+            "default": "waiting"
           }
         },
         "required": [
@@ -3294,7 +3340,56 @@
           "status",
           "sessionTitle",
           "mentorName",
-          "hasReview"
+          "roomId",
+          "canEnter"
+        ]
+      },
+      "ReservationClearItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-5678-90ef-ghij-klmnopqrstuv"
+          },
+          "date": {
+            "type": "string",
+            "example": "2025-07-10"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "14:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "15:00"
+          },
+          "status": {
+            "type": "string",
+            "example": "completed",
+            "description": "예약 상태"
+          },
+          "sessionTitle": {
+            "type": "string",
+            "example": "포트폴리오 피드백"
+          },
+          "mentorName": {
+            "type": "string",
+            "example": "김멘토"
+          },
+          "reviewWritten": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "startTime",
+          "endTime",
+          "status",
+          "sessionTitle",
+          "mentorName",
+          "reviewWritten"
         ]
       },
       "DonePaymentResponseDto": {
@@ -3338,6 +3433,23 @@
           "date",
           "startTime",
           "endTime"
+        ]
+      },
+      "JoinRoomResponseDto": {
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "example": "a6f8e12c-1234-4567-8901-abcdef123456"
+          },
+          "meetingUrl": {
+            "type": "string",
+            "example": "https://konnect.com/room/550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "reservationId",
+          "meetingUrl"
         ]
       },
       "ConfirmPaymentDto": {

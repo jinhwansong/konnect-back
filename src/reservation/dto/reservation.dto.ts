@@ -1,5 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { ChatRoomStatus, MentoringStatus } from '@/common/enum/status.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateReservationDto {
   @ApiProperty({ example: '2025-07-08', description: '예약 날짜 (YYYY-MM-DD)' })
@@ -44,7 +45,7 @@ export class ReservationItemDto {
   @ApiProperty({ example: '15:00' })
   endTime: string;
 
-  @ApiProperty({ example: 'CONFIRMED', description: '예약 상태' })
+  @ApiProperty({ example: MentoringStatus.CONFIRMED, description: '예약 상태' })
   status: string;
 
   @ApiProperty({ example: '포트폴리오 피드백' })
@@ -52,14 +53,37 @@ export class ReservationItemDto {
 
   @ApiProperty({ example: '김멘토' })
   mentorName: string;
-
+  @ApiProperty({ example: 'uuid' })
+  roomId: string;
   @ApiProperty({
-    example: 'https://toss.im/receipt/12345',
-    description: '결제 영수증 URL',
-    required: false,
+    example: 'waiting',
+    enum: ChatRoomStatus,
+    default: ChatRoomStatus.WAITING,
   })
-  receiptUrl?: string;
+  canEnter: ChatRoomStatus;
+}
 
-  @ApiProperty({ example: false, description: '후기 작성 여부' })
-  hasReview: boolean;
+export class ReservationClearItemDto {
+  @ApiProperty({ example: 'a1b2c3d4-5678-90ef-ghij-klmnopqrstuv' })
+  id: string;
+
+  @ApiProperty({ example: '2025-07-10' })
+  date: string;
+
+  @ApiProperty({ example: '14:00' })
+  startTime: string;
+
+  @ApiProperty({ example: '15:00' })
+  endTime: string;
+
+  @ApiProperty({ example: MentoringStatus.COMPLETED, description: '예약 상태' })
+  status: string;
+
+  @ApiProperty({ example: '포트폴리오 피드백' })
+  sessionTitle: string;
+
+  @ApiProperty({ example: '김멘토' })
+  mentorName: string;
+  @ApiProperty({ example: false })
+  reviewWritten: boolean;
 }

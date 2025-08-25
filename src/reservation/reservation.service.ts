@@ -1,6 +1,6 @@
 import { PaginationDto } from '@/common/dto/page.dto';
 import { DayOfWeek } from '@/common/enum/day.enum';
-import { MentoringStatus } from '@/common/enum/status.enum';
+import { ChatRoomStatus, MentoringStatus } from '@/common/enum/status.enum';
 import {
   MentoringReservation,
   MentoringSchedule,
@@ -57,8 +57,6 @@ export class ReservationService {
     base: Array<{ start: number; end: number }>,
     cuts: Array<{ start: number; end: number }>,
   ) {
-    // base: 스케줄 구간들, cuts: 예약 구간들
-    // 결과: 예약을 뺀 가용 구간들
     let result = [...base];
 
     for (const cut of cuts) {
@@ -83,6 +81,19 @@ export class ReservationService {
 
     // 길이 0 제거
     return result.filter((s) => s.end - s.start > 0);
+  }
+  private checkEnterable(reservation: MentoringReservation): ChatRoomStatus {
+    const now = new Date();
+    const start = new Date(`${reservation.date}T${reservation.startTime}`);
+    const end = new Date(`${reservation.date}T${reservation.endTime}`);
+
+    if (now < new Date(start.getTime() - 10 * 60 * 1000)) {
+      return ChatRoomStatus.WAITING;
+    }
+    if (now > end) {
+      return ChatRoomStatus.CLOSED;
+    }
+    return ChatRoomStatus.PROGRESS;
   }
   async getAvailableTimes(id: string, date: string) {
     try {
@@ -109,7 +120,7 @@ export class ReservationService {
 
       // 해당 날짜의 예약 조회
       const reservation = await this.reservationRepository.find({
-        where: { session: { id }, date },
+        where: { session: { mentor: { id: mentorId } }, date },
         order: { startTime: 'ASC' },
       });
 
@@ -202,6 +213,10 @@ export class ReservationService {
       .leftJoinAndSelect('mentor.user', 'mentorUser')
       .leftJoin('reservation.payments', 'payment')
       .where('reservation.mentee.id = :userId', { userId })
+      .andWhere('reservation.status = :status', {
+        status: [MentoringStatus.CONFIRMED, MentoringStatus.PROGRESS],
+      })
+
       .orderBy('reservation.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
@@ -215,14 +230,52 @@ export class ReservationService {
       status: res.status,
       sessionTitle: res.session.title,
       mentorName: res.session.mentor.user.name,
-      receiptUrl: res.payments?.[0]?.receiptUrl || null,
-      hasReview: res.review ? true : false,
+      roomId: res.roomId,
+      canEnter: this.checkEnterable(res),
     }));
 
     return {
       totalPage: Math.ceil(total / limit),
       items,
       message: '멘티 예약 내역 조회 성공',
+    };
+  }
+  async getMyClearReservations(
+    userId: string,
+    { page = 1, limit = 10 }: PaginationDto,
+  ) {
+    const [reservation, total] = await this.reservationRepository
+      .createQueryBuilder('reservation')
+      .leftJoinAndSelect('reservation.session', 'session')
+      .leftJoinAndSelect('session.mentor', 'mentor')
+      .leftJoinAndSelect('mentor.user', 'mentorUser')
+      .leftJoin('reservation.payments', 'payment')
+      .leftJoin('reservation.review', 'review')
+      .where('reservation.mentee.id = :userId', { userId })
+      .andWhere('reservation.status = :status', {
+        status: MentoringStatus.COMPLETED,
+      })
+
+      .orderBy('reservation.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    const items = reservation.map((res) => ({
+      id: res.id,
+      date: res.date,
+      startTime: res.startTime,
+      endTime: res.endTime,
+      status: res.status,
+      sessionTitle: res.session.title,
+      mentorName: res.session.mentor.user.name,
+      reviewWritten: !!res.review,
+    }));
+
+    return {
+      totalPage: Math.ceil(total / limit),
+      items,
+      message: '멘티 완료된 예약 내역 조회 성공',
     };
   }
   async getAvailableDays(mentorId: string) {
@@ -261,13 +314,44 @@ export class ReservationService {
     if (reservation.mentee.id !== userId) {
       throw new ForbiddenException('본인의 예약만 확인할 수 있습니다.');
     }
+
     return {
       reservationId: reservation.id,
       mentorName: reservation.session.mentor.user.name,
       date: reservation.date,
       startTime: reservation.startTime,
       endTime: reservation.endTime,
-      // meetingUrl: reservation.meetingUrl,
+    };
+  }
+
+  async joinRoom(userId: string, roomId: string) {
+    const reservation = await this.reservationRepository.findOne({
+      where: { roomId },
+      relations: ['mentee', 'session', 'session.mentor', 'session.mentor.user'],
+    });
+    if (!reservation) throw new NotFoundException('예약된 멘토링이 없습니다.');
+    if (
+      reservation.mentee.id !== userId ||
+      reservation.session.mentor.user.id !== userId
+    ) {
+      throw new ForbiddenException('본인의 예약만 입장 가능합니다.');
+    }
+    const now = new Date();
+    const start = new Date(reservation.startTime);
+    const end = new Date(reservation.endTime);
+    if (now < new Date(start.getTime() - 10 * 60 * 1000)) {
+      throw new ForbiddenException(
+        '아직 입장할 수 없습니다. 시작 10분 전부터 가능합니다.',
+      );
+    }
+    if (now > end) {
+      throw new ForbiddenException('이미 종료된 세션입니다.');
+    }
+
+    return {
+      reservationId: reservation.id,
+      roomId,
+      status: this.checkEnterable(reservation),
     };
   }
 }

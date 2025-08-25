@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -45,7 +46,8 @@ export class MentoringReservation {
   paidAt: Date;
   @Column({ type: 'text', nullable: true })
   rejectReason?: string;
-
+  @Column({ type: 'varchar', nullable: true })
+  roomId: string;
   @CreateDateColumn()
   createdAt: Date;
 
@@ -53,6 +55,7 @@ export class MentoringReservation {
   updatedAt: Date;
   @ApiProperty({ description: '예약한 멘티', required: true })
   @ManyToOne(() => Users, (user) => user.reservation, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'menteeId' })
   mentee: Users;
 
   @ApiProperty({ description: '예약된 멘토링 세션', required: true })

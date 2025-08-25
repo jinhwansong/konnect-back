@@ -9,7 +9,6 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '@/users/users.service';
 import { JoinDto, LoginDto, SocialLoginDto } from './dto/auth.dto';
 import { RedisService } from '@/redis/redis.service';
-import { SocialLoginProvider, UserRole } from '@/common/enum/status.enum';
 import { sendEmailDto, verifyCodeDto } from './dto/email.dto';
 import { MailService } from '@/mail/mail.service';
 

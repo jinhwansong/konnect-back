@@ -23,7 +23,7 @@ export class UsersService {
   async findByEmail(email: string) {
     return this.userRepository.findOne({ where: { email } });
   }
-  // 이메일 중복확인
+  // 닉네임 중복확인
   async findByNickname(nickname: string) {
     return this.userRepository.findOne({ where: { nickname } });
   }

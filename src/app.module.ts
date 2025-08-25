@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { AdminModule } from './admin/admin.module';
@@ -20,12 +21,19 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { SessionModule } from './session/session.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
+import { ChatModule } from './chat/chat.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ListenerModule } from './listener/listener.module';
 
 @Module({
   imports: [
     // dotenv 전역사용
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    EventEmitterModule.forRoot(),
+    MongooseModule.forRoot(process.env.MONGO_URL, {
+      dbName: 'konnect',
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -65,6 +73,8 @@ import { MailModule } from './mail/mail.module';
     ArticleModule,
     SessionModule,
     MailModule,
+    ChatModule,
+    ListenerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

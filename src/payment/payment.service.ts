@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { firstValueFrom } from 'rxjs';
 import { DataSource, Repository } from 'typeorm';
 import { ConfirmPaymentDto, RefundPaymentDto } from './dto/payment.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PaymentService {
@@ -17,6 +18,7 @@ export class PaymentService {
     private userRepository: Repository<Users>,
     @InjectRepository(MentoringReservation)
     private reservationRepository: Repository<MentoringReservation>,
+    private eventEmitter: EventEmitter2,
     private readonly httpService: HttpService,
     private readonly dataSource: DataSource,
   ) {}
@@ -38,7 +40,7 @@ export class PaymentService {
       // 예약 정보 조회
       const reservation = await this.reservationRepository.findOne({
         where: { id: body.orderId },
-        relations: { session: true },
+        relations: ['session', 'session.mentor', 'mentee'],
       });
 
       if (!reservation) {
@@ -88,7 +90,9 @@ export class PaymentService {
           { status: MentoringStatus.CONFIRMED, paidAt: new Date() },
         );
       });
-
+      this.eventEmitter.emit('payment.confirmed', {
+        reservationId: reservation.id,
+      });
       return {
         message: '결제에 성공했습니다.',
       };
@@ -182,7 +186,9 @@ export class PaymentService {
       .leftJoinAndSelect('session.mentor', 'mentor')
       .leftJoinAndSelect('mentor.user', 'mentorUser')
       .where('payment.user.id = :userId', { userId })
-      .andWhere('payment.status = :status', { status: PaymentStatus.SUCCESS })
+      .andWhere('payment.status IN (:...statuses)', {
+        statuses: [PaymentStatus.SUCCESS, PaymentStatus.REFUNDED],
+      })
       .orderBy('payment.createdAt', 'DESC')
 
       .skip((page - 1) * limit)
@@ -252,6 +258,9 @@ export class PaymentService {
       payment.reservation.status = MentoringStatus.CANCELLED;
       payment.reservation.rejectReason = '구매자가 취소를 원함';
       await manager.save(payment.reservation);
+      this.eventEmitter.emit('reservation.refunded', {
+        reservationId: payment.reservation.id,
+      });
 
       return {
         message: '환불 및 예약이 취소되었습니다.',
