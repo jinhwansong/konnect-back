@@ -213,7 +213,7 @@ export class ReservationService {
       .leftJoinAndSelect('mentor.user', 'mentorUser')
       .leftJoin('reservation.payments', 'payment')
       .where('reservation.mentee.id = :userId', { userId })
-      .andWhere('reservation.status = :status', {
+      .andWhere('reservation.status IN (:...status)', {
         status: [MentoringStatus.CONFIRMED, MentoringStatus.PROGRESS],
       })
 
@@ -222,21 +222,22 @@ export class ReservationService {
       .take(limit)
       .getManyAndCount();
 
-    const items = reservation.map((res) => ({
+    const data = reservation.map((res) => ({
       id: res.id,
       date: res.date,
-      startTime: res.startTime,
-      endTime: res.endTime,
+      startTime: res.startTime.slice(0, 5),
+      endTime: res.endTime.slice(0, 5),
       status: res.status,
       sessionTitle: res.session.title,
       mentorName: res.session.mentor.user.name,
       roomId: res.roomId,
       canEnter: this.checkEnterable(res),
+      duration: res.session.duration,
     }));
 
     return {
       totalPage: Math.ceil(total / limit),
-      items,
+      data,
       message: '멘티 예약 내역 조회 성공',
     };
   }
@@ -255,26 +256,26 @@ export class ReservationService {
       .andWhere('reservation.status = :status', {
         status: MentoringStatus.COMPLETED,
       })
-
       .orderBy('reservation.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
 
-    const items = reservation.map((res) => ({
+    const data = reservation.map((res) => ({
       id: res.id,
       date: res.date,
-      startTime: res.startTime,
-      endTime: res.endTime,
+      startTime: res.startTime.slice(0, 5),
+      endTime: res.endTime.slice(0, 5),
       status: res.status,
       sessionTitle: res.session.title,
       mentorName: res.session.mentor.user.name,
       reviewWritten: !!res.review,
+      duration: res.session.duration,
     }));
 
     return {
       totalPage: Math.ceil(total / limit),
-      items,
+      data,
       message: '멘티 완료된 예약 내역 조회 성공',
     };
   }

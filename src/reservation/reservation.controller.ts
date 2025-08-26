@@ -164,7 +164,7 @@ export class ReservationController {
     status: 500,
     description: '예약 내역 조회 중 오류가 발생했습니다.',
   })
-  @Get('my')
+  @Get('past')
   async getMyClearReservations(
     @User('id') userId: string,
     @Query() query: PaginationDto,
