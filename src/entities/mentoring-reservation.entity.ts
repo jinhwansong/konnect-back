@@ -66,6 +66,7 @@ export class MentoringReservation {
   @ApiProperty({ description: '결제된 멘토링 세션', required: true })
   @OneToOne(() => Payment, (payment) => payment.reservation)
   payments: Payment;
-  @OneToMany(() => MentoringReview, (review) => review.reservation)
-  review: MentoringReview[];
+
+  @OneToOne(() => MentoringReview, (review) => review.reservation)
+  review: MentoringReview;
 }

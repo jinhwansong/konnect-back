@@ -250,8 +250,8 @@ export class ReservationService {
       .leftJoinAndSelect('reservation.session', 'session')
       .leftJoinAndSelect('session.mentor', 'mentor')
       .leftJoinAndSelect('mentor.user', 'mentorUser')
+      .leftJoinAndSelect('reservation.review', 'review')
       .leftJoin('reservation.payments', 'payment')
-      .leftJoin('reservation.review', 'review')
       .where('reservation.mentee.id = :userId', { userId })
       .andWhere('reservation.status = :status', {
         status: MentoringStatus.COMPLETED,
@@ -269,7 +269,7 @@ export class ReservationService {
       status: res.status,
       sessionTitle: res.session.title,
       mentorName: res.session.mentor.user.name,
-      reviewWritten: !!res.review,
+      reviewWritten: res.review,
       duration: res.session.duration,
     }));
 

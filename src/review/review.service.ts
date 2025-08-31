@@ -1,7 +1,6 @@
 import { PaginationDto } from '@/common/dto/page.dto';
-import { LikeType, MentoringStatus } from '@/common/enum/status.enum';
+import { MentoringStatus } from '@/common/enum/status.enum';
 import {
-  Like,
   MentoringReservation,
   MentoringReview,
   MentoringSession,
@@ -29,8 +28,7 @@ export class ReviewService {
     private readonly userRepository: Repository<Users>,
     @InjectRepository(MentoringReservation)
     private readonly reservationRepository: Repository<MentoringReservation>,
-    @InjectRepository(Like)
-    private readonly likeRepository: Repository<Like>,
+
     @InjectRepository(MentoringSession)
     private readonly sessionRepository: Repository<MentoringSession>,
   ) {}
@@ -42,7 +40,7 @@ export class ReviewService {
         where: {
           id: body.reservationId,
         },
-        relations: ['mentor'],
+        relations: ['session', 'session.mentor', 'mentee'],
       });
       if (!reservation) {
         throw new NotFoundException('멘토링 예약 정보를 찾을 수 없습니다.');
@@ -75,11 +73,12 @@ export class ReviewService {
         content: body.content,
         session: reservation.session,
       });
-      this.reviewRepository.save(review);
+      await this.reviewRepository.save(review);
 
-      await this.recalculateSessionRating(review.session);
+      await this.recalculateSessionRating(review.session.id);
       return { message: '후기를 작성하셨습니다.' };
     } catch (error) {
+      console.log('error : ', error);
       throw new InternalServerErrorException(
         '후기 작성 중 오류가 발생했습니다.',
       );
@@ -106,7 +105,7 @@ export class ReviewService {
       if (body.rating) review.rating = body.rating;
 
       await this.reviewRepository.save(review);
-      await this.recalculateSessionRating(review.session);
+      await this.recalculateSessionRating(review.session.id);
       return { message: '후기를 수정하셨습니다.' };
     } catch (error) {
       throw new InternalServerErrorException(
@@ -129,7 +128,7 @@ export class ReviewService {
         );
 
       await this.reviewRepository.remove(review);
-      await this.recalculateSessionRating(review.session);
+      await this.recalculateSessionRating(review.session.id);
       return { message: '후기가 성공적으로 삭제되었습니다.' };
     } catch (error) {
       throw new InternalServerErrorException(
@@ -170,40 +169,15 @@ export class ReviewService {
       );
     }
   }
-  async likedReview(id: string, userId: string) {
-    try {
-      const user = await this.userRepository.findOneBy({ id: userId });
-      if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
-      const review = await this.reviewRepository.findOneBy({ id });
-      if (!review) throw new NotFoundException('리뷰가 존재하지 않습니다.');
-      const existing = await this.likeRepository.findOne({
-        where: {
-          review: { id },
-          user: { id: userId },
-        },
-      });
-      if (existing) {
-        await this.likeRepository.remove(existing);
-        return { message: '좋아요 취소됨', liked: false };
-      }
 
-      const like = this.likeRepository.create({
-        targetType: LikeType.REVIEW,
-        review,
-        user,
-      });
-      await this.likeRepository.save(like);
-      return { message: '좋아요 추가됨', liked: true };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        '리뷰 좋아요 중 오류가 발생했습니다.',
-      );
-    }
-  }
-
-  private async recalculateSessionRating(session: MentoringSession) {
+  private async recalculateSessionRating(sessionId: string) {
+    const session = await this.sessionRepository.findOne({
+      where: { id: sessionId },
+      relations: ['reviews'],
+    });
+    if (!session) return;
     const [reviews, count] = await this.reviewRepository.findAndCount({
-      where: { session: { id: session.id } },
+      where: { session: { id: sessionId } },
     });
     const avg =
       count > 0 ? reviews.reduce((sum, acc) => sum + acc.rating, 0) / count : 0;

@@ -21,28 +21,22 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  CreateReviewDto,
-  CreateReviewResponseDto,
-} from './dto/create.review.dto';
+import { CreateReviewDto } from './dto/create.review.dto';
 import { ReviewMyListItemDto } from './dto/get.review.dto';
-import { ToggleLikeResponseDto } from './dto/like.response.dto';
 import { UpdateReviewDto } from './dto/update.review.dto';
 import { ReviewService } from './review.service';
 
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth('access-token')
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Review')
-@UseGuards(JwtAuthGuard)
 @Controller('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: '멘토링 후기 작성' })
   @ApiResponse({
     status: 201,
-    type: CreateReviewResponseDto,
-    description: '후기 작성 성공',
+    description: '후기를 작성하셨습니다.',
   })
   @ApiResponse({
     status: 400,
@@ -116,20 +110,5 @@ export class ReviewController {
   @Get('/my')
   getMyReviews(userId, @Query() query: PaginationDto) {
     return this.reviewService.getMyReviews(userId, query);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: '좋아요 토글' })
-  @ApiResponse({
-    status: 200,
-    type: ToggleLikeResponseDto,
-    description: '좋아요 상태 토글 완료',
-  })
-  @ApiResponse({ status: 404, description: '리뷰가 존재하지 않음' })
-  @ApiResponse({ status: 500, description: '서버 오류' })
-  @Post(':id/like')
-  toggleReviewLike(@Param('id') reviewId: string, @User('id') userId: string) {
-    return this.reviewService.likedReview(reviewId, userId);
   }
 }

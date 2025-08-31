@@ -3,8 +3,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -33,11 +35,14 @@ export class MentoringReview {
 
   @OneToMany(() => Like, (like) => like.review)
   likes: Like[];
-  @ManyToOne(() => MentoringReservation, (reservation) => reservation.review, {
+
+  @OneToOne(() => MentoringReservation, (reservation) => reservation.review, {
     onDelete: 'CASCADE',
   })
   @ApiProperty({ description: '후기를 남긴 멘토링 예약 정보', required: true })
+  @JoinColumn()
   reservation: MentoringReservation;
+
   @ManyToOne(() => MentoringSession, (session) => session.reviews, {
     onDelete: 'CASCADE',
   })
