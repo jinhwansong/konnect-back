@@ -3,10 +3,10 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SchedulerService } from './scheduler.service';
-import { ExpiredReservationsTask } from './tasks/expired-reservations.task';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChatRoom, ChatRoomSchema } from '@/schema/chat-room.schema';
 import { ChatRoomTask } from './tasks/chat-room.task';
+import { ReservationsTask } from './tasks/update-reservation';
 
 @Module({
   imports: [
@@ -16,6 +16,6 @@ import { ChatRoomTask } from './tasks/chat-room.task';
       { name: ChatRoom.name, schema: ChatRoomSchema },
     ]),
   ],
-  providers: [ExpiredReservationsTask, SchedulerService, ChatRoomTask],
+  providers: [ReservationsTask, SchedulerService, ChatRoomTask],
 })
 export class SchedulerModule {}

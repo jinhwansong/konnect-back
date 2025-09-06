@@ -28,7 +28,6 @@ export class SessionService {
         .leftJoinAndSelect('review.mentee', 'mentee')
         .leftJoin('review.reservation', 'reservation')
         .leftJoin('reservation.session', 'session')
-        .loadRelationCountAndMap('review.likeCount', 'review.likes')
         .where('session.id = :sessionId', { sessionId })
         .orderBy('review.createdAt', 'DESC')
         .skip((page - 1) * limit)
@@ -40,7 +39,6 @@ export class SessionService {
         createdAt: res.createdAt,
         mentee: res.mentee,
         rating: res.rating,
-        likeCount: res.likes ?? 0,
       }));
       return {
         totalPages: Math.ceil(total / limit),

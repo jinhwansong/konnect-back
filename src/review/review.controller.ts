@@ -22,17 +22,21 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateReviewDto } from './dto/create.review.dto';
-import { ReviewMyListItemDto } from './dto/get.review.dto';
+import {
+  ReviewMyListItemDto,
+  ReviewReceivedListItemDto,
+} from './dto/get.review.dto';
 import { UpdateReviewDto } from './dto/update.review.dto';
 import { ReviewService } from './review.service';
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Review')
 @Controller('review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('access-token')
+
   @ApiOperation({ summary: '멘토링 후기 작성' })
   @ApiResponse({
     status: 201,
@@ -73,8 +77,6 @@ export class ReviewController {
     return this.reviewService.updateReview(id, body, userId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: '후기 삭제' })
   @ApiResponse({ status: 200, description: '후기 삭제 성공' })
   @ApiResponse({ status: 403, description: '작성자 본인만 삭제 가능' })
@@ -84,8 +86,6 @@ export class ReviewController {
     return this.reviewService.deleteReview(id, userId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: '내가 쓴 후기 조회' })
   @ApiResponse({
     status: 200,
@@ -108,7 +108,36 @@ export class ReviewController {
     description: '페이지당 개수 (기본값: 10)',
   })
   @Get('/my')
-  getMyReviews(userId, @Query() query: PaginationDto) {
+  getMyReviews(@User('id') userId: string, @Query() query: PaginationDto) {
     return this.reviewService.getMyReviews(userId, query);
+  }
+
+  @ApiOperation({ summary: '내가 받은 후기 조회 (멘토)' })
+  @ApiResponse({
+    status: 200,
+    type: ReviewReceivedListItemDto,
+    description: '내가 받은 후기 조회 (멘토)',
+    isArray: true,
+  })
+  @ApiResponse({ status: 404, description: '해당 세션을 찾을 수 없습니다.' })
+  @ApiResponse({ status: 500, description: '서버 오류' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    example: 1,
+    description: '페이지 번호 (기본값: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    example: 10,
+    description: '페이지당 개수 (기본값: 10)',
+  })
+  @Get('/received')
+  getMentorReceivedReviews(
+    @User('id') userId: string,
+    @Query() query: PaginationDto,
+  ) {
+    return this.reviewService.getMentorReceivedReviews(userId, query);
   }
 }

@@ -39,9 +39,9 @@ import { createMultiUploadInterceptor } from '@/common/interceptors/multer.inter
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Mentoring')
-@ApiBearerAuth('access-token')
 @Controller('mentoring')
 @Roles(UserRole.MENTOR)
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class MentoringController {
   constructor(private readonly mentoringService: MentoringService) {}

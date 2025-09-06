@@ -8,8 +8,7 @@ import { AppModule } from './app.module';
 import { createUploadFolder } from './common/util/upload.folder';
 import { HttpExceptionFilter } from './httpException.filter';
 import cookieParser from 'cookie-parser';
-import { existsSync, writeFileSync } from 'fs';
-import { Request, Response } from 'express';
+import { writeFileSync } from 'fs';
 
 declare const module: any;
 dotenv.config();

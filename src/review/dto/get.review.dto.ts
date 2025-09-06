@@ -12,12 +12,18 @@ export class ReviewListItemDto {
 
   @ApiProperty({ example: '2025-07-07T10:00:00Z' })
   createdAt: Date;
-
-  @ApiProperty({ example: 3, description: '좋아요 수' })
-  likeCount: number;
 }
-export class ReviewMyListItemDto extends ReviewListItemDto{
-
+export class ReviewMyListItemDto extends ReviewListItemDto {
   @ApiProperty({ example: '리액트강의' })
   sessionTitle: string;
+  @ApiProperty({ example: '멘토닉네임' })
+  mentorName: string;
+}
+
+export class ReviewReceivedListItemDto extends ReviewListItemDto {
+  @ApiProperty({ example: '리액트 강의' })
+  sessionTitle: string;
+
+  @ApiProperty({ example: '멘티닉네임' })
+  menteeName: string;
 }

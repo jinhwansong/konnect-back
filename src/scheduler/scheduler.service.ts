@@ -56,4 +56,42 @@ export class SchedulerService {
       }
     }
   }
+
+  async updateMentoringStatus() {
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const currentTime = now.toTimeString().slice(0, 8);
+    const toComplete = await this.reservationRepository
+      .createQueryBuilder('reservation')
+      .where('reservation.status = :status', {
+        status: MentoringStatus.CONFIRMED,
+      })
+      .andWhere(
+        '(reservation.date < :today OR (reservation.date = :today AND reservation.endTime < :currentTime))',
+        { today, currentTime },
+      )
+      .getMany();
+    for (const reservation of toComplete) {
+      reservation.status = MentoringStatus.COMPLETED;
+      await this.reservationRepository.save(reservation);
+    }
+  }
+  async ProgressReservations() {
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    const currentTime = now.toTimeString().slice(0, 8);
+    const toProgress = await this.reservationRepository
+      .createQueryBuilder('r')
+      .where('r.status = :status', { status: MentoringStatus.CONFIRMED })
+      .andWhere(
+        '(r.date = :today AND r.startTime <= ADDTIME(:currentTime, "00:10:00") AND r.endTime >= :currentTime)',
+        { today, currentTime },
+      )
+      .getMany();
+
+    for (const r of toProgress) {
+      r.status = MentoringStatus.PROGRESS;
+      await this.reservationRepository.save(r);
+    }
+  }
 }

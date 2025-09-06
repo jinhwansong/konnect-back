@@ -89,7 +89,7 @@ export class ReviewService {
     try {
       const review = await this.reviewRepository.findOne({
         where: { id },
-        relations: ['mentee'],
+        relations: ['mentee', 'session'],
       });
 
       if (!review) {
@@ -108,6 +108,7 @@ export class ReviewService {
       await this.recalculateSessionRating(review.session.id);
       return { message: '후기를 수정하셨습니다.' };
     } catch (error) {
+      console.error('error : ', error);
       throw new InternalServerErrorException(
         '후기 수정 중 오류가 발생했습니다.',
       );
@@ -117,9 +118,8 @@ export class ReviewService {
     try {
       const review = await this.reviewRepository.findOne({
         where: { id },
-        relations: ['mentee'],
+        relations: ['mentee', 'session'],
       });
-
       if (!review) throw new NotFoundException('후기를 찾을 수 없습니다.');
 
       if (review.mentee.id !== userId)
@@ -136,13 +136,14 @@ export class ReviewService {
       );
     }
   }
+
   async getMyReviews(userId: string, { page = 1, limit = 10 }: PaginationDto) {
     try {
       const [reviews, total] = await this.reviewRepository
         .createQueryBuilder('review')
-        .leftJoinAndSelect('review.reservation', 'reservation')
-        .leftJoinAndSelect('reservation.session', 'session')
-        .loadRelationCountAndMap('review.likeCount', 'review.likes')
+        .leftJoinAndSelect('review.session', 'session')
+        .leftJoinAndSelect('session.mentor', 'mentor')
+        .leftJoinAndSelect('mentor.user', 'user')
         .where('review.mentee.id = :userId', { userId })
         .orderBy('review.createdAt', 'DESC')
         .skip((page - 1) * limit)
@@ -154,18 +155,57 @@ export class ReviewService {
         content: res.content,
         rating: res.rating,
         createdAt: res.createdAt,
-        likeCount: res.likes ?? 0,
-        sessionTitle: res.reservation.session.title,
+        sessionTitle: res.session.title,
+        mentorName: res.session.mentor.user.nickname,
       }));
 
       return {
         message: '내 후기 목록 조회 성공',
-        totalPages: Math.ceil(total / limit),
+        totalPage: Math.ceil(total / limit),
+        data: items,
+      };
+    } catch (error) {
+      console.error('error : ', error);
+      throw new InternalServerErrorException(
+        '내 후기 목록을 가져오는 중 오류가 발생했습니다.',
+      );
+    }
+  }
+
+  async getMentorReceivedReviews(
+    userId: string,
+    { page = 1, limit = 10 }: PaginationDto,
+  ) {
+    try {
+      const [reviews, total] = await this.reviewRepository
+        .createQueryBuilder('review')
+        .leftJoinAndSelect('review.session', 'session')
+        .leftJoinAndSelect('session.mentor', 'mentor')
+        .leftJoinAndSelect('mentor.user', 'mentorUser')
+        .leftJoinAndSelect('review.mentee', 'mentee')
+        .where('mentorUser.id = :userId', { userId })
+        .orderBy('review.createdAt', 'DESC')
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      const items = reviews.map((res) => ({
+        id: res.id,
+        content: res.content,
+        rating: res.rating,
+        createdAt: res.createdAt,
+        sessionTitle: res.session.title,
+        menteeName: res.mentee.nickname,
+      }));
+
+      return {
+        message: '내가 받은 후기 조회 성공',
+        totalPage: Math.ceil(total / limit),
         data: items,
       };
     } catch (error) {
       throw new InternalServerErrorException(
-        '내 후기 목록을 가져오는 중 오류가 발생했습니다.',
+        '내가 받은 후기 조회 (멘토)을 가져오는 중 오류가 발생했습니다.',
       );
     }
   }

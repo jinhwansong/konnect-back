@@ -269,7 +269,7 @@ export class ReservationService {
       status: res.status,
       sessionTitle: res.session.title,
       mentorName: res.session.mentor.user.name,
-      reviewWritten: res.review,
+      reviewWritten: !!res.review,
       duration: res.session.duration,
     }));
 

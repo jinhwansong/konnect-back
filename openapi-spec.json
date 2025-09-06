@@ -1724,6 +1724,11 @@
             "description": "리뷰를 찾을 수 없음"
           }
         },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
         "summary": "후기 수정",
         "tags": [
           "Review"
@@ -1817,6 +1822,65 @@
           }
         ],
         "summary": "내가 쓴 후기 조회",
+        "tags": [
+          "Review"
+        ]
+      }
+    },
+    "/review/received": {
+      "get": {
+        "operationId": "ReviewController_getMentorReceivedReviews",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "페이지 번호 (기본값: 1)",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "페이지당 개수 (기본값: 10)",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "내가 받은 후기 조회 (멘토)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewReceivedListItemDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "해당 세션을 찾을 수 없습니다."
+          },
+          "500": {
+            "description": "서버 오류"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "내가 받은 후기 조회 (멘토)",
         "tags": [
           "Review"
         ]
@@ -3629,14 +3693,13 @@
             "type": "string",
             "example": "2025-07-07T10:00:00Z"
           },
-          "likeCount": {
-            "type": "number",
-            "example": 3,
-            "description": "좋아요 수"
-          },
           "sessionTitle": {
             "type": "string",
             "example": "리액트강의"
+          },
+          "mentorName": {
+            "type": "string",
+            "example": "멘토닉네임"
           }
         },
         "required": [
@@ -3644,8 +3707,46 @@
           "content",
           "rating",
           "createdAt",
-          "likeCount",
-          "sessionTitle"
+          "sessionTitle",
+          "mentorName"
+        ]
+      },
+      "ReviewReceivedListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "review-uuid"
+          },
+          "content": {
+            "type": "string",
+            "example": "정말 좋았습니다!"
+          },
+          "rating": {
+            "type": "number",
+            "example": 5
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2025-07-07T10:00:00Z"
+          },
+          "sessionTitle": {
+            "type": "string",
+            "example": "리액트 강의"
+          },
+          "menteeName": {
+            "type": "string",
+            "example": "멘티닉네임"
+          }
+        },
+        "required": [
+          "id",
+          "content",
+          "rating",
+          "createdAt",
+          "sessionTitle",
+          "menteeName"
         ]
       },
       "ArticleListItemDto": {
@@ -3837,19 +3938,13 @@
             "format": "date-time",
             "type": "string",
             "example": "2025-07-07T10:00:00Z"
-          },
-          "likeCount": {
-            "type": "number",
-            "example": 3,
-            "description": "좋아요 수"
           }
         },
         "required": [
           "id",
           "content",
           "rating",
-          "createdAt",
-          "likeCount"
+          "createdAt"
         ]
       },
       "MentorInfo": {
