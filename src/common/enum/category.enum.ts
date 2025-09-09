@@ -13,18 +13,16 @@ export enum ArticleCategory {
 }
 
 export enum MentoringCategory {
-  HR = 'hr', // 인사/총무/노무
-  MARKETING = 'marketing', // 마케팅/MD
-  PR = 'pr', //홍보/CSR
-  SALES = 'sales', //영업/영업관리
-  FINANCE = 'finance', // 회계/재무/금융
-  PLANNING = 'planning', // 전략/기획
-  IT = 'it', // IT개발/데이터
-  UX_UI = 'ux_ui', // 서비스 기획/UI, UX
-  DESIGN = 'design', // 디자인/예술
-  CONSULTING = 'consulting', // 교육/상담/컨설팅
-  MANUFACTURING = 'manufacturing', // 생산/품질/제조
-  ETC = 'etc', // 기타 사무
+  BUSINESS = 'business', // 경영/전략/기획
+  MARKETING = 'marketing', // 마케팅/광고/브랜딩/PR
+  SALES = 'sales', // 영업/MD/유통
+  FINANCE = 'finance', // 재무/회계/금융
+  HR = 'hr', // 인사/노무/총무
+  IT = 'it', // 웹/앱 개발, 데이터/AI, 인프라
+  DESIGN = 'design', // UX/UI, 그래픽, 영상/모션
+  CONSULTING = 'consulting', // 컨설팅/전문서비스/교육
+  MANUFACTURING = 'manufacturing', // 제조/생산/품질/기술직
+  ETC = 'etc', // 기타 직무
 }
 export enum MentorCareerLevel {
   JUNIOR = 'junior', // 주니어 (1~3년)
@@ -44,7 +42,6 @@ export enum MentorPosition {
   PM_PO = 'pm_po', // PM / PO
   UX_DESIGNER = 'ux_designer', // UX 디자이너
   UI_DESIGNER = 'ui_designer', // UI 디자이너
-  PLANNER = 'planner', // 서비스 기획자
   MARKETING = 'marketing', // 마케터 / 콘텐츠 기획자
   HR = 'hr', // HR / 리쿠루터
   CS = 'cs', // CS / 운영

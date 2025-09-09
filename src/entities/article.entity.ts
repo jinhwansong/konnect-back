@@ -11,6 +11,7 @@ import {
 import { Like } from './like.entity';
 import { Users } from './user.entity';
 import { ArticleCategory } from '@/common/enum/category.enum';
+import { Comment } from './comment.entity';
 
 @Entity({ schema: 'konnect', name: 'articles' })
 export class Article {
@@ -44,6 +45,6 @@ export class Article {
   @OneToMany(() => Like, (like) => like.article)
   likes: Like[];
 
-  // @OneToMany(() => Comment, (comment) => comment.article)
-  // comments: Comment[];
+  @OneToMany(() => Comment, (comment) => comment.article)
+  comments: Comment[];
 }

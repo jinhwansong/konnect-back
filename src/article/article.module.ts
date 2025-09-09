@@ -1,4 +1,4 @@
-import { Article, Mentors, Users, Like } from '@/entities';
+import { Article, Mentors, Users, Like, Comment } from '@/entities';
 import { RedisService } from '@/redis/redis.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,7 +6,7 @@ import { ArticleController } from './article.controller';
 import { ArticleService } from './article.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Article, Mentors, Like, Users])],
+  imports: [TypeOrmModule.forFeature([Article, Mentors, Like, Users, Comment])],
   controllers: [ArticleController],
   providers: [ArticleService, RedisService],
   exports: [ArticleService],

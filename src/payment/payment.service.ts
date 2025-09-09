@@ -5,7 +5,7 @@ import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { firstValueFrom } from 'rxjs';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ConfirmPaymentDto, RefundPaymentDto } from './dto/payment.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
@@ -231,40 +231,50 @@ export class PaymentService {
       if (payment.reservation.status === MentoringStatus.PROGRESS) {
         throw new BadRequestException('이미 승인된 멘토링 입니다.');
       }
-      const secretKey = Buffer.from(`${process.env.TOSS_SECRET_KEY}:`).toString(
-        'base64',
-      );
-
-      const response = await firstValueFrom(
-        this.httpService.post(
-          `https://api.tosspayments.com/v1/payments/${body.paymentKey}/cancel`,
-          {
-            cancelReason: '구매자가 취소를 원함',
-          },
-          {
-            headers: {
-              Authorization: `Basic ${secretKey}`,
-              'Content-Type': 'application/json',
-            },
-          },
-        ),
-      );
-      if (response.data.status !== 'CANCELED') {
-        throw new BadRequestException('환불 처리 중 오류가 발생했습니다.');
-      }
-      payment.status = PaymentStatus.REFUNDED;
-      await manager.save(payment);
-
-      payment.reservation.status = MentoringStatus.CANCELLED;
-      payment.reservation.rejectReason = '구매자가 취소를 원함';
-      await manager.save(payment.reservation);
-      this.eventEmitter.emit('reservation.refunded', {
-        reservationId: payment.reservation.id,
-      });
+      await this.cancelAndRefund(manager, payment, '구매자가 취소를 원함');
 
       return {
         message: '환불 및 예약이 취소되었습니다.',
       };
+    });
+  }
+
+  async cancelAndRefund(
+    manager: EntityManager,
+    payment: Payment,
+    reason: string,
+  ) {
+    const secretKey = Buffer.from(`${process.env.TOSS_SECRET_KEY}:`).toString(
+      'base64',
+    );
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `https://api.tosspayments.com/v1/payments/${payment.paymentKey}/cancel`,
+        { cancelReason: reason },
+        {
+          headers: {
+            Authorization: `Basic ${secretKey}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    if (response.data.status !== 'CANCELED') {
+      throw new BadRequestException('환불 처리 중 오류가 발생했습니다.');
+    }
+
+    // DB 상태 업데이트
+    payment.status = PaymentStatus.REFUNDED;
+    await manager.save(payment);
+
+    payment.reservation.status = MentoringStatus.CANCELLED;
+    payment.reservation.rejectReason = reason;
+    await manager.save(payment.reservation);
+
+    // 이벤트 발행
+    this.eventEmitter.emit('reservation.refunded', {
+      reservationId: payment.reservation.id,
     });
   }
 }

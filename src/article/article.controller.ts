@@ -41,6 +41,12 @@ import {
   ArticleQueryDto,
   CreateArticleDto,
 } from './dto/article.dto';
+import {
+  CommentItemDto,
+  CreateCommentDto,
+  PatchCommentDto,
+} from './dto/comment.dto';
+import { PaginationDto } from '@/common/dto/page.dto';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Article')
@@ -199,5 +205,70 @@ export class ArticleController {
     @UploadedFiles() files: { images?: Express.Multer.File[] },
   ) {
     return this.articleService.uploadEditorImages(files);
+  }
+
+  /** 댓글 부분 */
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '댓글/대댓글 작성' })
+  @ApiResponse({ status: 201, description: '댓글/대댓글이 작성되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @ApiResponse({ status: 404, description: '아티클을 찾을 수 없음' })
+  @ApiResponse({ status: 500, description: '서버 에러' })
+  @Post(':articleId/comment')
+  async createComment(
+    @Param('articleId') articleId: string,
+    @User('id') userId: string,
+    @Body() body: CreateCommentDto,
+  ) {
+    return this.articleService.createComment(articleId, userId, body);
+  }
+
+  @ApiOperation({ summary: '댓글 목록 조회 (대댓글 포함)' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiResponse({
+    status: 200,
+    description: '댓글 목록 조회 성공',
+    type: CommentItemDto,
+  })
+  @ApiResponse({ status: 404, description: '아티클을 찾을 수 없음' })
+  @ApiResponse({ status: 500, description: '서버 에러' })
+  @Get(':articleId/comment')
+  async getComment(
+    @Param('articleId') articleId: string,
+    @Query() dto: PaginationDto,
+  ) {
+    return this.articleService.getComment(articleId, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '댓글 수정' })
+  @ApiResponse({ status: 200, description: '댓글이 수정되었습니다.' })
+  @ApiResponse({ status: 400, description: '잘못된 요청' })
+  @ApiResponse({ status: 403, description: '수정 권한 없음' })
+  @ApiResponse({ status: 404, description: '댓글을 찾을 수 없음' })
+  @ApiResponse({ status: 500, description: '서버 에러' })
+  @Patch('comment/:id')
+  async updateComment(
+    @Param('id') id: string,
+    @User('id') userId: string,
+    @Body() body: PatchCommentDto,
+  ) {
+    return this.articleService.updateComment(id, userId, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '댓글 삭제' })
+  @ApiResponse({ status: 200, description: '댓글이 삭제되었습니다.' })
+  @ApiResponse({ status: 403, description: '삭제 권한 없음' })
+  @ApiResponse({ status: 404, description: '댓글을 찾을 수 없음' })
+  @ApiResponse({ status: 500, description: '서버 에러' })
+  @Delete('comment/:id')
+  async deleteComment(@Param('id') id: string, @User('id') userId: string) {
+    return this.articleService.deleteComment(id, userId);
   }
 }

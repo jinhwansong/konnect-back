@@ -93,7 +93,6 @@ export class AuthService {
       }
       return user;
     } catch (error) {
-      console.error('[socialLogin error]', error);
       throw new InternalServerErrorException(
         '소셜 로그인 처리 중 오류가 발생했습니다.',
       );

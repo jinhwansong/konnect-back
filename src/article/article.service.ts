@@ -12,6 +12,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArticleQueryDto, CreateArticleDto } from './dto/article.dto';
 import striptags from 'striptags';
+import { Comment } from '@/entities/comment.entity';
+import { CreateCommentDto, PatchCommentDto } from './dto/comment.dto';
+import { PaginationDto } from '@/common/dto/page.dto';
 
 @Injectable()
 export class ArticleService {
@@ -24,6 +27,8 @@ export class ArticleService {
     private readonly likeRepository: Repository<Like>,
     @InjectRepository(Users)
     private readonly userRepository: Repository<Users>,
+    @InjectRepository(Comment)
+    private readonly commentRepository: Repository<Comment>,
     private readonly redisService: RedisService,
   ) {}
   async getArticles({
@@ -276,5 +281,91 @@ export class ArticleService {
       (file) => `${process.env.SERVER_HOST}/uploads/article/${file.filename}`,
     );
     return { urls };
+  }
+
+  /** 댓글부분 */
+  async deleteComment(id: string, userId: string) {
+    const comment = await this.commentRepository.findOne({
+      where: { id },
+      relations: ['author'],
+    });
+    if (!comment) throw new NotFoundException('댓글을 찾을 수 없습니다.');
+    if (comment.author.id !== userId)
+      throw new ForbiddenException('삭제 권한이 없습니다.');
+    await this.commentRepository.remove(comment);
+    return { message: '댓글이 삭제되었습니다.' };
+  }
+  async updateComment(id: string, userId: string, body: PatchCommentDto) {
+    const comment = await this.commentRepository.findOne({
+      where: { id },
+      relations: ['author'],
+    });
+    if (!comment) throw new NotFoundException('댓글을 찾을 수 없습니다.');
+    if (comment.author.id !== userId)
+      throw new ForbiddenException('수정 권한이 없습니다.');
+    comment.content = body.content;
+    this.commentRepository.save(comment);
+    return { message: '댓글이 수정되었습니다.' };
+  }
+  async getComment(articleId: string, { page = 1, limit = 10 }: PaginationDto) {
+    try {
+      const queryBuilder = this.commentRepository
+        .createQueryBuilder('comment')
+        .leftJoinAndSelect('comment.author', 'author')
+        .leftJoinAndSelect('comment.children', 'children')
+        .leftJoinAndSelect('children.author', 'childrenAuthor')
+        .where('comment.articleId = :articleId', { articleId })
+        .andWhere('comment.parentId IS NULL')
+        .orderBy('comment.createdAt', 'DESC')
+        .skip((page - 1) * limit)
+        .take(limit);
+      const [result, total] = await queryBuilder.getManyAndCount();
+      const data = result.map((comment) => ({
+        id: comment.id,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        author: {
+          nickname: comment.author.nickname,
+          image: comment.author.image,
+        },
+        children: comment.children.map((child) => ({
+          id: child.id,
+          content: child.content,
+          createdAt: child.createdAt,
+          author: {
+            nickname: child.author.nickname,
+            image: child.author.image,
+          },
+        })),
+      }));
+
+      return {
+        data,
+        totalPage: Math.ceil(total / limit),
+        message: '댓글 목록을 조회했습니다.',
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('댓글 목록 를 찾을 수 없습니다.');
+    }
+  }
+  async createComment(id: string, userId: string, body: CreateCommentDto) {
+    const article = await this.articleRepository.findOne({ where: { id } });
+    if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
+    const author = await this.userRepository.findOne({ where: { id: userId } });
+    const comment = this.commentRepository.create({
+      content: body.content,
+      article,
+      author,
+    });
+    if (body.parentId) {
+      const parent = await this.commentRepository.findOne({
+        where: { id: body.parentId },
+      });
+      if (!parent) throw new NotFoundException('부모 댓글을 찾을 수 없습니다.');
+      comment.parent = parent;
+    }
+
+    this.commentRepository.save(comment);
+    return { message: '댓글/대댓글이 작성되었습니다.' };
   }
 }
