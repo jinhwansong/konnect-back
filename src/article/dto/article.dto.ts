@@ -55,6 +55,7 @@ export class CreateArticleDto {
   })
   thumbnail?: any;
 }
+
 export class ArticleListItemDto {
   @ApiProperty({ example: 'uuid-1234' })
   id: string;

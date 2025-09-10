@@ -161,6 +161,7 @@ export class ArticleService {
       ) {
         throw error;
       }
+      console.error('아티클 에러:', error);
       throw new InternalServerErrorException(
         '아티클 생성 중 오류가 발생했습니다.',
       );

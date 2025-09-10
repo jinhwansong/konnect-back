@@ -57,7 +57,6 @@ export class Users {
   deletedAt: Date;
   @ApiProperty({ description: '사용자와 연결된 멘토', required: true })
   @OneToOne(() => Mentors, (mentor) => mentor.user, { cascade: true })
-  @JoinColumn()
   mentorProfile: Mentors;
   @ApiProperty({ description: '소셜로그인', required: true })
   @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user)

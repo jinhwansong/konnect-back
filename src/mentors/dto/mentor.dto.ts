@@ -42,13 +42,13 @@ export class CreateMentorDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
+  @IsEnum(MentoringCategory, { each: true })
   @ApiProperty({
     example: [MentoringCategory.CONSULTING, MentoringCategory.DESIGN],
     description: '전문 분야 (다중 선택)',
     enum: MentoringCategory,
     type: [String],
   })
-  @IsEnum(MentoringCategory)
   expertise: string[];
   @IsString()
   @IsNotEmpty()

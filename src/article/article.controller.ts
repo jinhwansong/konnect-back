@@ -96,10 +96,7 @@ export class ArticleController {
     description: '아티클 작성 성공',
     type: CreateArticleDto,
   })
-  @ApiResponse({
-    status: 404,
-    description: '멘토를 찾을 수 없습니다.',
-  })
+  @ApiResponse({ status: 404, description: '멘토를 찾을 수 없습니다.' })
   @ApiResponse({
     status: 500,
     description: '아티클 생성 중 오류가 발생했습니다.',
