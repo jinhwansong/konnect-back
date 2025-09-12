@@ -48,7 +48,10 @@ export class UsersService {
 
   // 이메일 중복확인
   async findByEmail(email: string) {
-    return this.userRepository.findOne({ where: { email } });
+    return this.userRepository.findOne({
+      where: { email },
+      relations: ['socialAccounts'],
+    });
   }
 
   // 닉네임 중복확인
@@ -58,7 +61,10 @@ export class UsersService {
 
   // 프로필 조회
   async profile(id: string) {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['socialAccounts'],
+    });
     return {
       message: '사용자 정보 입니다.',
       email: user.email,
@@ -67,6 +73,8 @@ export class UsersService {
       phone: user.phone,
       image: user.image ? `${process.env.SERVER_HOST}${user.image}` : null,
       role: user.role,
+      socials:
+        user.socialAccounts?.map((s) => ({ provider: s.provider })) ?? [],
     };
   }
 
@@ -122,8 +130,11 @@ export class UsersService {
 
       return { nickname: user.nickname };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new InternalServerErrorException(
-        `닉네임 변경 중 오류가 발생했습니다: ${error.message}`,
+        '닉네임 변경 중 오류가 발생했습니다.',
       );
     }
   }
@@ -140,8 +151,11 @@ export class UsersService {
 
       return { phone: user.phone };
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new InternalServerErrorException(
-        `휴대폰 번호 변경 중 오류가 발생했습니다: ${error.message}`,
+        '휴대폰 번호 변경 중 오류가 발생했습니다.',
       );
     }
   }
@@ -151,7 +165,7 @@ export class UsersService {
     try {
       if (!file) throw new BadRequestException('파일이 업로드되지 않았습니다.');
 
-      const imageUrl = `/uploads/profile/${file.filename}`;
+      const imageUrl = `uploads/profile/${file.filename}`;
       const user = await this.userRepository.findOneBy({
         id,
       });
@@ -159,7 +173,7 @@ export class UsersService {
       user.image = imageUrl;
       await this.userRepository.save(user);
 
-      return { image: user.image };
+      return { image: `${process.env.SERVER_HOST}/${user.image} ` };
     } catch (error) {
       throw new InternalServerErrorException(
         `프로필 이미지 변경 중 오류가 발생했습니다: ${error.message}`,
@@ -183,8 +197,14 @@ export class UsersService {
 
       return { message: '비밀번호가 변경되었습니다.' };
     } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
       throw new InternalServerErrorException(
-        `비밀번호 변경 중 오류가 발생했습니다: ${error.message}`,
+        '비밀번호 변경 중 오류가 발생했습니다.',
       );
     }
   }
@@ -209,7 +229,7 @@ export class UsersService {
         MentoringReservation,
         {
           where: { mentee: { id }, status: MentoringStatus.CONFIRMED },
-          relations: ['mentor', 'payments'],
+          relations: ['session', 'payments', 'session.mentor'],
         },
       );
       for (const reservation of reservations) {
@@ -232,7 +252,7 @@ export class UsersService {
               session: { mentor: { id } },
               status: MentoringStatus.CONFIRMED,
             },
-            relations: ['mentee', 'payments'],
+            relations: ['session', 'mentee', 'payments'],
           },
         );
         for (const reservation of mentorReservations) {
@@ -246,10 +266,11 @@ export class UsersService {
           }
         }
       }
+      await queryRunner.manager.delete(SocialAccount, { user: { id } });
 
       // 유저 삭제...
       user.deletedAt = new Date();
-      user.email = null;
+      user.email = `deleted_${user.id}`;
       user.phone = null;
       await queryRunner.manager.save(user);
       await queryRunner.commitTransaction();
@@ -266,8 +287,12 @@ export class UsersService {
       return { message: '계정이 탈퇴 처리되었습니다.' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      console.error('error:', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       throw new InternalServerErrorException(
-        `계정 삭제 중 오류 발생: ${error.message}`,
+        '계정 삭제 중 오류가 발생했습니다.',
       );
     } finally {
       await queryRunner.release();

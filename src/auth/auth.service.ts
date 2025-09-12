@@ -11,10 +11,15 @@ import { JoinDto, LoginDto, SocialLoginDto } from './dto/auth.dto';
 import { RedisService } from '@/redis/redis.service';
 import { sendEmailDto, verifyCodeDto } from './dto/email.dto';
 import { MailService } from '@/mail/mail.service';
+import { SocialAccount } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(SocialAccount)
+    private readonly socialRepository: Repository<SocialAccount>,
     private readonly usersService: UsersService,
     private readonly redisService: RedisService,
     private readonly mailService: MailService,
@@ -60,11 +65,62 @@ export class AuthService {
         image: user.image,
         phone: user.phone,
         role: user.role,
+        socials:
+          user.socialAccounts?.map((s) => ({ provider: s.provider })) ?? [],
       };
     } catch (error) {
       throw error instanceof UnauthorizedException
         ? error
         : new UnauthorizedException('로그인 중 오류가 발생했습니다.');
+    }
+  }
+
+  async socialLogin(body: SocialLoginDto) {
+    try {
+      const { provider, socialId, email, name, image } = body;
+      // 1) 소셜 계정으로 이미 가입된 유저 찾기
+      let user = await this.usersService.findUserBySocialId(provider, socialId);
+
+      // 2) 소셜 계정이 없으면 이메일 기준으로 기존 유저 찾기
+      if (!user) {
+        user = await this.usersService.findByEmail(email);
+
+        if (user) {
+          // 기존 유저 → 소셜 계정 추가
+          const social = this.socialRepository.create({
+            provider,
+            socialId,
+            user,
+          });
+          await this.socialRepository.save(social);
+        } else {
+          // 신규 유저 생성
+          user = await this.usersService.createSocialUser(
+            email,
+            name,
+            provider,
+            socialId,
+            image,
+          );
+        }
+      }
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        nickname: user.nickname,
+        image: user.image,
+        phone: user.phone,
+        role: user.role,
+        socials: user.socialAccounts.map((acc) =>
+          acc.provider.toLocaleLowerCase(),
+        ),
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        '소셜 로그인 처리 중 오류가 발생했습니다.',
+      );
     }
   }
 
@@ -76,27 +132,6 @@ export class AuthService {
         .json({ message: '사용자 정보가 존재하지 않습니다.' });
     }
     return res.status(200).json({ message: '로그아웃 되었습니다.' });
-  }
-
-  async socialLogin(body: SocialLoginDto) {
-    try {
-      const { provider, socialId, email, name, image } = body;
-      let user = await this.usersService.findUserBySocialId(provider, socialId);
-      if (!user) {
-        user = await this.usersService.createSocialUser(
-          email,
-          name,
-          provider,
-          socialId,
-          image,
-        );
-      }
-      return user;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        '소셜 로그인 처리 중 오류가 발생했습니다.',
-      );
-    }
   }
 
   async duplicateEmail(email: string) {

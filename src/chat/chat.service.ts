@@ -37,7 +37,6 @@ export class ChatService {
       });
       return room;
     } catch (error) {
-      console.log('채팅방 에러가 머니 : ', error);
       if (error.code === 11000) {
         throw new ConflictException('이미 생성된 방이 있습니다.');
       }

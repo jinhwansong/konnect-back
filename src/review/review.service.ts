@@ -78,7 +78,6 @@ export class ReviewService {
       await this.recalculateSessionRating(review.session.id);
       return { message: '후기를 작성하셨습니다.' };
     } catch (error) {
-      console.log('error : ', error);
       throw new InternalServerErrorException(
         '후기 작성 중 오류가 발생했습니다.',
       );

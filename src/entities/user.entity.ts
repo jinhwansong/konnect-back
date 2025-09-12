@@ -25,7 +25,7 @@ export class Users {
   id: string;
   @Column({
     type: 'varchar',
-    length: 30,
+    length: 255,
     unique: true,
     nullable: false,
   })

@@ -278,10 +278,10 @@ export class ArticleService {
       throw new BadRequestException('이미지 파일이 없습니다.');
     }
 
-    const urls = uploaded.map(
+    const image = uploaded.map(
       (file) => `${process.env.SERVER_HOST}/uploads/article/${file.filename}`,
     );
-    return { urls };
+    return { image };
   }
 
   /** 댓글부분 */

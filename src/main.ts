@@ -25,8 +25,12 @@ async function bootstrap() {
   // 예외처리
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      transform: true,
+      whitelist: true, // DTO에 정의되지 않은 값은 거름
+      forbidNonWhitelisted: true, // 잘못된 값 들어오면 에러
+      transform: true, // string -> number 변환 자동
+      transformOptions: {
+        enableImplicitConversion: true, // DTO에서 타입만 지정해도 변환
+      },
     }),
   );
   app.useGlobalFilters(new HttpExceptionFilter());

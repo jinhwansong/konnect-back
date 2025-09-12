@@ -8,7 +8,6 @@ import {
   Get,
   Patch,
   UploadedFile,
-  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -119,7 +118,7 @@ export class UsersController {
   })
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FileInterceptor('thumbnail', createMulterOptions('uploads/profile')),
+    FileInterceptor('image', createMulterOptions('uploads/profile')),
   )
   @Patch('profile')
   async uploadArticleEditorImages(
