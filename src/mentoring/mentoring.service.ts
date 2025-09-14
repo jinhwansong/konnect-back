@@ -215,4 +215,21 @@ export class MentoringService {
     );
     return { urls };
   }
+
+  async updatePublicStatus(userId: string, isPublic: boolean) {
+    const mentor = await this.mentorRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+    if (!mentor) {
+      throw new NotFoundException('멘토 정보를 찾을 수 없습니다.');
+    }
+    for (const session of mentor.sessions) {
+      session.isPublic = isPublic;
+    }
+    await this.sessionRepository.save(mentor.sessions);
+    return {
+      message: `멘토의 모든 세션이 ${isPublic ? '공개' : '비공개'} 처리되었습니다.`,
+    };
+  }
 }

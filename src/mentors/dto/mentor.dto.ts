@@ -68,3 +68,29 @@ export class CreateMentorDto {
   })
   portfolio: string;
 }
+
+export class MentorProfileResponseDto {
+  @ApiProperty({ example: '멘토 정보 입니다.', description: '응답 메시지' })
+  message: string;
+
+  @ApiProperty({ example: '5년차 백엔드 개발자', description: '경력' })
+  career: string;
+
+  @ApiProperty({ example: '네이버', description: '회사명' })
+  company: string;
+
+  @ApiProperty({
+    example: '백엔드 개발, 시스템 설계',
+    description: '전문 분야',
+  })
+  expertise: string;
+
+  @ApiProperty({
+    example: false,
+    description: '회사명 공개 여부 (true = 숨김)',
+  })
+  isCompanyHidden: boolean;
+
+  @ApiProperty({ example: '시니어 엔지니어', description: '직무/직책' })
+  position: string;
+}

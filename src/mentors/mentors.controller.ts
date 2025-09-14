@@ -6,6 +6,7 @@ import { UndefinedToNullInterceptor } from '@/common/interceptors/undefinedToNul
 import {
   Body,
   Controller,
+  Get,
   Patch,
   Post,
   UseGuards,
@@ -17,8 +18,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CreateMentorDto } from './dto/mentor.dto';
-import { UpdateMentorPublicDto } from './dto/public.dto';
+import { CreateMentorDto, MentorProfileResponseDto } from './dto/mentor.dto';
 import { MentorsService } from './mentors.service';
 import {
   UpdateCareerDto,
@@ -52,18 +52,6 @@ export class MentorsController {
   @Post('apply')
   async applyMentor(@User('id') userId: string, @Body() body: CreateMentorDto) {
     return this.mentorService.apply(userId, body);
-  }
-
-  @Roles(UserRole.MENTOR)
-  @ApiOperation({ summary: '멘토 세션 공개 여부 설정' })
-  @ApiResponse({ status: 200, description: '공개 여부가 수정되었습니다.' })
-  @ApiResponse({ status: 404, description: '멘토 정보를 찾을 수 없습니다.' })
-  @Patch('public')
-  async updatePublicStatus(
-    @User('id') userId: string,
-    @Body() body: UpdateMentorPublicDto,
-  ) {
-    return this.mentorService.updatePublicStatus(userId, body.isPublic);
   }
 
   @Roles(UserRole.MENTOR)
@@ -163,5 +151,18 @@ export class MentorsController {
     @Body() body: UpdateCompanyHiddenDto,
   ) {
     return this.mentorService.updatePublicCompanyName(userId, body);
+  }
+
+  @Roles(UserRole.MENTOR)
+  @ApiOperation({ summary: '멘토 정보' })
+  @ApiResponse({
+    status: 200,
+    description: '멘토 정보 입니다.',
+    type: MentorProfileResponseDto,
+  })
+  @ApiResponse({ status: 404, description: '멘토 정보를 찾을 수 없습니다.' })
+  @Get('')
+  async mentorProfile(@User('id') userId: string) {
+    return this.mentorService.mentorProfile(userId);
   }
 }

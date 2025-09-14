@@ -544,39 +544,6 @@
         ]
       }
     },
-    "/mentor/public": {
-      "patch": {
-        "operationId": "MentorsController_updatePublicStatus",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateMentorPublicDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "공개 여부가 수정되었습니다."
-          },
-          "404": {
-            "description": "멘토 정보를 찾을 수 없습니다."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "멘토 세션 공개 여부 설정",
-        "tags": [
-          "Mentor"
-        ]
-      }
-    },
     "/mentor/company": {
       "patch": {
         "operationId": "MentorsController_updateCompany",
@@ -780,6 +747,36 @@
           }
         ],
         "summary": "회사명 공개 여부 설정",
+        "tags": [
+          "Mentor"
+        ]
+      }
+    },
+    "/mentor": {
+      "get": {
+        "operationId": "MentorsController_mentorProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "멘토 정보 입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MentorProfileResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "멘토 정보를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 정보",
         "tags": [
           "Mentor"
         ]
@@ -1268,6 +1265,39 @@
           }
         ],
         "summary": "이미지 업로드 (세션)",
+        "tags": [
+          "Mentoring"
+        ]
+      }
+    },
+    "/mentoring/public": {
+      "patch": {
+        "operationId": "MentoringController_updatePublicStatus",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMentorPublicDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "공개 여부가 수정되었습니다."
+          },
+          "404": {
+            "description": "멘토 정보를 찾을 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "멘토 세션 공개 여부 설정",
         "tags": [
           "Mentoring"
         ]
@@ -3332,19 +3362,6 @@
           "portfolio"
         ]
       },
-      "UpdateMentorPublicDto": {
-        "type": "object",
-        "properties": {
-          "isPublic": {
-            "type": "boolean",
-            "description": "세션 공개 여부",
-            "example": true
-          }
-        },
-        "required": [
-          "isPublic"
-        ]
-      },
       "UpdateCompanyDto": {
         "type": "object",
         "properties": {
@@ -3447,6 +3464,49 @@
         },
         "required": [
           "isCompanyHidden"
+        ]
+      },
+      "MentorProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "멘토 정보 입니다.",
+            "description": "응답 메시지"
+          },
+          "career": {
+            "type": "string",
+            "example": "5년차 백엔드 개발자",
+            "description": "경력"
+          },
+          "company": {
+            "type": "string",
+            "example": "네이버",
+            "description": "회사명"
+          },
+          "expertise": {
+            "type": "string",
+            "example": "백엔드 개발, 시스템 설계",
+            "description": "전문 분야"
+          },
+          "isCompanyHidden": {
+            "type": "boolean",
+            "example": false,
+            "description": "회사명 공개 여부 (true = 숨김)"
+          },
+          "position": {
+            "type": "string",
+            "example": "시니어 엔지니어",
+            "description": "직무/직책"
+          }
+        },
+        "required": [
+          "message",
+          "career",
+          "company",
+          "expertise",
+          "isCompanyHidden",
+          "position"
         ]
       },
       "UserListDto": {
@@ -3759,6 +3819,19 @@
             "type": "boolean",
             "example": true,
             "description": "공개 여부"
+          }
+        },
+        "required": [
+          "isPublic"
+        ]
+      },
+      "UpdateMentorPublicDto": {
+        "type": "object",
+        "properties": {
+          "isPublic": {
+            "type": "boolean",
+            "description": "세션 공개 여부",
+            "example": true
           }
         },
         "required": [

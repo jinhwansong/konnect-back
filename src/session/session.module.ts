@@ -5,9 +5,9 @@ import { SessionController } from './session.controller';
 import { SessionService } from './session.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([MentoringReview,MentoringSession])],
-    controllers: [SessionController],
-    providers: [SessionService],
-    exports: [SessionService],
+  imports: [TypeOrmModule.forFeature([MentoringReview, MentoringSession])],
+  controllers: [SessionController],
+  providers: [SessionService],
+  exports: [SessionService],
 })
 export class SessionModule {}

@@ -23,8 +23,6 @@ export class MentorsService {
     private readonly mentorRepository: Repository<Mentors>,
     @InjectRepository(Users)
     private readonly userRepository: Repository<Users>,
-    @InjectRepository(MentoringSession)
-    private readonly sessionRepository: Repository<MentoringSession>,
   ) {}
 
   // 멘토 신청
@@ -48,22 +46,6 @@ export class MentorsService {
         '멘토 신청 중 오류가 발생했습니다.',
       );
     }
-  }
-  async updatePublicStatus(userId: string, isPublic: boolean) {
-    const mentor = await this.mentorRepository.findOne({
-      where: { user: { id: userId } },
-      relations: ['user'],
-    });
-    if (!mentor) {
-      throw new NotFoundException('멘토 정보를 찾을 수 없습니다.');
-    }
-    for (const session of mentor.sessions) {
-      session.isPublic = isPublic;
-    }
-    await this.sessionRepository.save(mentor.sessions);
-    return {
-      message: `멘토의 모든 세션이 ${isPublic ? '공개' : '비공개'} 처리되었습니다.`,
-    };
   }
 
   // 회사명 공개 여부 설정
@@ -162,5 +144,24 @@ export class MentorsService {
         `회사명 변경 중 오류가 발생했습니다: ${error.message}`,
       );
     }
+  }
+
+  // 프로필 조회
+  async mentorProfile(id: string) {
+    const mentor = await this.mentorRepository.findOne({
+      where: { user: { id } },
+      relations: ['user'],
+    });
+    if (!mentor) {
+      throw new NotFoundException('해당 유저의 멘토 정보를 찾을 수 없습니다.');
+    }
+    return {
+      message: '멘토 정보 입니다.',
+      career: mentor.career,
+      company: mentor.company,
+      expertise: mentor.expertise,
+      isCompanyHidden: mentor.isCompanyHidden,
+      position: mentor.position,
+    };
   }
 }

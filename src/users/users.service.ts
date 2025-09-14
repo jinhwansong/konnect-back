@@ -96,7 +96,7 @@ export class UsersService {
     socialId: string,
     image?: string,
   ) {
-    const nickname = `user_${uuidv4().slice(0, 8)}`;
+    const nickname = `user${uuidv4().slice(0, 8)}`;
     const newUser = this.userRepository.create({
       email,
       name,

@@ -36,6 +36,7 @@ import {
 } from './dto/update.mentoring.session.dto';
 import { MentoringService } from './mentoring.service';
 import { createMultiUploadInterceptor } from '@/common/interceptors/multer.interceptor';
+import { UpdateMentorPublicDto } from '../mentors/dto/public.dto';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Mentoring')
@@ -140,5 +141,16 @@ export class MentoringController {
     @UploadedFiles() files: { images?: Express.Multer.File[] },
   ) {
     return this.mentoringService.uploadEditorImages(files);
+  }
+
+  @ApiOperation({ summary: '멘토 세션 공개 여부 설정' })
+  @ApiResponse({ status: 200, description: '공개 여부가 수정되었습니다.' })
+  @ApiResponse({ status: 404, description: '멘토 정보를 찾을 수 없습니다.' })
+  @Patch('public')
+  async updatePublicStatus(
+    @User('id') userId: string,
+    @Body() body: UpdateMentorPublicDto,
+  ) {
+    return this.mentoringService.updatePublicStatus(userId, body.isPublic);
   }
 }
