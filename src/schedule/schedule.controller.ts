@@ -8,6 +8,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -46,6 +48,7 @@ export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
   @Post('')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: '멘토 정기 스케줄 등록' })
   @ApiResponse({
     status: 201,
@@ -63,6 +66,7 @@ export class ScheduleController {
   }
 
   @Patch('')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '멘토 정기 스케줄 수정' })
   @ApiResponse({
     status: 200,
@@ -97,6 +101,7 @@ export class ScheduleController {
     description: '해당 스케줄을 찾을 수 없습니다.',
   })
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   async deleteSchedule(
     @Param('id') scheduleId: string,
     @User('id') userId: string,
@@ -115,6 +120,7 @@ export class ScheduleController {
     description: '멘토 정보를 찾을 수 없습니다.',
   })
   @Get('')
+  @HttpCode(HttpStatus.OK)
   async getMyScheduleList(@User('id') userId: string) {
     return this.scheduleService.getScheduleList(userId);
   }
@@ -133,6 +139,7 @@ export class ScheduleController {
     description: '등록된 세션 목록을 찾을 수 없습니다.',
   })
   @Get('reservations')
+  @HttpCode(HttpStatus.OK)
   async getMentorReservationList(
     @User('id') userId: string,
     @Query() dto: PaginationDto,
@@ -146,6 +153,7 @@ export class ScheduleController {
     type: MentorReservationDetailResponseDto,
   })
   @Get('reservations/:id')
+  @HttpCode(HttpStatus.OK)
   async getMentorReservationDetail(
     @User('id') userId: string,
     @Param('id') reservationId: string,
@@ -156,6 +164,7 @@ export class ScheduleController {
     );
   }
   @Patch('reservations/:id/status')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '멘토 예약 수락/거절 처리' })
   @ApiBody({
     description: '예약 상태 변경 요청',

@@ -49,7 +49,7 @@ export class CreateMentorDto {
     enum: MentoringCategory,
     type: [String],
   })
-  expertise: string[];
+  expertise: MentoringCategory[];
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

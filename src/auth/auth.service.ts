@@ -11,7 +11,7 @@ import { JoinDto, LoginDto, SocialLoginDto } from './dto/auth.dto';
 import { RedisService } from '@/redis/redis.service';
 import { sendEmailDto, verifyCodeDto } from './dto/email.dto';
 import { MailService } from '@/mail/mail.service';
-import { SocialAccount } from '@/entities';
+import { SocialAccount, Users } from '@/entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -20,6 +20,8 @@ export class AuthService {
   constructor(
     @InjectRepository(SocialAccount)
     private readonly socialRepository: Repository<SocialAccount>,
+    @InjectRepository(Users)
+    private readonly userRepository: Repository<Users>,
     private readonly usersService: UsersService,
     private readonly redisService: RedisService,
     private readonly mailService: MailService,
@@ -80,7 +82,6 @@ export class AuthService {
       const { provider, socialId, email, name, image } = body;
       // 1) 소셜 계정으로 이미 가입된 유저 찾기
       let user = await this.usersService.findUserBySocialId(provider, socialId);
-
       // 2) 소셜 계정이 없으면 이메일 기준으로 기존 유저 찾기
       if (!user) {
         user = await this.usersService.findByEmail(email);
@@ -104,18 +105,21 @@ export class AuthService {
           );
         }
       }
-
+      const fullUser = await this.userRepository.findOne({
+        where: { id: user.id },
+        relations: ['socialAccounts'],
+      });
       return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        nickname: user.nickname,
-        image: user.image,
-        phone: user.phone,
-        role: user.role,
-        socials: user.socialAccounts.map((acc) =>
-          acc.provider.toLocaleLowerCase(),
-        ),
+        id: fullUser.id,
+        email: fullUser.email,
+        name: fullUser.name,
+        nickname: fullUser.nickname,
+        image: fullUser.image,
+        phone: fullUser.phone,
+        role: fullUser.role,
+        socials: fullUser.socialAccounts
+          ? fullUser.socialAccounts.map((acc) => acc.provider.toLowerCase())
+          : [],
       };
     } catch (error) {
       throw new InternalServerErrorException(

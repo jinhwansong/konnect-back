@@ -6,10 +6,11 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ArticleQueryDto, CreateArticleDto } from './dto/article.dto';
 import striptags from 'striptags';
 import { Comment } from '@/entities/comment.entity';
@@ -18,18 +19,21 @@ import { PaginationDto } from '@/common/dto/page.dto';
 
 @Injectable()
 export class ArticleService {
+  private readonly logger = new Logger(ArticleService.name);
+
   constructor(
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
-    @InjectRepository(Mentors)
-    private readonly mentorRepository: Repository<Mentors>,
     @InjectRepository(Like)
     private readonly likeRepository: Repository<Like>,
-    @InjectRepository(Users)
-    private readonly userRepository: Repository<Users>,
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
+    @InjectRepository(Mentors)
+    private readonly mentorsRepository: Repository<Mentors>,
+    @InjectRepository(Users)
+    private readonly userRepository: Repository<Users>,
     private readonly redisService: RedisService,
+    private readonly dataSource: DataSource,
   ) {}
   async getArticles({
     page = 1,
@@ -119,9 +123,12 @@ export class ArticleService {
         throw new ForbiddenException(
           '본인이 작성한 아티클만 삭제할 수 있습니다.',
         );
+
       await this.articleRepository.remove(article);
+      this.logger.log(`Article deleted successfully: ${id}`);
       return { message: '아티클이 성공적으로 삭제되었습니다.' };
     } catch (error) {
+      this.logger.error(`Failed to delete article ${id}: ${error.message}`);
       if (
         error instanceof NotFoundException ||
         error instanceof ForbiddenException
@@ -139,32 +146,36 @@ export class ArticleService {
     thumbnail: Express.Multer.File | null,
   ) {
     try {
-      const mentor = await this.mentorRepository.findOne({
+      const mentor = await this.mentorsRepository.findOne({
         where: { user: { id: userId } },
         relations: ['user'],
       });
       if (!mentor) throw new NotFoundException('멘토를 찾을 수 없습니다.');
+
       const thumbnailUrls = thumbnail
         ? `/uploads/article/${thumbnail.filename}`
         : null;
+
       const article = this.articleRepository.create({
         ...body,
         thumbnail: thumbnailUrls,
         author: { id: userId },
       });
 
-      return await this.articleRepository.save(article);
+      const savedArticle = await this.articleRepository.save(article);
+      this.logger.log(`Article created successfully: ${savedArticle.id}`);
+      return savedArticle;
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-      console.error('아티클 에러:', error);
-      throw new InternalServerErrorException(
-        '아티클 생성 중 오류가 발생했습니다.',
+      this.logger.error(
+        `Failed to create article: ${error.message}`,
+        error.stack,
       );
+      throw error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+        ? error
+        : new InternalServerErrorException(
+            '아티클 생성 중 오류가 발생했습니다.',
+          );
     }
   }
   async getArticleDetail(id: string, userId?: string, clientIp?: string) {
@@ -225,31 +236,42 @@ export class ArticleService {
   }
   async likedArticle(id: string, userId: string) {
     try {
-      const user = await this.userRepository.findOneBy({ id: userId });
+      const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
+
       const article = await this.articleRepository.findOne({
         where: { id },
       });
       if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
+
       const existing = await this.likeRepository.findOne({
         where: {
-          article: { id: id },
+          article: { id },
           user: { id: userId },
         },
       });
 
       if (existing) {
         await this.likeRepository.remove(existing);
+        this.logger.log(
+          `Article like removed for article ${id} by user ${userId}`,
+        );
         return { message: '좋아요 취소됨', liked: false };
       }
+
       const like = this.likeRepository.create({
         targetType: LikeType.ARTICLE,
         article,
         user,
       });
       await this.likeRepository.save(like);
+      this.logger.log(`Article like added for article ${id} by user ${userId}`);
       return { message: '좋아요 추가됨', liked: true };
     } catch (error) {
+      this.logger.error(
+        `Failed to toggle like for article ${id}: ${error.message}`,
+        error.stack,
+      );
       if (
         error instanceof NotFoundException ||
         error instanceof ForbiddenException
@@ -339,9 +361,12 @@ export class ArticleService {
           },
         })),
       }));
-
+      const totalAll = await this.commentRepository.count({
+        where: { article: { id: articleId } },
+      });
       return {
         data,
+        totalAll,
         totalPage: Math.ceil(total / limit),
         message: '댓글 목록을 조회했습니다.',
       };
@@ -350,23 +375,42 @@ export class ArticleService {
     }
   }
   async createComment(id: string, userId: string, body: CreateCommentDto) {
-    const article = await this.articleRepository.findOne({ where: { id } });
-    if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
-    const author = await this.userRepository.findOne({ where: { id: userId } });
-    const comment = this.commentRepository.create({
-      content: body.content,
-      article,
-      author,
-    });
-    if (body.parentId) {
-      const parent = await this.commentRepository.findOne({
-        where: { id: body.parentId },
-      });
-      if (!parent) throw new NotFoundException('부모 댓글을 찾을 수 없습니다.');
-      comment.parent = parent;
-    }
+    return this.dataSource.transaction(async (manager) => {
+      try {
+        const article = await manager.findOne(Article, { where: { id } });
+        if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
 
-    this.commentRepository.save(comment);
-    return { message: '댓글/대댓글이 작성되었습니다.' };
+        const author = await manager.findOne(Users, { where: { id: userId } });
+        if (!author) throw new NotFoundException('사용자를 찾을 수 없습니다.');
+
+        const comment = manager.create(Comment, {
+          content: body.content,
+          article,
+          author,
+        });
+
+        if (body.parentId) {
+          const parent = await manager.findOne(Comment, {
+            where: { id: body.parentId },
+          });
+          if (!parent)
+            throw new NotFoundException('부모 댓글을 찾을 수 없습니다.');
+          comment.parent = parent;
+        }
+
+        await manager.save(Comment, comment);
+        this.logger.log(`Comment created successfully for article ${id}`);
+        return { message: '댓글/대댓글이 작성되었습니다.' };
+      } catch (error) {
+        this.logger.error(
+          `Failed to create comment for article ${id}: ${error.message}`,
+        );
+        throw error instanceof NotFoundException
+          ? error
+          : new InternalServerErrorException(
+              '댓글 작성 중 오류가 발생했습니다.',
+            );
+      }
+    });
   }
 }

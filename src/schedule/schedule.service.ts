@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +21,8 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class ScheduleService {
+  private readonly logger = new Logger(ScheduleService.name);
+
   constructor(
     @InjectRepository(MentoringSchedule)
     private readonly scheduleRepository: Repository<MentoringSchedule>,
@@ -32,70 +35,100 @@ export class ScheduleService {
   ) {}
 
   async createSchedule(userId: string, body: CreateMentoringScheduleDto[]) {
-    const mentor = await this.mentorRepository.findOne({
-      where: { user: { id: userId } },
+    return this.dataSource.transaction(async (manager) => {
+      try {
+        const mentor = await manager.findOne(Mentors, {
+          where: { user: { id: userId } },
+        });
+        if (!mentor)
+          throw new ForbiddenException('본인의 스케줄만 등록할 수 있습니다.');
+        
+        const schedule = body.map((item) => {
+          return manager.create(MentoringSchedule, {
+            mentor,
+            dayOfWeek: item.dayOfWeek,
+            startTime: item.startTime,
+            endTime: item.endTime,
+          });
+        });
+        
+        await manager.save(MentoringSchedule, schedule);
+        this.logger.log(`Schedule created successfully for user ${userId}: ${schedule.length} items`);
+        return { message: '정기 스케줄이 성공적으로 등록되었습니다.' };
+      } catch (error) {
+        this.logger.error(`Failed to create schedule for user ${userId}: ${error.message}`);
+        throw error instanceof ForbiddenException
+          ? error
+          : new InternalServerErrorException('스케줄 등록 중 오류가 발생했습니다.');
+      }
     });
-    if (!mentor)
-      throw new ForbiddenException('본인의 스케줄만 등록할 수 있습니다.');
-    const schedule = body.map((item) => {
-      return this.scheduleRepository.create({
-        mentor,
-        dayOfWeek: item.dayOfWeek,
-        startTime: item.startTime,
-        endTime: item.endTime,
-      });
-    });
-    await this.scheduleRepository.save(schedule);
-
-    return { message: '정기 스케줄이 성공적으로 등록되었습니다.' };
   }
 
   async updateSchedule(
     userId: string,
     schedules: UpdateMentoringScheduleDto[],
   ) {
-    const mentor = await this.mentorRepository.findOne({
-      where: { user: { id: userId } },
+    return this.dataSource.transaction(async (manager) => {
+      try {
+        const mentor = await manager.findOne(Mentors, {
+          where: { user: { id: userId } },
+        });
+        if (!mentor)
+          throw new ForbiddenException('본인의 스케줄만 수정할 수 있습니다.');
+
+        const existing = await manager.find(MentoringSchedule, {
+          where: {
+            mentor: { user: { id: userId } },
+          },
+          relations: { mentor: { user: true } },
+        });
+
+        const incomingIds = schedules.map((s) => s.id).filter(Boolean);
+        const toDelete = existing.filter(
+          (item) =>
+            !incomingIds.includes(item.id) && item.mentor.user.id === userId,
+        );
+
+        if (toDelete.length) {
+          await manager.remove(MentoringSchedule, toDelete);
+        }
+
+        await this.updateExistingSchedules(userId, schedules, manager);
+        await this.createNewSchedules(mentor, schedules, manager);
+        
+        this.logger.log(`Schedule updated successfully for user ${userId}: ${schedules.length} items`);
+        return { message: '정기 스케줄이 성공적으로 수정되었습니다.' };
+      } catch (error) {
+        this.logger.error(`Failed to update schedule for user ${userId}: ${error.message}`);
+        throw error instanceof ForbiddenException || error instanceof NotFoundException
+          ? error
+          : new InternalServerErrorException('스케줄 수정 중 오류가 발생했습니다.');
+      }
     });
-    if (!mentor)
-      throw new ForbiddenException('본인의 스케줄만 등록할 수 있습니다.');
-
-    const existing = await this.scheduleRepository.find({
-      where: {
-        mentor: { user: { id: userId } },
-      },
-      relations: { mentor: { user: true } },
-    });
-
-    const incomingIds = schedules.map((s) => s.id).filter(Boolean);
-    const toDelete = existing.filter(
-      (item) =>
-        !incomingIds.includes(item.id) && item.mentor.user.id === userId,
-    );
-
-    if (toDelete.length) {
-      await this.scheduleRepository.remove(toDelete);
-    }
-
-    await this.updateExistingSchedules(userId, schedules);
-    await this.createNewSchedules(mentor, schedules);
-    return { message: '정기 스케줄이 성공적으로 수정되었습니다.' };
   }
 
   async deleteSchedule(userId: string, scheduleId: string) {
-    const schedule = await this.scheduleRepository.findOne({
-      where: { id: scheduleId },
-      relations: { mentor: { user: true } },
-    });
+    try {
+      const schedule = await this.scheduleRepository.findOne({
+        where: { id: scheduleId },
+        relations: { mentor: { user: true } },
+      });
 
-    if (!schedule)
-      throw new NotFoundException('해당 스케줄을 찾을 수 없습니다.');
-    if (schedule.mentor.user.id !== userId) {
-      throw new ForbiddenException('본인의 스케줄만 삭제할 수 있습니다.');
+      if (!schedule)
+        throw new NotFoundException('해당 스케줄을 찾을 수 없습니다.');
+      if (schedule.mentor.user.id !== userId) {
+        throw new ForbiddenException('본인의 스케줄만 삭제할 수 있습니다.');
+      }
+
+      await this.scheduleRepository.remove(schedule);
+      this.logger.log(`Schedule deleted successfully: ${scheduleId} by user ${userId}`);
+      return { message: '해당 정기 스케줄이 성공적으로 삭제되었습니다.' };
+    } catch (error) {
+      this.logger.error(`Failed to delete schedule ${scheduleId}: ${error.message}`);
+      throw error instanceof NotFoundException || error instanceof ForbiddenException
+        ? error
+        : new InternalServerErrorException('스케줄 삭제 중 오류가 발생했습니다.');
     }
-
-    await this.scheduleRepository.remove(schedule);
-    return { message: '해당 정기 스케줄이 성공적으로 삭제되었습니다.' };
   }
 
   async getScheduleList(userId: string) {
@@ -165,37 +198,47 @@ export class ScheduleService {
         data: items,
       };
     } catch (error) {
+      this.logger.error(`Failed to get mentor reservation list for user ${userId}: ${error.message}`);
       throw new InternalServerErrorException(
         '예약된 멘토링 목록을 불러오는 중 오류가 발생했습니다. ',
       );
     }
   }
   async getMentorReservationDetail(userId: string, reservationId: string) {
-    const reservation = await this.reservationRepository.findOne({
-      where: { id: reservationId, status: Not(MentoringStatus.EXPIRED) },
-      relations: ['session', 'session.mentor', 'session.mentor.user', 'mentee'],
-    });
-    if (!reservation) {
-      throw new NotFoundException('예약 정보를 찾을 수 없습니다.');
-    }
+    try {
+      const reservation = await this.reservationRepository.findOne({
+        where: { id: reservationId, status: Not(MentoringStatus.EXPIRED) },
+        relations: ['session', 'session.mentor', 'session.mentor.user', 'mentee'],
+      });
+      if (!reservation) {
+        throw new NotFoundException('예약 정보를 찾을 수 없습니다.');
+      }
 
-    if (reservation.session.mentor.user.id !== userId) {
-      throw new ForbiddenException('해당 예약 정보에 접근할 수 없습니다.');
+      if (reservation.session.mentor.user.id !== userId) {
+        throw new ForbiddenException('해당 예약 정보에 접근할 수 없습니다.');
+      }
+      
+      this.logger.log(`Reservation detail retrieved for reservation ${reservationId}`);
+      return {
+        id: reservation.id,
+        title: reservation.session.title,
+        date: reservation.date,
+        startTime: reservation.startTime.slice(0, 5),
+        endTime: reservation.endTime.slice(0, 5),
+        question: reservation.question,
+        status: reservation.status,
+        createdAt: reservation.createdAt,
+        rejectReason: reservation.rejectReason,
+        menteeName: reservation.mentee.nickname,
+        menteeEmail: reservation.mentee.email,
+        menteePhone: reservation.mentee.phone,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get reservation detail ${reservationId}: ${error.message}`);
+      throw error instanceof NotFoundException || error instanceof ForbiddenException
+        ? error
+        : new InternalServerErrorException('예약 상세 정보 조회 중 오류가 발생했습니다.');
     }
-    return {
-      id: reservation.id,
-      title: reservation.session.title,
-      date: reservation.date,
-      startTime: reservation.startTime.slice(0, 5),
-      endTime: reservation.endTime.slice(0, 5),
-      question: reservation.question,
-      status: reservation.status,
-      createdAt: reservation.createdAt,
-      rejectReason: reservation.rejectReason,
-      menteeName: reservation.mentee.nickname,
-      menteeEmail: reservation.mentee.email,
-      menteePhone: reservation.mentee.phone,
-    };
   }
   async updateReservationStatus(
     userId: string,
@@ -261,18 +304,21 @@ export class ScheduleService {
       reservation.payments.status = PaymentStatus.REFUNDED;
       await manager.save(reservation.payments);
     });
+    
+    this.logger.log(`Reservation rejected and refunded: ${reservationId}`);
     return { message: '예약이 거절이 완료되었습니다.' };
   }
 
   private async updateExistingSchedules(
     userId: string,
     schedules: UpdateMentoringScheduleDto[],
+    manager: any,
   ) {
     const result = [];
 
     const toUpdate = schedules.filter((s) => s.id);
     for (const dto of toUpdate) {
-      const schedule = await this.scheduleRepository.findOne({
+      const schedule = await manager.findOne(MentoringSchedule, {
         where: { id: dto.id },
         relations: { mentor: { user: true } },
       });
@@ -283,7 +329,7 @@ export class ScheduleService {
       }
 
       this.assignScheduleFields(schedule, dto);
-      result.push(await this.scheduleRepository.save(schedule));
+      result.push(await manager.save(MentoringSchedule, schedule));
     }
 
     return result;
@@ -291,18 +337,19 @@ export class ScheduleService {
   private async createNewSchedules(
     mentor: Mentors,
     schedules: UpdateMentoringScheduleDto[],
+    manager: any,
   ) {
     const result = [];
 
     const toCreate = schedules.filter((s) => !s.id);
     for (const dto of toCreate) {
-      const newSchedule = this.scheduleRepository.create({
+      const newSchedule = manager.create(MentoringSchedule, {
         mentor,
         dayOfWeek: dto.dayOfWeek,
         startTime: dto.startTime,
         endTime: dto.endTime,
       });
-      result.push(await this.scheduleRepository.save(newSchedule));
+      result.push(await manager.save(MentoringSchedule, newSchedule));
     }
 
     return result;

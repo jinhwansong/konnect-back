@@ -2,7 +2,7 @@ import { PaginationDto } from '@/common/dto/page.dto';
 import { MentoringStatus, PaymentStatus } from '@/common/enum/status.enum';
 import { MentoringReservation, Payment, Users } from '@/entities';
 import { HttpService } from '@nestjs/axios';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { firstValueFrom } from 'rxjs';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -11,6 +11,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PaymentService {
+  private readonly logger = new Logger(PaymentService.name);
+
   constructor(
     @InjectRepository(Payment)
     private paymentRepository: Repository<Payment>,
@@ -89,10 +91,14 @@ export class PaymentService {
           { id: body.orderId },
           { status: MentoringStatus.CONFIRMED, paidAt: new Date() },
         );
+        
+        this.logger.log(`Payment confirmed successfully for order ${body.orderId}`);
       });
+      
       this.eventEmitter.emit('payment.confirmed', {
         reservationId: reservation.id,
       });
+      
       return {
         message: '결제에 성공했습니다.',
       };
@@ -100,6 +106,8 @@ export class PaymentService {
       // Toss 응답이 있는 경우: 잔액 부족, 카드 거절 등
       const reason = error?.response?.data?.message || '알 수 없는 오류';
       const code = error?.response?.data?.code || 'UNKNOWN';
+
+      this.logger.error(`Payment failed for order ${body.orderId}: ${code} - ${reason}`);
 
       const reservation = await this.reservationRepository.findOne({
         where: { id: body.orderId },

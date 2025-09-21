@@ -13,7 +13,7 @@ import { MentoringSchedule } from './mentoring-schedule.entity';
 import { MentoringSession } from './mentoring-session.entity';
 import { Users } from './user.entity';
 import { MentorStatus } from '@/common/enum/status.enum';
-import { MentorCareerLevel, MentorPosition } from '@/common/enum/category.enum';
+import { MentorCareerLevel, MentoringCategory, MentorPosition } from '@/common/enum/category.enum';
 
 @Entity({ schema: 'konnect', name: 'mentors' })
 export class Mentors {
@@ -30,7 +30,7 @@ export class Mentors {
   })
   position: string;
   @Column({ type: 'simple-array', nullable: false })
-  expertise: string[];
+  expertise: MentoringCategory[];
   @Column({
     type: 'enum',
     enum: MentorCareerLevel,

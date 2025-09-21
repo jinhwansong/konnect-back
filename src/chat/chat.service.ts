@@ -6,6 +6,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,6 +14,8 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
     @InjectModel(ChatRoom.name) private chatRoomModel: Model<ChatRoom>,
     @InjectModel(ChatMessage.name) private chatMessageModel: Model<ChatMessage>,
@@ -35,11 +38,15 @@ export class ChatService {
         isVideoRoom: true,
         status: ChatRoomStatus.WAITING,
       });
+      
+      this.logger.log(`Chat room created successfully for reservation: ${reservationId}`);
       return room;
     } catch (error) {
       if (error.code === 11000) {
+        this.logger.warn(`Chat room already exists for reservation: ${reservationId}`);
         throw new ConflictException('이미 생성된 방이 있습니다.');
       }
+      this.logger.error(`Failed to create chat room: ${error.message}`);
       throw new InternalServerErrorException('채팅방 생성에 실패했습니다.');
     }
   }
@@ -52,6 +59,7 @@ export class ChatService {
     try {
       const room = await this.chatMessageModel.findOne({ roomId });
       if (!room) throw new NotFoundException('채팅룸이 존재하지 않습니다.');
+      
       const message = await this.chatMessageModel.create({
         room: room._id,
         sender: senderId,
@@ -59,9 +67,13 @@ export class ChatService {
         type,
       });
 
+      this.logger.log(`Message sent successfully in room: ${roomId}`);
       return message;
     } catch (error) {
-      throw new InternalServerErrorException('메시지 전송에 실패했습니다.');
+      this.logger.error(`Failed to send message: ${error.message}`);
+      throw error instanceof NotFoundException
+        ? error
+        : new InternalServerErrorException('메시지 전송에 실패했습니다.');
     }
   }
 }

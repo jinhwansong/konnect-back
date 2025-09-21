@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
@@ -42,6 +50,7 @@ export class AuthController {
     status: 500,
     description: '서버 에러',
   })
+  @HttpCode(200)
   @Post('')
   async login(@Body() body: LoginDto) {
     return this.authService.login(body);

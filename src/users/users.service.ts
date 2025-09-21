@@ -115,7 +115,12 @@ export class UsersService {
     });
     await this.socialRepository.save(social);
 
-    return savedUser;
+    const isUser = this.userRepository.findOne({
+      where: { id: savedUser.id },
+      relations: ['socialAccounts'],
+    });
+
+    return isUser;
   }
 
   // 닉네임 변경

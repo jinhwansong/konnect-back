@@ -1,18 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateReviewDto {
-  @ApiProperty({ example: 'uuid' })
-  @IsString()
+  @ApiProperty({ 
+    description: '예약 ID',
+    example: 'uuid-string-here' 
+  })
+  @IsUUID()
   reservationId: string;
 
-  @ApiProperty({ example: 4 })
+  @ApiProperty({ 
+    description: '평점 (1-5)',
+    example: 4,
+    minimum: 1,
+    maximum: 5
+  })
   @IsInt()
   @Min(1)
   @Max(5)
   rating: number;
 
-  @ApiProperty({ example: '정말 좋았습니다.' })
+  @ApiProperty({ 
+    description: '후기 내용',
+    example: '정말 좋았습니다.' 
+  })
   @IsString()
   @IsNotEmpty()
   content: string;

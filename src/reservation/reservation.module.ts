@@ -5,7 +5,7 @@ import { ReservationController } from './reservation.controller';
 import { ReservationService } from './reservation.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([MentoringSession,MentoringReservation,MentoringSchedule,Users])],
+    imports: [TypeOrmModule.forFeature([MentoringSession, MentoringReservation, MentoringSchedule, Users])],
     providers: [ReservationService],
     controllers: [ReservationController],
     exports: [ReservationService],

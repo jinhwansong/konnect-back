@@ -10,6 +10,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -50,6 +52,7 @@ export class AdminController {
     description: '사용자 목록 를 찾을 수 없습니다.',
   })
   @Get('users')
+  @HttpCode(HttpStatus.OK)
   async getUserList(@Query() dto: PaginationDto) {
     return this.adminService.getUserList(dto);
   }
@@ -68,6 +71,7 @@ export class AdminController {
     description: '멘토 신청 정보를 찾을 수 없습니다.',
   })
   @Get('mentors')
+  @HttpCode(HttpStatus.OK)
   async getMentorList(@Query() dto: PaginationDto) {
     return this.adminService.getMentorList(dto);
   }
@@ -87,6 +91,7 @@ export class AdminController {
     description: '멘토 상세 정보를 불러오는 데 실패했습니다.',
   })
   @Get('mentors/:id')
+  @HttpCode(HttpStatus.OK)
   async getMentorDetail(@Param('id') id: string) {
     return this.adminService.getMentorDetail(id);
   }
@@ -124,6 +129,7 @@ export class AdminController {
     description: '멘토 또는 관리자 계정 없음',
   })
   @Post('mentors/:id/approve')
+  @HttpCode(HttpStatus.OK)
   async approveMentor(
     @Param('id') id: string,
     @User('id') userId: string,

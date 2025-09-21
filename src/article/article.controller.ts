@@ -11,6 +11,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Ip,
   Param,
   ParseArrayPipe,
@@ -76,6 +78,7 @@ export class ArticleController {
   })
   @ApiResponse({ status: 500, description: '서버 오류 또는 목록 조회 실패' })
   @Get('')
+  @HttpCode(HttpStatus.OK)
   async getArticles(@Query() body: ArticleQueryDto) {
     return this.articleService.getArticles(body);
   }
@@ -102,6 +105,7 @@ export class ArticleController {
     description: '아티클 생성 중 오류가 발생했습니다.',
   })
   @Post('')
+  @HttpCode(HttpStatus.CREATED)
   async createArticle(
     @Body() body: CreateArticleDto,
     @User('id') userId: string,
@@ -114,6 +118,7 @@ export class ArticleController {
   @ApiOperation({ summary: '좋아요 여부확인' })
   @UseGuards(JwtAuthGuard)
   @Get('liked')
+  @HttpCode(HttpStatus.OK)
   async getLikedArticles(
     @Query('ids', new ParseArrayPipe({ items: String })) ids: string[],
     @User('id') userId: string,
@@ -128,6 +133,7 @@ export class ArticleController {
     type: ArticleDetailDto,
   })
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   async getArticleDetail(
     @Param('id') id: string,
     @Req() req: Request,
@@ -142,6 +148,7 @@ export class ArticleController {
   @Roles(UserRole.MENTOR)
   @ApiBearerAuth('access-token')
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '아티클 삭제 (작성자 전용)' })
   async deleteArticle(@Param('id') id: string, @User('id') userId: string) {
     return this.articleService.deleteArticle(id, userId);
@@ -157,6 +164,7 @@ export class ArticleController {
   )
   @ApiBody({ type: CreateArticleDto })
   @ApiOperation({ summary: '아티클 수정' })
+  @HttpCode(HttpStatus.OK)
   async updateArticle(
     @Param('id') id: string,
     @Body() body: CreateArticleDto,
@@ -182,6 +190,7 @@ export class ArticleController {
   @ApiResponse({ status: 404, description: '아티클이 존재하지 않음' })
   @ApiResponse({ status: 500, description: '서버 오류' })
   @Patch(':id/like')
+  @HttpCode(HttpStatus.OK)
   async toggleArticleLike(
     @Param('id') articleId: string,
     @User('id') userId: string,
@@ -198,6 +207,7 @@ export class ArticleController {
   )
   @ApiConsumes('multipart/form-data')
   @Post('upload-image')
+  @HttpCode(HttpStatus.OK)
   async uploadArticleEditorImages(
     @UploadedFiles() files: { images?: Express.Multer.File[] },
   ) {
@@ -214,6 +224,7 @@ export class ArticleController {
   @ApiResponse({ status: 404, description: '아티클을 찾을 수 없음' })
   @ApiResponse({ status: 500, description: '서버 에러' })
   @Post(':articleId/comment')
+  @HttpCode(HttpStatus.CREATED)
   async createComment(
     @Param('articleId') articleId: string,
     @User('id') userId: string,
@@ -233,6 +244,7 @@ export class ArticleController {
   @ApiResponse({ status: 404, description: '아티클을 찾을 수 없음' })
   @ApiResponse({ status: 500, description: '서버 에러' })
   @Get(':articleId/comment')
+  @HttpCode(HttpStatus.OK)
   async getComment(
     @Param('articleId') articleId: string,
     @Query() dto: PaginationDto,
@@ -249,6 +261,7 @@ export class ArticleController {
   @ApiResponse({ status: 404, description: '댓글을 찾을 수 없음' })
   @ApiResponse({ status: 500, description: '서버 에러' })
   @Patch('comment/:id')
+  @HttpCode(HttpStatus.OK)
   async updateComment(
     @Param('id') id: string,
     @User('id') userId: string,
@@ -265,6 +278,7 @@ export class ArticleController {
   @ApiResponse({ status: 404, description: '댓글을 찾을 수 없음' })
   @ApiResponse({ status: 500, description: '서버 에러' })
   @Delete('comment/:id')
+  @HttpCode(HttpStatus.OK)
   async deleteComment(@Param('id') id: string, @User('id') userId: string) {
     return this.articleService.deleteComment(id, userId);
   }

@@ -7,6 +7,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -60,6 +62,7 @@ export class ReviewController {
     description: '후기 작성 중 서버 오류가 발생했습니다.',
   })
   @Post('')
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() body: CreateReviewDto, @User('id') userId: string) {
     return this.reviewService.createReview(body, userId);
   }
@@ -69,6 +72,7 @@ export class ReviewController {
   @ApiResponse({ status: 403, description: '작성자 본인만 수정 가능' })
   @ApiResponse({ status: 404, description: '리뷰를 찾을 수 없음' })
   @Patch(':id')
+  @HttpCode(HttpStatus.OK)
   update(
     @Param('id') id: string,
     @Body() body: UpdateReviewDto,
@@ -82,6 +86,7 @@ export class ReviewController {
   @ApiResponse({ status: 403, description: '작성자 본인만 삭제 가능' })
   @ApiResponse({ status: 404, description: '리뷰를 찾을 수 없음' })
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   Delete(@Param('id') id: string, @User('id') userId: string) {
     return this.reviewService.deleteReview(id, userId);
   }
@@ -108,6 +113,7 @@ export class ReviewController {
     description: '페이지당 개수 (기본값: 10)',
   })
   @Get('/my')
+  @HttpCode(HttpStatus.OK)
   getMyReviews(@User('id') userId: string, @Query() query: PaginationDto) {
     return this.reviewService.getMyReviews(userId, query);
   }
@@ -134,6 +140,7 @@ export class ReviewController {
     description: '페이지당 개수 (기본값: 10)',
   })
   @Get('/received')
+  @HttpCode(HttpStatus.OK)
   getMentorReceivedReviews(
     @User('id') userId: string,
     @Query() query: PaginationDto,

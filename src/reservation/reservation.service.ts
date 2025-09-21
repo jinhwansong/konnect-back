@@ -12,14 +12,17 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateReservationDto } from './dto/reservation.dto';
 
 @Injectable()
 export class ReservationService {
+  private readonly logger = new Logger(ReservationService.name);
+
   constructor(
     @InjectRepository(MentoringSession)
     private readonly sessionRepository: Repository<MentoringSession>,
@@ -27,8 +30,7 @@ export class ReservationService {
     private readonly reservationRepository: Repository<MentoringReservation>,
     @InjectRepository(MentoringSchedule)
     private readonly scheduleRepository: Repository<MentoringSchedule>,
-    @InjectRepository(Users)
-    private readonly userRepository: Repository<Users>,
+    private readonly dataSource: DataSource,
   ) {}
   private getDayOfWeek(date: Date): DayOfWeek {
     const days = [
@@ -156,50 +158,58 @@ export class ReservationService {
 
   async createReservation(userId: string, body: CreateReservationDto) {
     const { sessionId, date, startTime, endTime, question } = body;
-    try {
-      const session = await this.sessionRepository.findOne({
-        where: { id: sessionId },
-      });
-      if (!session) throw new NotFoundException('세션을 찾을 수 없습니다.');
+    
+    return this.dataSource.transaction(async (manager) => {
+      try {
+        const session = await manager.findOne(MentoringSession, {
+          where: { id: sessionId },
+        });
+        if (!session) throw new NotFoundException('세션을 찾을 수 없습니다.');
 
-      // 중복 여부
-      const isReserved = await this.reservationRepository.findOne({
-        where: {
-          session: { id: sessionId },
+        // 중복 여부 체크
+        const isReserved = await manager.findOne(MentoringReservation, {
+          where: {
+            session: { id: sessionId },
+            date,
+            startTime: startTime,
+            endTime: endTime,
+          },
+        });
+        if (isReserved) {
+          throw new ConflictException('해당 시간은 이미 예약되었습니다.');
+        }
+
+        const mentee = await manager.findOne(Users, {
+          where: { id: userId },
+        });
+        if (!mentee) throw new NotFoundException('유저를 찾을 수 없습니다.');
+
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        const newReservation = manager.create(MentoringReservation, {
+          endTime,
+          startTime,
           date,
-          startTime: startTime,
-          endTime: endTime,
-        },
-      });
-      if (isReserved) {
-        throw new ConflictException('해당 시간은 이미 예약되었습니다.');
+          mentee,
+          question,
+          session,
+          expiresAt,
+          status: MentoringStatus.PENDING,
+        });
+
+        await manager.save(newReservation);
+
+        this.logger.log(`Reservation created successfully: ${newReservation.id}`);
+
+        return {
+          reservationId: newReservation.id,
+        };
+      } catch (error) {
+        this.logger.error(`Failed to create reservation: ${error.message}`);
+        throw error instanceof ConflictException || error instanceof NotFoundException
+          ? error
+          : new InternalServerErrorException('멘토링 예약 중 오류가 발생했습니다.');
       }
-      const mentee = await this.userRepository.findOne({
-        where: { id: userId },
-      });
-      if (!mentee) throw new NotFoundException('유저를 찾을 수 없습니다.');
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-      const newReservation = this.reservationRepository.create({
-        endTime,
-        startTime,
-        date,
-        mentee,
-        question,
-        session,
-        expiresAt,
-        status: MentoringStatus.PENDING,
-      });
-
-      await this.reservationRepository.save(newReservation);
-
-      return {
-        reservationId: newReservation.id,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        '멘토링 예약 중 오류가 발생했습니다.',
-      );
-    }
+    });
   }
 
   async getMyReservations(

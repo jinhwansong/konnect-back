@@ -1,24 +1,27 @@
 import { ChatRoomStatus, MentoringStatus } from '@/common/enum/status.enum';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty,  IsString, Matches } from 'class-validator';
 
 export class CreateReservationDto {
   @ApiProperty({ example: '2025-07-08', description: '예약 날짜 (YYYY-MM-DD)' })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: '날짜 형식은 YYYY-MM-DD여야 합니다.' })
   date: string;
 
   @ApiProperty({ example: '10:00', description: '시작 시간 (HH:mm)' })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: '시간 형식은 HH:mm여야 합니다.' })
   startTime: string;
 
   @ApiProperty({ example: '11:00', description: '종료 시간 (HH:mm)' })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, { message: '시간 형식은 HH:mm여야 합니다.' })
   endTime: string;
 
-  @ApiProperty({ example: '세션 ID', description: '멘토링 세션 ID' })
+  @ApiProperty({ example: 'uuid-string', description: '멘토링 세션 ID' })
   @IsString()
   @IsNotEmpty()
   sessionId: string;

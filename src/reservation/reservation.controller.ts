@@ -6,6 +6,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -59,6 +61,7 @@ export class ReservationController {
     description: '멘토링 예약 가능 시간 조회 중 오류가 발생했습니다.',
   })
   @Get('available-times/:id')
+  @HttpCode(HttpStatus.OK)
   async getAvailableTimes(
     @Param('id') id: string,
     @Query('date') date: string,
@@ -81,6 +84,7 @@ export class ReservationController {
   })
   @ApiOperation({ summary: '멘토링 예약 가능 날짜 조회' })
   @Get('available-days/:id')
+  @HttpCode(HttpStatus.OK)
   async getAvailableDays(@Param('id') mentorId: string) {
     return this.reservationService.getAvailableDays(mentorId);
   }
@@ -103,6 +107,7 @@ export class ReservationController {
     description: '멘토링 예약 중 오류가 발생했습니다.',
   })
   @Post('')
+  @HttpCode(HttpStatus.CREATED)
   async createReservation(
     @User('id') userId: string,
     @Body() body: CreateReservationDto,
@@ -134,6 +139,7 @@ export class ReservationController {
     description: '예약 내역 조회 중 오류가 발생했습니다.',
   })
   @Get('my')
+  @HttpCode(HttpStatus.OK)
   async getMyReservations(
     @User('id') userId: string,
     @Query() query: PaginationDto,
@@ -165,6 +171,7 @@ export class ReservationController {
     description: '예약 내역 조회 중 오류가 발생했습니다.',
   })
   @Get('past')
+  @HttpCode(HttpStatus.OK)
   async getMyClearReservations(
     @User('id') userId: string,
     @Query() query: PaginationDto,
@@ -177,6 +184,7 @@ export class ReservationController {
     type: DonePaymentResponseDto,
   })
   @Get('done/:orderId')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '결제 완료 페이지 - 예약 확정' })
   async donePayment(
     @User('id') userId: string,
@@ -199,6 +207,7 @@ export class ReservationController {
     description: '예약을 찾을 수 없음',
   })
   @Get('joinRoom/:roomId')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '멘토링 방 입장' })
   async joinRoom(@User('id') userId: string, @Param('roomId') roomId: string) {
     return this.reservationService.joinRoom(userId, roomId);

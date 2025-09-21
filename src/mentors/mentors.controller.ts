@@ -7,6 +7,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Patch,
   Post,
   UseGuards,
@@ -50,6 +52,7 @@ export class MentorsController {
     description: '멘토 신청 중 오류가 발생했습니다.',
   })
   @Post('apply')
+  @HttpCode(HttpStatus.CREATED)
   async applyMentor(@User('id') userId: string, @Body() body: CreateMentorDto) {
     return this.mentorService.apply(userId, body);
   }
@@ -67,6 +70,7 @@ export class MentorsController {
     description: '서버 에러',
   })
   @Patch('company')
+  @HttpCode(HttpStatus.OK)
   async updateCompany(
     @User('id') userId: string,
     @Body() body: UpdateCompanyDto,
@@ -87,6 +91,7 @@ export class MentorsController {
     description: '서버 에러',
   })
   @Patch('expertise')
+  @HttpCode(HttpStatus.OK)
   async updateExpertise(
     @User('id') userId: string,
     @Body() body: UpdateExpertiseDto,
@@ -107,6 +112,7 @@ export class MentorsController {
     description: '서버 에러',
   })
   @Patch('position')
+  @HttpCode(HttpStatus.OK)
   async updatePosition(
     @User('id') userId: string,
     @Body() body: UpdatePositionDto,
@@ -134,6 +140,7 @@ export class MentorsController {
     description: '서버 에러',
   })
   @Patch('career')
+  @HttpCode(HttpStatus.OK)
   async updateCareer(
     @User('id') userId: string,
     @Body() body: UpdateCareerDto,
@@ -146,6 +153,7 @@ export class MentorsController {
   @ApiResponse({ status: 200, description: '공개 여부가 수정되었습니다.' })
   @ApiResponse({ status: 404, description: '멘토 정보를 찾을 수 없습니다.' })
   @Patch('company-name')
+  @HttpCode(HttpStatus.OK)
   async updatePublicCompanyName(
     @User('id') userId: string,
     @Body() body: UpdateCompanyHiddenDto,
@@ -162,6 +170,7 @@ export class MentorsController {
   })
   @ApiResponse({ status: 404, description: '멘토 정보를 찾을 수 없습니다.' })
   @Get('')
+  @HttpCode(HttpStatus.OK)
   async mentorProfile(@User('id') userId: string) {
     return this.mentorService.mentorProfile(userId);
   }

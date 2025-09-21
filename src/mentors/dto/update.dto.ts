@@ -45,7 +45,7 @@ export class UpdateExpertiseDto {
     enum: MentoringCategory,
     type: [String],
   })
-  expertise: string[];
+  expertise: MentoringCategory[];
 }
 export class UpdateCareerDto {
   @IsString()
