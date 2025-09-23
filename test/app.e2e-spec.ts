@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import request from 'supertest';
-import * as dotenv from 'dotenv';
+import * as jwt from 'jsonwebtoken';
 import { AppModule } from '../src/app.module';
 import { Users } from '../src/entities/user.entity';
 import { Mentors } from '../src/entities/mentor.entity';
@@ -13,9 +13,6 @@ import { Article } from '../src/entities/article.entity';
 import { Comment } from '../src/entities/comment.entity';
 import { UserRole, MentorStatus } from '../src/common/enum/status.enum';
 import { MentorCareerLevel, MentoringCategory, MentorPosition } from '../src/common/enum/category.enum';
-
-// 테스트 환경 변수 로드
-dotenv.config({ path: '.env.test' });
 
 // Jest 타임아웃 설정
 jest.setTimeout(30000);

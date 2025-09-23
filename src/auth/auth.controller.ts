@@ -14,10 +14,28 @@ import { JoinDto, LoginDto, SocialLoginDto, UserDto } from './dto/auth.dto';
 import { JwtAuthGuard } from '../common/guard/jwt.guard';
 import { duplicateEmailDto, duplicateNicknameDto } from './dto/duplicate.dto';
 import { sendEmailDto, verifyCodeDto } from './dto/email.dto';
+import * as jwt from 'jsonwebtoken';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+  @Post('login')
+  testLogin(@Body() body: { id?: string; email: string; role?: string }) {
+    const payload = {
+      id: body.id || 'test-id',
+      email: body.email,
+      role: body.role || 'MENTEE',
+    };
+
+    // 테스트 환경에서는 HS256 비밀키 사용
+    const secret = process.env.JWT_SECRET || 'test-secret';
+    const token = jwt.sign(payload, secret, {
+      algorithm: 'HS256',
+      expiresIn: '1h',
+    });
+
+    return { accessToken: token };
+  }
   @ApiOperation({ summary: '회원가입' })
   @ApiResponse({
     status: 201,

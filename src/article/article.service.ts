@@ -1,4 +1,4 @@
-import { LikeType } from '@/common/enum/status.enum';
+import { LikeType, NotificationType } from '@/common/enum/status.enum';
 import { Article, Like, Mentors, Users } from '@/entities';
 import { RedisService } from '@/redis/redis.service';
 import {
@@ -16,6 +16,7 @@ import striptags from 'striptags';
 import { Comment } from '@/entities/comment.entity';
 import { CreateCommentDto, PatchCommentDto } from './dto/comment.dto';
 import { PaginationDto } from '@/common/dto/page.dto';
+import { NotificationService } from '@/notification/notification.service';
 
 @Injectable()
 export class ArticleService {
@@ -33,6 +34,8 @@ export class ArticleService {
     @InjectRepository(Users)
     private readonly userRepository: Repository<Users>,
     private readonly redisService: RedisService,
+    private readonly notificationService: NotificationService,
+
     private readonly dataSource: DataSource,
   ) {}
   async getArticles({
@@ -85,7 +88,7 @@ export class ArticleService {
     const data = entities.map((entity) => ({
       id: entity.id,
       title: entity.title,
-      thumbnail: `${process.env.SERVER_HOST}${entity.thumbnail}`,
+      thumbnail: entity.thumbnail,
       views: entity.views,
       likeCount: (entity as any).likeCount ?? 0,
       category: entity.category,
@@ -153,7 +156,7 @@ export class ArticleService {
       if (!mentor) throw new NotFoundException('멘토를 찾을 수 없습니다.');
 
       const thumbnailUrls = thumbnail
-        ? `/uploads/article/${thumbnail.filename}`
+        ? `uploads/article/${thumbnail.filename}`
         : null;
 
       const article = this.articleRepository.create({
@@ -241,6 +244,7 @@ export class ArticleService {
 
       const article = await this.articleRepository.findOne({
         where: { id },
+        relations: ['author'],
       });
       if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
 
@@ -266,6 +270,17 @@ export class ArticleService {
       });
       await this.likeRepository.save(like);
       this.logger.log(`Article like added for article ${id} by user ${userId}`);
+
+      if (article.author.id !== userId) {
+        await this.notificationService.save(
+          null,
+          article.author.id,
+          NotificationType.ARTICLE,
+          `${user.nickname}님이 회원님의 아티클을 좋아합니다.`,
+          `/articles/${article.id}`,
+        );
+      }
+
       return { message: '좋아요 추가됨', liked: true };
     } catch (error) {
       this.logger.error(
@@ -377,7 +392,10 @@ export class ArticleService {
   async createComment(id: string, userId: string, body: CreateCommentDto) {
     return this.dataSource.transaction(async (manager) => {
       try {
-        const article = await manager.findOne(Article, { where: { id } });
+        const article = await manager.findOne(Article, {
+          where: { id },
+          relations: ['author'],
+        });
         if (!article) throw new NotFoundException('아티클을 찾을 수 없습니다.');
 
         const author = await manager.findOne(Users, { where: { id: userId } });
@@ -389,6 +407,7 @@ export class ArticleService {
           author,
         });
 
+        let parent: Comment | null = null;
         if (body.parentId) {
           const parent = await manager.findOne(Comment, {
             where: { id: body.parentId },
@@ -400,6 +419,31 @@ export class ArticleService {
 
         await manager.save(Comment, comment);
         this.logger.log(`Comment created successfully for article ${id}`);
+
+        if (parent) {
+          // 대댓글 → 부모 댓글 작성자
+          if (parent.author.id !== userId) {
+            await this.notificationService.save(
+              manager,
+              parent.author.id,
+              NotificationType.ARTICLE,
+              `${author.nickname}님이 회원님의 댓글에 답글을 남겼습니다.`,
+              `/articles/${article.id}#comment-${comment.id}`,
+            );
+          }
+        } else {
+          // 댓글 → 아티클 작성자
+          if (article.author.id !== userId) {
+            await this.notificationService.save(
+              manager,
+              article.author.id,
+              NotificationType.ARTICLE,
+              `${author.nickname}님이 회원님의 아티클에 댓글을 남겼습니다.`,
+              `/articles/${article.id}#comment-${comment.id}`,
+            );
+          }
+        }
+
         return { message: '댓글/대댓글이 작성되었습니다.' };
       } catch (error) {
         this.logger.error(

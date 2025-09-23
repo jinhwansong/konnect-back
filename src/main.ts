@@ -40,6 +40,8 @@ async function bootstrap() {
   // 이미지 정적 파일
   const uploadsPath = path.join(__dirname, '..', 'uploads');
   app.useStaticAssets(uploadsPath, { prefix: '/uploads' });
+  console.log('📂 Static uploads path:', uploadsPath);
+
   // 스웨거 설정
   const config = new DocumentBuilder()
     .setTitle('커넥트 api문서')
@@ -60,7 +62,7 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  app.useStaticAssets(join(__dirname, '..'));
+
   writeFileSync('./openapi-spec.json', JSON.stringify(document, null, 2));
   const port = process.env.PORT;
 

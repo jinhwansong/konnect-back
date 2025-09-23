@@ -18,3 +18,5 @@ USE konnect_test;
 
 -- 완료 메시지
 SELECT '테스트 데이터베이스 konnect_test가 성공적으로 생성되었습니다!' as message;
+
+

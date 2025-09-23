@@ -6,6 +6,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   UploadedFile,
   UseGuards,
@@ -27,6 +28,7 @@ import {
 } from './dto/update.user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { createMulterOptions } from '@/common/util/multer.options';
+import { UpdateFcmTokenDto } from '../notification/dto/fcm.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)

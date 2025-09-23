@@ -15,20 +15,23 @@ try {
 
 // 안전장치: 테스트 환경에서 운영 DB 접근 방지
 const isTestEnv = process.env.NODE_ENV === 'test';
-const isDevEnv = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 const isProdEnv = process.env.NODE_ENV === 'production';
 const dbDatabase = process.env.DB_DATABASE || 'konnect';
 
 if (isTestEnv) {
   if (!dbDatabase.includes('test') && dbDatabase !== 'konnect_test') {
     throw new Error(
-      `❌ 테스트 환경에서는 테스트 DB만 사용 가능합니다. 현재 DB: ${dbDatabase}. `.repeat(3)
+      `❌ 테스트 환경에서는 테스트 DB만 사용 가능합니다. 현재 DB: ${dbDatabase}. `.repeat(
+        3,
+      ),
     );
   }
 } else {
   if (dbDatabase.includes('test')) {
     throw new Error(
-      `❌ 운영/개발 환경에서는 테스트 DB 접근이 금지됩니다. 현재 DB: ${dbDatabase}. `.repeat(3)
+      `❌ 운영/개발 환경에서는 테스트 DB 접근이 금지됩니다. 현재 DB: ${dbDatabase}. `.repeat(
+        3,
+      ),
     );
   }
 }
@@ -61,13 +64,19 @@ export const AppDataSource = new DataSource({
 
 // CLI에서 사용할 때 환경 정보 출력
 if (require.main === module) {
-  console.log(`🔧 DataSource 초기화 - 환경: ${process.env.NODE_ENV || 'development'}`);
+  console.log(
+    `🔧 DataSource 초기화 - 환경: ${process.env.NODE_ENV || 'development'}`,
+  );
   console.log(`📊 데이터베이스: ${dbDatabase}`);
   console.log(`🏠 호스트: ${process.env.DB_HOST || 'localhost'}`);
   console.log(`👤 사용자: ${process.env.DB_USERNAME || 'root'}`);
   console.log(`🔄 Synchronize: ${isTestEnv ? 'true (테스트용)' : 'false'}`);
-  console.log(`📝 Migrations Run: ${isProdEnv ? 'true (프로덕션용)' : 'false'}`);
-  
+  console.log(
+    `📝 Migrations Run: ${isProdEnv ? 'true (프로덕션용)' : 'false'}`,
+  );
+
   // entities 경로 확인
-  console.log(`📁 Entities 경로: ${join(__dirname, 'src/entities/**/*.entity.{ts,js}')}`);
+  console.log(
+    `📁 Entities 경로: ${join(__dirname, 'src/entities/**/*.entity.{ts,js}')}`,
+  );
 }

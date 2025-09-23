@@ -49,3 +49,13 @@ export enum ChatMessageType {
   TEXT = 'text',
   SYSTEM = 'system',
 }
+
+// 알림
+export enum NotificationType {
+  RESERVATION = 'reservation',
+  CHAT = 'chat',
+  ARTICLE = 'article',
+  PAYMENT = 'payment',
+  MENTOR = 'mentor',
+  REVIEW = 'review',
+}

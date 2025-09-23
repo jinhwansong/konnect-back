@@ -9,3 +9,5 @@ export { MentoringSession } from './mentoring-session.entity';
 export { Payment } from './payment.entity';
 export { SocialAccount } from './social-account.entity';
 export { Users } from './user.entity';
+export { Notification } from './notification.entity';
+export { UserFcmToken } from './fcm.entity';

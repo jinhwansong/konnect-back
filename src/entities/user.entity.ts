@@ -4,7 +4,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -18,6 +17,8 @@ import { Payment } from './payment.entity';
 import { SocialAccount } from './social-account.entity';
 import { UserRole } from '@/common/enum/status.enum';
 import { Comment } from './comment.entity';
+import { Notification } from './notification.entity';
+import { UserFcmToken } from './fcm.entity';
 
 @Entity({ schema: 'konnect', name: 'users' })
 export class Users {
@@ -46,7 +47,6 @@ export class Users {
 
   @Column({ type: 'text', nullable: true })
   image: string;
-
   @Column({ type: 'enum', enum: UserRole, default: UserRole.MENTEE })
   role: UserRole;
   @CreateDateColumn()
@@ -76,4 +76,8 @@ export class Users {
   @ApiProperty({ description: '멘토링 결제', required: true })
   @OneToMany(() => Payment, (payment) => payment.user)
   payments: Payment[];
+  @OneToMany(() => Notification, (notification) => notification.user)
+  notifications: Notification[];
+  @OneToMany(() => UserFcmToken, (fcmToken) => fcmToken.user)
+  fcmTokens: UserFcmToken[];
 }

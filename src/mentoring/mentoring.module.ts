@@ -5,7 +5,9 @@ import { MentoringController } from './mentoring.controller';
 import { MentoringService } from './mentoring.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Mentors ,MentoringSession,MentoringSchedule])],
+  imports: [
+    TypeOrmModule.forFeature([Mentors, MentoringSession, MentoringSchedule]),
+  ],
   controllers: [MentoringController],
   providers: [MentoringService],
   exports: [MentoringService],

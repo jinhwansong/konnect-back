@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,6 +18,7 @@ import {
 } from '@/entities';
 import {
   MentoringStatus,
+  NotificationType,
   PaymentStatus,
   SocialLoginProvider,
   UserRole,
@@ -27,6 +29,7 @@ import {
   UpdatePhoneDto,
 } from './dto/update.user.dto';
 import { PaymentService } from '@/payment/payment.service';
+import { NotificationService } from '@/notification/notification.service';
 
 @Injectable()
 export class UsersService {
@@ -36,6 +39,8 @@ export class UsersService {
     @InjectRepository(SocialAccount)
     private readonly socialRepository: Repository<SocialAccount>,
     private readonly paymentService: PaymentService,
+    private readonly notificationService: NotificationService,
+
     private readonly dataSource: DataSource,
   ) {}
 
@@ -71,7 +76,7 @@ export class UsersService {
       name: user.name,
       nickname: user.nickname,
       phone: user.phone,
-      image: user.image ? `${process.env.SERVER_HOST}${user.image}` : null,
+      image: user.image ? `${user.image}` : null,
       role: user.role,
       socials:
         user.socialAccounts?.map((s) => ({ provider: s.provider })) ?? [],
@@ -170,7 +175,7 @@ export class UsersService {
     try {
       if (!file) throw new BadRequestException('파일이 업로드되지 않았습니다.');
 
-      const imageUrl = `uploads/profile/${file.filename}`;
+      const imageUrl = `/uploads/profile/${file.filename}`;
       const user = await this.userRepository.findOneBy({
         id,
       });
@@ -178,7 +183,7 @@ export class UsersService {
       user.image = imageUrl;
       await this.userRepository.save(user);
 
-      return { image: `${process.env.SERVER_HOST}/${user.image} ` };
+      return { image: `${user.image} ` };
     } catch (error) {
       throw new InternalServerErrorException(
         `프로필 이미지 변경 중 오류가 발생했습니다: ${error.message}`,
@@ -222,6 +227,12 @@ export class UsersService {
 
     // 트랜잭션 안에서 모아둘 환불 대상
     const refundTargets: Payment[] = [];
+    const cancelledReservations: {
+      reservation: MentoringReservation;
+      targetUserId: string;
+      message: string;
+    }[] = [];
+
     try {
       const user = await queryRunner.manager.findOne(Users, {
         where: { id },
@@ -246,6 +257,11 @@ export class UsersService {
           await queryRunner.manager.save(reservation.payments);
           refundTargets.push(reservation.payments);
         }
+        cancelledReservations.push({
+          reservation,
+          targetUserId: reservation.session.mentor.user.id,
+          message: '멘티가 탈퇴하여 예약이 자동 취소되었습니다.',
+        });
       }
 
       // 멘토 예약취소
@@ -269,6 +285,12 @@ export class UsersService {
             await queryRunner.manager.save(reservation.payments);
             refundTargets.push(reservation.payments);
           }
+
+          cancelledReservations.push({
+            reservation,
+            targetUserId: reservation.mentee.id,
+            message: '멘토가 탈퇴하여 예약이 자동 취소되었습니다.',
+          });
         }
       }
       await queryRunner.manager.delete(SocialAccount, { user: { id } });
@@ -289,10 +311,21 @@ export class UsersService {
           '회원 탈퇴',
         );
       }
+
+      for (const item of cancelledReservations) {
+        // 알림 DB 저장 (상대방에게만)
+        await this.notificationService.save(
+          this.dataSource.manager,
+          item.targetUserId,
+          NotificationType.RESERVATION,
+          item.message,
+          `/reservations/${item.reservation.id}`,
+        );
+      }
+
       return { message: '계정이 탈퇴 처리되었습니다.' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.error('error:', error);
       if (error instanceof NotFoundException) {
         throw error;
       }

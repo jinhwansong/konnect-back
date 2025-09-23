@@ -24,50 +24,19 @@ import { MailModule } from './mail/mail.module';
 import { ChatModule } from './chat/chat.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ListenerModule } from './listener/listener.module';
-import * as dotenv from 'dotenv';
-
-// 환경별 .env 파일 로드
-try {
-  if (process.env.NODE_ENV === 'test') {
-    dotenv.config({ path: '.env.test' });
-  } else {
-    dotenv.config();
-  }
-} catch (error) {
-  console.warn('환경 변수 파일 로드 실패:', error.message);
-}
-
-// 안전장치: 테스트 환경에서 운영 DB 접근 방지
-const isTestEnv = process.env.NODE_ENV === 'test';
-const dbDatabase = process.env.DB_DATABASE || 'konnect';
-
-if (isTestEnv) {
-  // 테스트 환경에서는 반드시 konnect_test DB만 사용
-  if (!dbDatabase.includes('test') && dbDatabase !== 'konnect_test') {
-    throw new Error(
-      `❌ 테스트 환경에서는 테스트 DB만 사용 가능합니다. 현재 DB: ${dbDatabase}. `.repeat(3) +
-      `테스트용 DB 설정을 확인해주세요.`
-    );
-  }
-} else {
-  // 운영/개발 환경에서는 test DB 접근 방지
-  if (dbDatabase.includes('test')) {
-    throw new Error(
-      `❌ 운영/개발 환경에서는 테스트 DB 접근이 금지됩니다. 현재 DB: ${dbDatabase}. `.repeat(3)
-    );
-  }
-}
+import { NotificationController } from './notification/notification.controller';
+import { NotificationModule } from './notification/notification.module';
+import { FcmModule } from './fcm/fcm.module';
 
 @Module({
   imports: [
     // dotenv 전역사용
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: isTestEnv ? '.env.test' : '.env',
     }),
     EventEmitterModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URL, {
-      dbName: isTestEnv ? 'konnect_test' : 'konnect',
+      dbName: 'konnect',
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -75,7 +44,7 @@ if (isTestEnv) {
       port: parseInt(process.env.DB_PORT) || 3306,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      database: dbDatabase,
+      database: process.env.DB_DATABASE,
       logging: process.env.NODE_ENV === 'production' ? false : true,
       // 마이그레이션
       migrations: [join(__dirname, './migrations/**/*{.ts,.js}')],
@@ -88,10 +57,9 @@ if (isTestEnv) {
       retryAttempts: 3,
       retryDelay: 3000,
       // 테스트 환경에서는 synchronize 활성화
-      synchronize: isTestEnv ? true : false,
-      dropSchema: isTestEnv ? true : false, // 테스트에서만 스키마 삭제
+      synchronize: false,
       extra: {
-        connectionLimit: isTestEnv ? 5 : 10, // 테스트에서는 연결 수 제한
+        connectionLimit: 10,
       },
     }),
     UsersModule,
@@ -110,8 +78,10 @@ if (isTestEnv) {
     MailModule,
     ChatModule,
     ListenerModule,
+    NotificationModule,
+    FcmModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, NotificationController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {

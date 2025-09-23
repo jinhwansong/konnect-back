@@ -1,6 +1,10 @@
 import { PaginationDto } from '@/common/dto/page.dto';
-import { MentorStatus, UserRole } from '@/common/enum/status.enum';
-import { Mentors, Users } from '@/entities';
+import {
+  MentorStatus,
+  NotificationType,
+  UserRole,
+} from '@/common/enum/status.enum';
+import { Mentors, Notification, Users } from '@/entities';
 import {
   BadRequestException,
   ForbiddenException,
@@ -12,6 +16,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ApproveOrRejectMentorDto } from './dto/approve.dto';
+import { NotificationService } from '@/notification/notification.service';
 
 @Injectable()
 export class AdminService {
@@ -22,6 +27,7 @@ export class AdminService {
     private readonly mentorRepository: Repository<Mentors>,
     @InjectRepository(Users)
     private readonly userRepository: Repository<Users>,
+    private readonly notificationService: NotificationService,
     private readonly dataSource: DataSource,
   ) {}
   // 멘토 신청 목록 조회
@@ -72,7 +78,7 @@ export class AdminService {
         where: { id },
         relations: ['user'],
       });
-      
+
       if (!mentor) {
         throw new NotFoundException('멘토를 찾을 수 없습니다.');
       }
@@ -94,10 +100,14 @@ export class AdminService {
         phone: mentor.user.phone,
       };
     } catch (error) {
-      this.logger.error(`Failed to get mentor detail for ID ${id}: ${error.message}`);
+      this.logger.error(
+        `Failed to get mentor detail for ID ${id}: ${error.message}`,
+      );
       throw error instanceof NotFoundException
         ? error
-        : new InternalServerErrorException('멘토 상세 정보를 불러오는 데 실패했습니다.');
+        : new InternalServerErrorException(
+            '멘토 상세 정보를 불러오는 데 실패했습니다.',
+          );
     }
   }
   // 유저 목록 조회
@@ -134,9 +144,7 @@ export class AdminService {
       };
     } catch (error) {
       this.logger.error(`Failed to get user list: ${error.message}`);
-      throw new InternalServerErrorException(
-        '사용자 목록을 찾을 수 없습니다.',
-      );
+      throw new InternalServerErrorException('사용자 목록을 찾을 수 없습니다.');
     }
   }
   // 승인 / 거절
@@ -153,21 +161,24 @@ export class AdminService {
         if (!admin) throw new NotFoundException('사용자를 찾을 수 없습니다.');
 
         if (admin.role !== UserRole.ADMIN)
-          throw new ForbiddenException('관리자만 이 작업을 수행할 수 있습니다.');
-        
+          throw new ForbiddenException(
+            '관리자만 이 작업을 수행할 수 있습니다.',
+          );
+
         const mentor = await manager.findOne(Mentors, {
           where: { id: mentorId },
           relations: ['user'],
         });
-        if (!mentor) throw new NotFoundException('멘토 정보를 찾을 수 없습니다.');
-        
+        if (!mentor)
+          throw new NotFoundException('멘토 정보를 찾을 수 없습니다.');
+
         if (body.status === MentorStatus.REJECTED && !body.reason) {
           throw new BadRequestException('거절 사유를 입력해야 합니다.');
         }
-        
+
         mentor.status = body.status;
         mentor.reason = body.reason || null;
-        
+
         if (body.status === MentorStatus.REJECTED) {
           mentor.rejectedAt = new Date();
         } else {
@@ -176,24 +187,55 @@ export class AdminService {
           mentor.user.role = UserRole.MENTOR;
           await manager.save(Users, mentor.user);
         }
-        
+
         await manager.save(Mentors, mentor);
-        
-        this.logger.log(`Mentor ${mentorId} ${body.status === MentorStatus.REJECTED ? 'rejected' : 'approved'} by admin ${userId}`);
-        
+
+        this.logger.log(
+          `Mentor ${mentorId} ${body.status === MentorStatus.REJECTED ? 'rejected' : 'approved'} by admin ${userId}`,
+        );
+
+        let savedNotification: Notification;
+
         if (body.status === MentorStatus.REJECTED) {
+          savedNotification = await this.notificationService.save(
+            manager,
+            mentor.user.id,
+            NotificationType.MENTOR,
+            `멘토 신청이 거절되었습니다. 사유: ${body.reason}`,
+            `/mentor/apply/${mentor.id}`,
+          );
+          this.notificationService.sendFcm(mentor.user.id, savedNotification);
+
           return {
             message: '멘토가 거절되었습니다.',
           };
         }
+        savedNotification = await this.notificationService.save(
+          manager,
+          mentor.user.id,
+          NotificationType.RESERVATION,
+          '멘토 신청이 승인되었습니다.',
+          `/mentor/${mentor.id}`,
+        );
+
+        await this.notificationService.sendFcm(
+          mentor.user.id,
+          savedNotification,
+        );
         return {
           message: '멘토가 승인되었습니다.',
         };
       } catch (error) {
-        this.logger.error(`Failed to approve/reject mentor ${mentorId}: ${error.message}`);
-        throw error instanceof BadRequestException || error instanceof ForbiddenException || error instanceof NotFoundException
+        this.logger.error(
+          `Failed to approve/reject mentor ${mentorId}: ${error.message}`,
+        );
+        throw error instanceof BadRequestException ||
+          error instanceof ForbiddenException ||
+          error instanceof NotFoundException
           ? error
-          : new InternalServerErrorException('멘토 승인/거절 처리 중 오류가 발생했습니다.');
+          : new InternalServerErrorException(
+              '멘토 승인/거절 처리 중 오류가 발생했습니다.',
+            );
       }
     });
   }

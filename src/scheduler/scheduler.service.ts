@@ -1,19 +1,27 @@
-import { ChatRoomStatus, MentoringStatus } from '@/common/enum/status.enum';
+import {
+  ChatRoomStatus,
+  MentoringStatus,
+  NotificationType,
+} from '@/common/enum/status.enum';
 import { MentoringReservation } from '@/entities';
+import { NotificationService } from '@/notification/notification.service';
 import { ChatRoom, ChatRoomDocument } from '@/schema/chat-room.schema';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Model } from 'mongoose';
-import { LessThan, Repository } from 'typeorm';
+import { Between, IsNull, LessThan, Repository } from 'typeorm';
 
 @Injectable()
 export class SchedulerService {
+  private readonly logger = new Logger(SchedulerService.name);
+
   constructor(
     @InjectRepository(MentoringReservation)
     private readonly reservationRepository: Repository<MentoringReservation>,
     @InjectModel(ChatRoom.name)
     private chatRoomModel: Model<ChatRoomDocument>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async expirePendingReservations() {
@@ -92,6 +100,53 @@ export class SchedulerService {
     for (const r of toProgress) {
       r.status = MentoringStatus.PROGRESS;
       await this.reservationRepository.save(r);
+
+      this.logger.log(`Reservation moved to PROGRESS: ${r.id}`);
+
+      // ✅ 멘토링 시작 10분 전 리마인더 알림
+      const menteeNoti = await this.notificationService.save(
+        this.reservationRepository.manager,
+        r.mentee.id,
+        NotificationType.RESERVATION,
+        `멘토링이 곧 시작됩니다. (${r.session.title})`,
+      );
+      await this.notificationService.sendFcm(r.mentee.id, menteeNoti);
+
+      const mentorNoti = await this.notificationService.save(
+        this.reservationRepository.manager,
+        r.session.mentor.user.id,
+        NotificationType.RESERVATION,
+        `멘토링이 곧 시작됩니다. (${r.session.title})`,
+      );
+      await this.notificationService.sendFcm(
+        r.session.mentor.user.id,
+        mentorNoti,
+      );
+    }
+  }
+
+  async remindReviews() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const noReview = await this.reservationRepository.find({
+      where: {
+        status: MentoringStatus.COMPLETED,
+        updatedAt: Between(yesterday, new Date()),
+        review: IsNull(),
+      },
+      relations: ['mentee'],
+    });
+
+    for (const r of noReview) {
+      const reviewNoti = await this.notificationService.save(
+        this.reservationRepository.manager,
+        r.mentee.id,
+        NotificationType.REVIEW,
+        '어제 완료된 멘토링에 후기를 남겨주세요!',
+        `/reservations/${r.id}`,
+      );
+      await this.notificationService.sendFcm(r.mentee.id, reviewNoti);
     }
   }
 }

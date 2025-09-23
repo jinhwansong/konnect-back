@@ -6,7 +6,9 @@ import { SchedulerService } from './scheduler.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChatRoom, ChatRoomSchema } from '@/schema/chat-room.schema';
 import { ChatRoomTask } from './tasks/chat-room.task';
-import { ReservationsTask } from './tasks/update-reservation';
+import { ReservationsTask } from './tasks/update-reservation.task';
+import { NotificationModule } from '@/notification/notification.module';
+import { ReviewTask } from './tasks/review.task';
 
 @Module({
   imports: [
@@ -15,7 +17,8 @@ import { ReservationsTask } from './tasks/update-reservation';
     MongooseModule.forFeature([
       { name: ChatRoom.name, schema: ChatRoomSchema },
     ]),
+    NotificationModule,
   ],
-  providers: [ReservationsTask, SchedulerService, ChatRoomTask],
+  providers: [ReservationsTask, SchedulerService, ChatRoomTask, ReviewTask],
 })
 export class SchedulerModule {}

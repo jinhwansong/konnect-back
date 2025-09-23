@@ -1,6 +1,10 @@
 import { PaginationDto } from '@/common/dto/page.dto';
-import { MentoringStatus, PaymentStatus } from '@/common/enum/status.enum';
-import { MentoringReservation, Payment, Users } from '@/entities';
+import {
+  MentoringStatus,
+  NotificationType,
+  PaymentStatus,
+} from '@/common/enum/status.enum';
+import { MentoringReservation, Notification, Payment, Users } from '@/entities';
 import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ConfirmPaymentDto, RefundPaymentDto } from './dto/payment.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NotificationService } from '@/notification/notification.service';
 
 @Injectable()
 export class PaymentService {
@@ -22,6 +27,8 @@ export class PaymentService {
     private reservationRepository: Repository<MentoringReservation>,
     private eventEmitter: EventEmitter2,
     private readonly httpService: HttpService,
+    private readonly notificationService: NotificationService,
+
     private readonly dataSource: DataSource,
   ) {}
 
@@ -42,7 +49,12 @@ export class PaymentService {
       // 예약 정보 조회
       const reservation = await this.reservationRepository.findOne({
         where: { id: body.orderId },
-        relations: ['session', 'session.mentor', 'mentee'],
+        relations: [
+          'session',
+          'session.mentor',
+          'session.mentor.user',
+          'mentee',
+        ],
       });
 
       if (!reservation) {
@@ -71,6 +83,7 @@ export class PaymentService {
           },
         ),
       );
+      let savedNotification: Notification;
 
       await this.dataSource.transaction(async (manager) => {
         const payments = manager.getRepository(Payment);
@@ -91,14 +104,25 @@ export class PaymentService {
           { id: body.orderId },
           { status: MentoringStatus.CONFIRMED, paidAt: new Date() },
         );
-        
-        this.logger.log(`Payment confirmed successfully for order ${body.orderId}`);
+
+        this.logger.log(
+          `Payment confirmed successfully for order ${body.orderId}`,
+        );
+
+        // 알림 DB 저장
+        savedNotification = await this.notificationService.save(
+          manager,
+          reservation.session.mentor.user.id,
+          NotificationType.PAYMENT,
+          `${user.nickname}님이 멘토링 예약 결제를 완료했습니다.`,
+          `/reservations/${reservation.id}`,
+        );
       });
-      
-      this.eventEmitter.emit('payment.confirmed', {
-        reservationId: reservation.id,
-      });
-      
+
+      // this.eventEmitter.emit('payment.confirmed', {
+      //   reservationId: reservation.id,
+      // });
+
       return {
         message: '결제에 성공했습니다.',
       };
@@ -106,9 +130,9 @@ export class PaymentService {
       // Toss 응답이 있는 경우: 잔액 부족, 카드 거절 등
       const reason = error?.response?.data?.message || '알 수 없는 오류';
       const code = error?.response?.data?.code || 'UNKNOWN';
-
-      this.logger.error(`Payment failed for order ${body.orderId}: ${code} - ${reason}`);
-
+      this.logger.error(
+        `Payment failed for order ${body.orderId}: ${code} - ${reason}`,
+      );
       const reservation = await this.reservationRepository.findOne({
         where: { id: body.orderId },
       });
@@ -225,7 +249,12 @@ export class PaymentService {
     return this.dataSource.transaction(async (manager) => {
       const payment = await this.paymentRepository.findOne({
         where: { paymentKey: body.paymentKey },
-        relations: ['reservation', 'user'],
+        relations: [
+          'reservation',
+          'reservation.session',
+          'reservation.session.mentor',
+          'user',
+        ],
       });
       if (!payment || payment.user.id !== userId) {
         throw new BadRequestException(
@@ -241,6 +270,28 @@ export class PaymentService {
       }
       await this.cancelAndRefund(manager, payment, '구매자가 취소를 원함');
 
+      // 알림 (멘티 본인)
+      const menteeNotification = await this.notificationService.save(
+        manager,
+        userId,
+        NotificationType.PAYMENT,
+        '결제가 취소되었습니다.',
+        `/reservations/${payment.reservation.id}`,
+      );
+
+      // 알림 (멘토)
+      const mentorNotification = await this.notificationService.save(
+        manager,
+        payment.reservation.session.mentor.user.id,
+        NotificationType.PAYMENT,
+        `${payment.user.nickname}님이 예약을 취소하여 환불되었습니다.`,
+        `/reservations/${payment.reservation.id}`,
+      );
+      await this.notificationService.sendFcm(userId, menteeNotification);
+      await this.notificationService.sendFcm(
+        payment.reservation.session.mentor.user.id,
+        mentorNotification,
+      );
       return {
         message: '환불 및 예약이 취소되었습니다.',
       };

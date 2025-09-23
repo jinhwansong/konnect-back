@@ -14,10 +14,15 @@ import {
   UpdateMentoringScheduleDto,
 } from './dto/schedule.dto';
 import { PaginationDto } from '@/common/dto/page.dto';
-import { MentoringStatus, PaymentStatus } from '@/common/enum/status.enum';
+import {
+  MentoringStatus,
+  NotificationType,
+  PaymentStatus,
+} from '@/common/enum/status.enum';
 import { UpdateReservationStatusDto } from './dto/reservation.dto';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { NotificationService } from '@/notification/notification.service';
 
 @Injectable()
 export class ScheduleService {
@@ -31,6 +36,7 @@ export class ScheduleService {
     @InjectRepository(MentoringReservation)
     private readonly reservationRepository: Repository<MentoringReservation>,
     private readonly httpService: HttpService,
+    private readonly notificationService: NotificationService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -42,7 +48,7 @@ export class ScheduleService {
         });
         if (!mentor)
           throw new ForbiddenException('본인의 스케줄만 등록할 수 있습니다.');
-        
+
         const schedule = body.map((item) => {
           return manager.create(MentoringSchedule, {
             mentor,
@@ -51,15 +57,21 @@ export class ScheduleService {
             endTime: item.endTime,
           });
         });
-        
+
         await manager.save(MentoringSchedule, schedule);
-        this.logger.log(`Schedule created successfully for user ${userId}: ${schedule.length} items`);
+        this.logger.log(
+          `Schedule created successfully for user ${userId}: ${schedule.length} items`,
+        );
         return { message: '정기 스케줄이 성공적으로 등록되었습니다.' };
       } catch (error) {
-        this.logger.error(`Failed to create schedule for user ${userId}: ${error.message}`);
+        this.logger.error(
+          `Failed to create schedule for user ${userId}: ${error.message}`,
+        );
         throw error instanceof ForbiddenException
           ? error
-          : new InternalServerErrorException('스케줄 등록 중 오류가 발생했습니다.');
+          : new InternalServerErrorException(
+              '스케줄 등록 중 오류가 발생했습니다.',
+            );
       }
     });
   }
@@ -95,14 +107,21 @@ export class ScheduleService {
 
         await this.updateExistingSchedules(userId, schedules, manager);
         await this.createNewSchedules(mentor, schedules, manager);
-        
-        this.logger.log(`Schedule updated successfully for user ${userId}: ${schedules.length} items`);
+
+        this.logger.log(
+          `Schedule updated successfully for user ${userId}: ${schedules.length} items`,
+        );
         return { message: '정기 스케줄이 성공적으로 수정되었습니다.' };
       } catch (error) {
-        this.logger.error(`Failed to update schedule for user ${userId}: ${error.message}`);
-        throw error instanceof ForbiddenException || error instanceof NotFoundException
+        this.logger.error(
+          `Failed to update schedule for user ${userId}: ${error.message}`,
+        );
+        throw error instanceof ForbiddenException ||
+          error instanceof NotFoundException
           ? error
-          : new InternalServerErrorException('스케줄 수정 중 오류가 발생했습니다.');
+          : new InternalServerErrorException(
+              '스케줄 수정 중 오류가 발생했습니다.',
+            );
       }
     });
   }
@@ -121,13 +140,20 @@ export class ScheduleService {
       }
 
       await this.scheduleRepository.remove(schedule);
-      this.logger.log(`Schedule deleted successfully: ${scheduleId} by user ${userId}`);
+      this.logger.log(
+        `Schedule deleted successfully: ${scheduleId} by user ${userId}`,
+      );
       return { message: '해당 정기 스케줄이 성공적으로 삭제되었습니다.' };
     } catch (error) {
-      this.logger.error(`Failed to delete schedule ${scheduleId}: ${error.message}`);
-      throw error instanceof NotFoundException || error instanceof ForbiddenException
+      this.logger.error(
+        `Failed to delete schedule ${scheduleId}: ${error.message}`,
+      );
+      throw error instanceof NotFoundException ||
+        error instanceof ForbiddenException
         ? error
-        : new InternalServerErrorException('스케줄 삭제 중 오류가 발생했습니다.');
+        : new InternalServerErrorException(
+            '스케줄 삭제 중 오류가 발생했습니다.',
+          );
     }
   }
 
@@ -198,7 +224,9 @@ export class ScheduleService {
         data: items,
       };
     } catch (error) {
-      this.logger.error(`Failed to get mentor reservation list for user ${userId}: ${error.message}`);
+      this.logger.error(
+        `Failed to get mentor reservation list for user ${userId}: ${error.message}`,
+      );
       throw new InternalServerErrorException(
         '예약된 멘토링 목록을 불러오는 중 오류가 발생했습니다. ',
       );
@@ -208,7 +236,12 @@ export class ScheduleService {
     try {
       const reservation = await this.reservationRepository.findOne({
         where: { id: reservationId, status: Not(MentoringStatus.EXPIRED) },
-        relations: ['session', 'session.mentor', 'session.mentor.user', 'mentee'],
+        relations: [
+          'session',
+          'session.mentor',
+          'session.mentor.user',
+          'mentee',
+        ],
       });
       if (!reservation) {
         throw new NotFoundException('예약 정보를 찾을 수 없습니다.');
@@ -217,8 +250,10 @@ export class ScheduleService {
       if (reservation.session.mentor.user.id !== userId) {
         throw new ForbiddenException('해당 예약 정보에 접근할 수 없습니다.');
       }
-      
-      this.logger.log(`Reservation detail retrieved for reservation ${reservationId}`);
+
+      this.logger.log(
+        `Reservation detail retrieved for reservation ${reservationId}`,
+      );
       return {
         id: reservation.id,
         title: reservation.session.title,
@@ -234,10 +269,15 @@ export class ScheduleService {
         menteePhone: reservation.mentee.phone,
       };
     } catch (error) {
-      this.logger.error(`Failed to get reservation detail ${reservationId}: ${error.message}`);
-      throw error instanceof NotFoundException || error instanceof ForbiddenException
+      this.logger.error(
+        `Failed to get reservation detail ${reservationId}: ${error.message}`,
+      );
+      throw error instanceof NotFoundException ||
+        error instanceof ForbiddenException
         ? error
-        : new InternalServerErrorException('예약 상세 정보 조회 중 오류가 발생했습니다.');
+        : new InternalServerErrorException(
+            '예약 상세 정보 조회 중 오류가 발생했습니다.',
+          );
     }
   }
   async updateReservationStatus(
@@ -252,6 +292,7 @@ export class ScheduleService {
         'session.mentor',
         'session.mentor.user',
         'payments',
+        'mentee',
       ],
     });
 
@@ -303,9 +344,21 @@ export class ScheduleService {
 
       reservation.payments.status = PaymentStatus.REFUNDED;
       await manager.save(reservation.payments);
+
+      // 알림 저장
+      const rejectNoti = await this.notificationService.save(
+        manager,
+        reservation.mentee.id,
+        NotificationType.RESERVATION,
+        `멘토가 예약을 거절했습니다. 사유: ${body.rejectReason}`,
+        `/reservations/${reservation.id}`,
+      );
+
+      // 🔔 FCM 푸시 발송
+      await this.notificationService.sendFcm(reservation.mentee.id, rejectNoti);
     });
-    
     this.logger.log(`Reservation rejected and refunded: ${reservationId}`);
+
     return { message: '예약이 거절이 완료되었습니다.' };
   }
 

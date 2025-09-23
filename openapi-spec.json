@@ -9,15 +9,345 @@
           "200": {
             "description": ""
           }
+        }
+      }
+    },
+    "/notification": {
+      "get": {
+        "operationId": "NotificationController_getMyNotifications",
+        "summary": "내 알림 목록 조회",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "알림 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationResponseDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증되지 않은 사용자"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
         },
         "tags": [
-          "App"
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "NotificationController_create",
+        "summary": "알림 생성 (테스트용 또는 내부 호출)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "알림 생성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 데이터"
+          },
+          "401": {
+            "description": "인증되지 않은 사용자"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/notification/unread-count": {
+      "get": {
+        "operationId": "NotificationController_getUnreadCount",
+        "summary": "읽지 않은 알림 개수 조회",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "읽지 않은 알림 개수 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "count": 5
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증되지 않은 사용자"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/notification/all": {
+      "delete": {
+        "operationId": "NotificationController_deleteAll",
+        "summary": "내 모든 알림 삭제",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "모든 알림 삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "모든 알림 삭제 성공"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증되지 않은 사용자"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/notification/{id}/read": {
+      "patch": {
+        "operationId": "NotificationController_markAsRead",
+        "summary": "알림 읽음 처리",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "알림 읽음 처리 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증되지 않은 사용자"
+          },
+          "404": {
+            "description": "알림을 찾을 수 없음"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/notification/{id}": {
+      "delete": {
+        "operationId": "NotificationController_delete",
+        "summary": "알림 삭제",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "알림 삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "success": true
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증되지 않은 사용자"
+          },
+          "404": {
+            "description": "알림을 찾을 수 없음"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/notification/read/all": {
+      "patch": {
+        "operationId": "NotificationController_markAllAsRead",
+        "summary": "내 모든 알림 읽음 처리",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "모든 알림 읽음 처리 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkAllAsReadResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증되지 않은 사용자"
+          },
+          "500": {
+            "description": "서버 내부 오류"
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/notification/fcm-token": {
+      "patch": {
+        "operationId": "NotificationController_updateFcmToken",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFcmTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/notification/fcm-token/{id}": {
+      "delete": {
+        "operationId": "NotificationController_removeFcmToken",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "notification"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
         ]
       }
     },
     "/user": {
       "get": {
         "operationId": "UsersController_profile",
+        "summary": "회원정보",
         "parameters": [],
         "responses": {
           "200": {
@@ -34,20 +364,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "회원정보",
-        "tags": [
-          "User"
         ]
       }
     },
     "/user/phone": {
       "patch": {
         "operationId": "UsersController_updatePhone",
+        "summary": "휴대폰 번호 변경",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -80,20 +410,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "휴대폰 번호 변경",
-        "tags": [
-          "User"
         ]
       }
     },
     "/user/nickname": {
       "patch": {
         "operationId": "UsersController_updateNickname",
+        "summary": "닉네임 변경",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -126,20 +456,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "닉네임 변경",
-        "tags": [
-          "User"
         ]
       }
     },
     "/user/profile": {
       "patch": {
         "operationId": "UsersController_uploadArticleEditorImages",
+        "summary": "프로필 이미지 변경",
         "parameters": [],
         "responses": {
           "200": {
@@ -162,20 +492,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "프로필 이미지 변경",
-        "tags": [
-          "User"
         ]
       }
     },
     "/user/password": {
       "patch": {
         "operationId": "UsersController_updatePassword",
+        "summary": "비밀번호 변경",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -210,20 +540,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "비밀번호 변경",
-        "tags": [
-          "User"
         ]
       }
     },
     "/user/me": {
       "delete": {
         "operationId": "UsersController_deleteAccount",
+        "summary": "회원 탈퇴 (소프트 삭제)",
         "parameters": [],
         "responses": {
           "200": {
@@ -245,20 +575,31 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "User"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "회원 탈퇴 (소프트 삭제)",
-        "tags": [
-          "User"
         ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_testLogin",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
       }
     },
     "/auth/join": {
       "post": {
         "operationId": "AuthController_join",
+        "summary": "회원가입",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -287,16 +628,13 @@
           "500": {
             "description": "서버 에러"
           }
-        },
-        "summary": "회원가입",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/auth": {
       "post": {
         "operationId": "AuthController_login",
+        "summary": "사용자 로그인",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -325,16 +663,13 @@
           "500": {
             "description": "서버 에러"
           }
-        },
-        "summary": "사용자 로그인",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/auth/social": {
       "post": {
         "operationId": "AuthController_socialRegister",
+        "summary": "소셜 로그인 등록",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -357,16 +692,13 @@
               }
             }
           }
-        },
-        "summary": "소셜 로그인 등록",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/auth/duplicateEmail": {
       "post": {
         "operationId": "AuthController_duplicateEmail",
+        "summary": "이메일 중복 검사",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -392,16 +724,13 @@
           "409": {
             "description": "이미 사용 중인 이메일입니다."
           }
-        },
-        "summary": "이메일 중복 검사",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/auth/duplicateNickname": {
       "post": {
         "operationId": "AuthController_duplicateNickname",
+        "summary": "닉네임 중복 검사",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -427,16 +756,13 @@
           "409": {
             "description": "이미 사용 중인 닉네임입니다."
           }
-        },
-        "summary": "닉네임 중복 검사",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/auth/email/verify/send": {
       "post": {
         "operationId": "AuthController_sendCode",
+        "summary": "이메일 인증보내기",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -455,16 +781,13 @@
           "400": {
             "description": "이미 인증 코드가 발송되어 있음 or 이메일 오류"
           }
-        },
-        "summary": "이메일 인증보내기",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/auth/email/verify/confirm": {
       "post": {
         "operationId": "AuthController_confirmCode",
+        "summary": "이메일 인증확인",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -483,16 +806,13 @@
           "400": {
             "description": "인증 코드가 없거나, 일치하지 않거나, 만료됨"
           }
-        },
-        "summary": "이메일 인증확인",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/auth/logout": {
       "post": {
         "operationId": "AuthController_logout",
+        "summary": "사용자 로그아웃",
         "parameters": [],
         "responses": {
           "200": {
@@ -504,16 +824,13 @@
           "500": {
             "description": "서버 에러"
           }
-        },
-        "summary": "사용자 로그아웃",
-        "tags": [
-          "Auth"
-        ]
+        }
       }
     },
     "/mentor/apply": {
       "post": {
         "operationId": "MentorsController_applyMentor",
+        "summary": "멘토 신청",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -533,20 +850,20 @@
             "description": "멘토 신청 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Mentor"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 신청",
-        "tags": [
-          "Mentor"
         ]
       }
     },
     "/mentor/company": {
       "patch": {
         "operationId": "MentorsController_updateCompany",
+        "summary": "회사명 변경",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -576,20 +893,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "Mentor"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "회사명 변경",
-        "tags": [
-          "Mentor"
         ]
       }
     },
     "/mentor/expertise": {
       "patch": {
         "operationId": "MentorsController_updateExpertise",
+        "summary": "전문 분야 변경",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -619,20 +936,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "Mentor"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "전문 분야 변경",
-        "tags": [
-          "Mentor"
         ]
       }
     },
     "/mentor/position": {
       "patch": {
         "operationId": "MentorsController_updatePosition",
+        "summary": "직책 변경",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -662,20 +979,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "Mentor"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "직책 변경",
-        "tags": [
-          "Mentor"
         ]
       }
     },
     "/mentor/career": {
       "patch": {
         "operationId": "MentorsController_updateCareer",
+        "summary": "연차 변경",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -708,20 +1025,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "Mentor"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "연차 변경",
-        "tags": [
-          "Mentor"
         ]
       }
     },
     "/mentor/company-name": {
       "patch": {
         "operationId": "MentorsController_updatePublicCompanyName",
+        "summary": "회사명 공개 여부 설정",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -741,20 +1058,20 @@
             "description": "멘토 정보를 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Mentor"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "회사명 공개 여부 설정",
-        "tags": [
-          "Mentor"
         ]
       }
     },
     "/mentor": {
       "get": {
         "operationId": "MentorsController_mentorProfile",
+        "summary": "멘토 정보",
         "parameters": [],
         "responses": {
           "200": {
@@ -771,20 +1088,20 @@
             "description": "멘토 정보를 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Mentor"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 정보",
-        "tags": [
-          "Mentor"
         ]
       }
     },
     "/admin/users": {
       "get": {
         "operationId": "AdminController_getUserList",
+        "summary": "사용자 목록 조회",
         "parameters": [
           {
             "name": "page",
@@ -827,20 +1144,20 @@
             "description": "사용자 목록 를 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Admin"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "사용자 목록 조회",
-        "tags": [
-          "Admin"
         ]
       }
     },
     "/admin/mentors": {
       "get": {
         "operationId": "AdminController_getMentorList",
+        "summary": "멘토 신청 목록 조회",
         "parameters": [
           {
             "name": "page",
@@ -883,20 +1200,20 @@
             "description": "멘토 신청 정보를 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Admin"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 신청 목록 조회",
-        "tags": [
-          "Admin"
         ]
       }
     },
     "/admin/mentors/{id}": {
       "get": {
         "operationId": "AdminController_getMentorDetail",
+        "summary": "멘토 상세 정보 조회",
         "parameters": [
           {
             "name": "id",
@@ -925,20 +1242,20 @@
             "description": "멘토 상세 정보를 불러오는 데 실패했습니다."
           }
         },
+        "tags": [
+          "Admin"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 상세 정보 조회",
-        "tags": [
-          "Admin"
         ]
       }
     },
     "/admin/mentors/{id}/approve": {
       "post": {
         "operationId": "AdminController_approveMentor",
+        "summary": "승인/거절",
         "parameters": [
           {
             "name": "id",
@@ -997,20 +1314,20 @@
             "description": "멘토 또는 관리자 계정 없음"
           }
         },
+        "tags": [
+          "Admin"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "승인/거절",
-        "tags": [
-          "Admin"
         ]
       }
     },
     "/mentoring": {
       "post": {
         "operationId": "MentoringController_createSession",
+        "summary": "멘토링 세션 등록",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1043,18 +1360,18 @@
             "description": "멘토링 세션 등록 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 세션 등록",
-        "tags": [
-          "Mentoring"
         ]
       },
       "get": {
         "operationId": "MentoringController_getSession",
+        "summary": "멘토가 등록한 세션 목록 조회",
         "parameters": [
           {
             "name": "page",
@@ -1097,20 +1414,20 @@
             "description": "등록된 세션 목록을 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토가 등록한 세션 목록 조회",
-        "tags": [
-          "Mentoring"
         ]
       }
     },
     "/mentoring/{id}": {
       "get": {
         "operationId": "MentoringController_getSessionDetail",
+        "summary": "멘토가 등록한 세션 상세 조회",
         "parameters": [
           {
             "name": "id",
@@ -1136,18 +1453,18 @@
             "description": "세션을 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토가 등록한 세션 상세 조회",
-        "tags": [
-          "Mentoring"
         ]
       },
       "patch": {
         "operationId": "MentoringController_updateSession",
+        "summary": "멘토링 세션 수정",
         "parameters": [
           {
             "name": "id",
@@ -1173,18 +1490,18 @@
             "description": ""
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 세션 수정",
-        "tags": [
-          "Mentoring"
         ]
       },
       "delete": {
         "operationId": "MentoringController_deleteSession",
+        "summary": "멘토링 세션 삭제",
         "parameters": [
           {
             "name": "id",
@@ -1200,20 +1517,20 @@
             "description": ""
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 세션 삭제",
-        "tags": [
-          "Mentoring"
         ]
       }
     },
     "/mentoring/{id}/public": {
       "patch": {
         "operationId": "MentoringController_updatePublic",
+        "summary": "멘토링 세션별 공개 여부",
         "parameters": [
           {
             "name": "id",
@@ -1239,40 +1556,40 @@
             "description": ""
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 세션별 공개 여부",
-        "tags": [
-          "Mentoring"
         ]
       }
     },
     "/mentoring/upload-image": {
       "post": {
         "operationId": "MentoringController_uploadSessionEditorImages",
+        "summary": "이미지 업로드 (세션)",
         "parameters": [],
         "responses": {
           "201": {
             "description": ""
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "이미지 업로드 (세션)",
-        "tags": [
-          "Mentoring"
         ]
       }
     },
     "/mentoring/public": {
       "patch": {
         "operationId": "MentoringController_updatePublicStatus",
+        "summary": "멘토 세션 공개 여부 설정",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1292,20 +1609,20 @@
             "description": "멘토 정보를 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Mentoring"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 세션 공개 여부 설정",
-        "tags": [
-          "Mentoring"
         ]
       }
     },
     "/schedule": {
       "post": {
         "operationId": "ScheduleController_createSchedule",
+        "summary": "멘토 정기 스케줄 등록",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1325,18 +1642,18 @@
             "description": "본인의 스케줄만 등록할 수 있습니다."
           }
         },
+        "tags": [
+          "Schedule"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 정기 스케줄 등록",
-        "tags": [
-          "Schedule"
         ]
       },
       "patch": {
         "operationId": "ScheduleController_updateSchedule",
+        "summary": "멘토 정기 스케줄 수정",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1359,18 +1676,18 @@
             "description": "해당 스케줄을 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Schedule"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 정기 스케줄 수정",
-        "tags": [
-          "Schedule"
         ]
       },
       "get": {
         "operationId": "ScheduleController_getMyScheduleList",
+        "summary": "멘토 정기 스케줄 목록 조회",
         "parameters": [],
         "responses": {
           "200": {
@@ -1387,20 +1704,20 @@
             "description": "멘토 정보를 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Schedule"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 정기 스케줄 목록 조회",
-        "tags": [
-          "Schedule"
         ]
       }
     },
     "/schedule/{id}": {
       "delete": {
         "operationId": "ScheduleController_deleteSchedule",
+        "summary": "멘토 정기 스케줄 삭제",
         "parameters": [
           {
             "name": "id",
@@ -1422,20 +1739,20 @@
             "description": "해당 스케줄을 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Schedule"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 정기 스케줄 삭제",
-        "tags": [
-          "Schedule"
         ]
       }
     },
     "/schedule/reservations": {
       "get": {
         "operationId": "ScheduleController_getMentorReservationList",
+        "summary": "멘토 예약 목록 조회",
         "parameters": [
           {
             "name": "page",
@@ -1478,20 +1795,20 @@
             "description": "등록된 세션 목록을 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Schedule"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 예약 목록 조회",
-        "tags": [
-          "Schedule"
         ]
       }
     },
     "/schedule/reservations/{id}": {
       "get": {
         "operationId": "ScheduleController_getMentorReservationDetail",
+        "summary": "멘토 예약 상세 조회",
         "parameters": [
           {
             "name": "id",
@@ -1514,20 +1831,20 @@
             }
           }
         },
+        "tags": [
+          "Schedule"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 예약 상세 조회",
-        "tags": [
-          "Schedule"
         ]
       }
     },
     "/schedule/reservations/{id}/status": {
       "patch": {
         "operationId": "ScheduleController_updateReservationStatus",
+        "summary": "멘토 예약 수락/거절 처리",
         "parameters": [
           {
             "name": "id",
@@ -1578,20 +1895,20 @@
             "description": "예약 없음"
           }
         },
+        "tags": [
+          "Schedule"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 예약 수락/거절 처리",
-        "tags": [
-          "Schedule"
         ]
       }
     },
     "/reservation/available-times/{id}": {
       "get": {
         "operationId": "ReservationController_getAvailableTimes",
+        "summary": "멘토링 예약 가능 시간 조회",
         "parameters": [
           {
             "name": "id",
@@ -1640,20 +1957,20 @@
             "description": "멘토링 예약 가능 시간 조회 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Reservation"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 예약 가능 시간 조회",
-        "tags": [
-          "Reservation"
         ]
       }
     },
     "/reservation/available-days/{id}": {
       "get": {
         "operationId": "ReservationController_getAvailableDays",
+        "summary": "멘토링 예약 가능 날짜 조회",
         "parameters": [
           {
             "name": "id",
@@ -1685,20 +2002,20 @@
             "description": "해당 멘토의 스케줄이 존재하지 않습니다."
           }
         },
+        "tags": [
+          "Reservation"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 예약 가능 날짜 조회",
-        "tags": [
-          "Reservation"
         ]
       }
     },
     "/reservation": {
       "post": {
         "operationId": "ReservationController_createReservation",
+        "summary": "멘토링 예약 등록",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1724,20 +2041,20 @@
             "description": "멘토링 예약 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Reservation"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 예약 등록",
-        "tags": [
-          "Reservation"
         ]
       }
     },
     "/reservation/my": {
       "get": {
         "operationId": "ReservationController_getMyReservations",
+        "summary": "멘티 진행중인 예약 내역 조회",
         "parameters": [
           {
             "name": "page",
@@ -1780,20 +2097,20 @@
             "description": "예약 내역 조회 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Reservation"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘티 진행중인 예약 내역 조회",
-        "tags": [
-          "Reservation"
         ]
       }
     },
     "/reservation/past": {
       "get": {
         "operationId": "ReservationController_getMyClearReservations",
+        "summary": "멘티 완료된 예약 내역 조회",
         "parameters": [
           {
             "name": "page",
@@ -1836,20 +2153,20 @@
             "description": "예약 내역 조회 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Reservation"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘티 완료된 예약 내역 조회",
-        "tags": [
-          "Reservation"
         ]
       }
     },
     "/reservation/done/{orderId}": {
       "get": {
         "operationId": "ReservationController_donePayment",
+        "summary": "결제 완료 페이지 - 예약 확정",
         "parameters": [
           {
             "name": "orderId",
@@ -1872,20 +2189,20 @@
             }
           }
         },
+        "tags": [
+          "Reservation"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "결제 완료 페이지 - 예약 확정",
-        "tags": [
-          "Reservation"
         ]
       }
     },
     "/reservation/joinRoom/{roomId}": {
       "get": {
         "operationId": "ReservationController_joinRoom",
+        "summary": "멘토링 방 입장",
         "parameters": [
           {
             "name": "roomId",
@@ -1914,20 +2231,20 @@
             "description": "예약을 찾을 수 없음"
           }
         },
+        "tags": [
+          "Reservation"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 방 입장",
-        "tags": [
-          "Reservation"
         ]
       }
     },
     "/payment/confirm": {
       "post": {
         "operationId": "PaymentController_confirmPayment",
+        "summary": "결제 성공 시 Toss confirm 처리",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1950,20 +2267,20 @@
             "description": "결제 처리 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Payment"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "결제 성공 시 Toss confirm 처리",
-        "tags": [
-          "Payment"
         ]
       }
     },
     "/payment/mentor-income": {
       "get": {
         "operationId": "PaymentController_getMentorIncome",
+        "summary": "멘토 수입 내역 조회",
         "parameters": [
           {
             "name": "page",
@@ -2009,20 +2326,20 @@
             "description": "멘토 수입 내역 목록을 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Payment"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토 수입 내역 조회",
-        "tags": [
-          "Payment"
         ]
       }
     },
     "/payment/mentee-income": {
       "get": {
         "operationId": "PaymentController_getMenteeIncome",
+        "summary": "멘티 결제 내역 조회",
         "parameters": [
           {
             "name": "page",
@@ -2065,20 +2382,20 @@
             "description": "멘티 결제 내역 목록을 찾을 수 없습니다."
           }
         },
+        "tags": [
+          "Payment"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘티 결제 내역 조회",
-        "tags": [
-          "Payment"
         ]
       }
     },
     "/payment/refund": {
       "post": {
         "operationId": "PaymentController_refundPayment",
+        "summary": "결제 환불",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2104,20 +2421,20 @@
             "description": "환불 처리 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Payment"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "결제 환불",
-        "tags": [
-          "Payment"
         ]
       }
     },
     "/review": {
       "post": {
         "operationId": "ReviewController_create",
+        "summary": "멘토링 후기 작성",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2146,20 +2463,20 @@
             "description": "후기 작성 중 서버 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Review"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "멘토링 후기 작성",
-        "tags": [
-          "Review"
         ]
       }
     },
     "/review/{id}": {
       "patch": {
         "operationId": "ReviewController_update",
+        "summary": "후기 수정",
         "parameters": [
           {
             "name": "id",
@@ -2191,18 +2508,18 @@
             "description": "리뷰를 찾을 수 없음"
           }
         },
+        "tags": [
+          "Review"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "후기 수정",
-        "tags": [
-          "Review"
         ]
       },
       "delete": {
         "operationId": "ReviewController_Delete",
+        "summary": "후기 삭제",
         "parameters": [
           {
             "name": "id",
@@ -2224,20 +2541,20 @@
             "description": "리뷰를 찾을 수 없음"
           }
         },
+        "tags": [
+          "Review"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "후기 삭제",
-        "tags": [
-          "Review"
         ]
       }
     },
     "/review/my": {
       "get": {
         "operationId": "ReviewController_getMyReviews",
+        "summary": "내가 쓴 후기 조회",
         "parameters": [
           {
             "name": "page",
@@ -2283,20 +2600,20 @@
             "description": "서버 오류"
           }
         },
+        "tags": [
+          "Review"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "내가 쓴 후기 조회",
-        "tags": [
-          "Review"
         ]
       }
     },
     "/review/received": {
       "get": {
         "operationId": "ReviewController_getMentorReceivedReviews",
+        "summary": "내가 받은 후기 조회 (멘토)",
         "parameters": [
           {
             "name": "page",
@@ -2342,20 +2659,20 @@
             "description": "서버 오류"
           }
         },
+        "tags": [
+          "Review"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "내가 받은 후기 조회 (멘토)",
-        "tags": [
-          "Review"
         ]
       }
     },
     "/article": {
       "get": {
         "operationId": "ArticleController_getArticles",
+        "summary": "아티클 목록 조회",
         "parameters": [
           {
             "name": "page",
@@ -2397,7 +2714,6 @@
             "description": "카테고리 이름 (선택)",
             "schema": {
               "example": "book",
-              "type": "string",
               "enum": [
                 "career",
                 "job",
@@ -2410,7 +2726,8 @@
                 "portfolio",
                 "book",
                 "etc"
-              ]
+              ],
+              "type": "string"
             }
           }
         ],
@@ -2432,13 +2749,13 @@
             "description": "서버 오류 또는 목록 조회 실패"
           }
         },
-        "summary": "아티클 목록 조회",
         "tags": [
           "Article"
         ]
       },
       "post": {
         "operationId": "ArticleController_createArticle",
+        "summary": "아티클 작성",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2468,20 +2785,20 @@
             "description": "아티클 생성 중 오류가 발생했습니다."
           }
         },
+        "tags": [
+          "Article"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "아티클 작성",
-        "tags": [
-          "Article"
         ]
       }
     },
     "/article/liked": {
       "get": {
         "operationId": "ArticleController_getLikedArticles",
+        "summary": "좋아요 여부확인",
         "parameters": [
           {
             "name": "ids",
@@ -2500,7 +2817,6 @@
             "description": ""
           }
         },
-        "summary": "좋아요 여부확인",
         "tags": [
           "Article"
         ]
@@ -2509,6 +2825,7 @@
     "/article/{id}": {
       "get": {
         "operationId": "ArticleController_getArticleDetail",
+        "summary": "아티클 상세 조회 (조회수 증가)",
         "parameters": [
           {
             "name": "id",
@@ -2531,13 +2848,13 @@
             }
           }
         },
-        "summary": "아티클 상세 조회 (조회수 증가)",
         "tags": [
           "Article"
         ]
       },
       "delete": {
         "operationId": "ArticleController_deleteArticle",
+        "summary": "아티클 삭제 (작성자 전용)",
         "parameters": [
           {
             "name": "id",
@@ -2553,18 +2870,18 @@
             "description": ""
           }
         },
+        "tags": [
+          "Article"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "아티클 삭제 (작성자 전용)",
-        "tags": [
-          "Article"
         ]
       },
       "patch": {
         "operationId": "ArticleController_updateArticle",
+        "summary": "아티클 수정",
         "parameters": [
           {
             "name": "id",
@@ -2590,20 +2907,20 @@
             "description": ""
           }
         },
+        "tags": [
+          "Article"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "아티클 수정",
-        "tags": [
-          "Article"
         ]
       }
     },
     "/article/{id}/like": {
       "patch": {
         "operationId": "ArticleController_toggleArticleLike",
+        "summary": "좋아요 토글",
         "parameters": [
           {
             "name": "id",
@@ -2632,27 +2949,26 @@
             "description": "서버 오류"
           }
         },
+        "tags": [
+          "Article"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "좋아요 토글",
-        "tags": [
-          "Article"
         ]
       }
     },
     "/article/upload-image": {
       "post": {
         "operationId": "ArticleController_uploadArticleEditorImages",
+        "summary": "이미지 업로드 (아티클)",
         "parameters": [],
         "responses": {
           "200": {
             "description": ""
           }
         },
-        "summary": "이미지 업로드 (아티클)",
         "tags": [
           "Article"
         ]
@@ -2661,6 +2977,7 @@
     "/article/{articleId}/comment": {
       "post": {
         "operationId": "ArticleController_createComment",
+        "summary": "댓글/대댓글 작성",
         "parameters": [
           {
             "name": "articleId",
@@ -2695,18 +3012,18 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "Article"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "댓글/대댓글 작성",
-        "tags": [
-          "Article"
         ]
       },
       "get": {
         "operationId": "ArticleController_getComment",
+        "summary": "댓글 목록 조회 (대댓글 포함)",
         "parameters": [
           {
             "name": "articleId",
@@ -2757,7 +3074,6 @@
             "description": "서버 에러"
           }
         },
-        "summary": "댓글 목록 조회 (대댓글 포함)",
         "tags": [
           "Article"
         ]
@@ -2766,6 +3082,7 @@
     "/article/comment/{id}": {
       "patch": {
         "operationId": "ArticleController_updateComment",
+        "summary": "댓글 수정",
         "parameters": [
           {
             "name": "id",
@@ -2803,18 +3120,18 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "Article"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "댓글 수정",
-        "tags": [
-          "Article"
         ]
       },
       "delete": {
         "operationId": "ArticleController_deleteComment",
+        "summary": "댓글 삭제",
         "parameters": [
           {
             "name": "id",
@@ -2839,20 +3156,20 @@
             "description": "서버 에러"
           }
         },
+        "tags": [
+          "Article"
+        ],
         "security": [
           {
             "access-token": []
           }
-        ],
-        "summary": "댓글 삭제",
-        "tags": [
-          "Article"
         ]
       }
     },
     "/session/{id}/reviews": {
       "get": {
         "operationId": "SessionController_getReviews",
+        "summary": "세션별 후기 조회",
         "parameters": [
           {
             "name": "id",
@@ -2905,16 +3222,13 @@
           "500": {
             "description": "서버 오류"
           }
-        },
-        "summary": "세션별 후기 조회",
-        "tags": [
-          "Session"
-        ]
+        }
       }
     },
     "/session": {
       "get": {
         "operationId": "SessionController_getSession",
+        "summary": "멘토가 등록한 세션 목록 조회",
         "parameters": [
           {
             "name": "page",
@@ -2955,7 +3269,6 @@
             "description": "카테고리 이름 (선택)",
             "schema": {
               "example": "it",
-              "type": "string",
               "enum": [
                 "business",
                 "marketing",
@@ -2967,7 +3280,8 @@
                 "consulting",
                 "manufacturing",
                 "etc"
-              ]
+              ],
+              "type": "string"
             }
           }
         ],
@@ -2988,16 +3302,13 @@
           "500": {
             "description": "등록된 세션 목록을 찾을 수 없습니다."
           }
-        },
-        "summary": "멘토가 등록한 세션 목록 조회",
-        "tags": [
-          "Session"
-        ]
+        }
       }
     },
     "/session/{id}": {
       "get": {
         "operationId": "SessionController_getSessionDetail",
+        "summary": "멘토가 등록한 세션 상세 조회",
         "parameters": [
           {
             "name": "id",
@@ -3015,11 +3326,7 @@
           "404": {
             "description": "세션을 찾을 수 없습니다."
           }
-        },
-        "summary": "멘토가 등록한 세션 상세 조회",
-        "tags": [
-          "Session"
-        ]
+        }
       }
     }
   },
@@ -3041,6 +3348,127 @@
       }
     },
     "schemas": {
+      "NotificationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "알림 ID",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "reservation",
+              "chat",
+              "article",
+              "payment",
+              "mentor",
+              "review"
+            ],
+            "description": "알림 타입",
+            "example": "reservation"
+          },
+          "message": {
+            "type": "string",
+            "description": "알림 메시지",
+            "example": "결제가 완료되었습니다."
+          },
+          "link": {
+            "type": "string",
+            "description": "알림 클릭 시 이동할 링크",
+            "example": "/payment/123"
+          },
+          "isRead": {
+            "type": "boolean",
+            "description": "읽음 여부",
+            "example": false,
+            "default": false
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "알림 생성 시간",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "알림 수정 시간",
+            "example": "2024-01-01T00:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "message",
+          "isRead",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateNotificationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "reservation",
+              "chat",
+              "article",
+              "payment",
+              "mentor",
+              "review"
+            ],
+            "description": "알림 타입",
+            "example": "reservation"
+          },
+          "message": {
+            "type": "string",
+            "description": "알림 메시지",
+            "example": "결제가 완료되었습니다."
+          },
+          "link": {
+            "type": "string",
+            "description": "알림 클릭 시 이동할 링크",
+            "example": "/payment/123"
+          }
+        },
+        "required": [
+          "type",
+          "message"
+        ]
+      },
+      "MarkAllAsReadResponseDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "처리 성공 여부",
+            "example": true
+          },
+          "affected": {
+            "type": "number",
+            "description": "처리된 알림 개수",
+            "example": 5
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "UpdateFcmTokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "FCM 토큰"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
       "UserDto": {
         "type": "object",
         "properties": {

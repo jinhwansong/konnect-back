@@ -9,7 +9,7 @@ export class ReservationsTask {
   async handleReservationStatus() {
     await this.schedulerService.updateMentoringStatus();
   }
-  @Cron('0 */5 * * *')
+  @Cron('0 */10 * * *')
   async handleProgressReservationStatus() {
     await this.schedulerService.ProgressReservations();
   }
