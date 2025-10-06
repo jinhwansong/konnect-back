@@ -9,15 +9,26 @@ import { createUploadFolder } from './common/util/upload.folder';
 import { HttpExceptionFilter } from './httpException.filter';
 import cookieParser from 'cookie-parser';
 import { writeFileSync } from 'fs';
+import { SocketIoAdapter } from './realtime/socket-io.adapter';
 
 declare const module: any;
 dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Socket.IO Adapter 설정 (CORS 및 네임스페이스 포함)
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
+
   app.set('trust proxy', 1);
+
+  // HTTP CORS 설정
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie', 'Cookie'],
@@ -44,12 +55,38 @@ async function bootstrap() {
 
   // 스웨거 설정
   const config = new DocumentBuilder()
-    .setTitle('커넥트 api문서')
+    .setTitle('커넥트 API 문서')
     .setDescription(
-      '커넥트 개발을 위한 api문서 \n\n🔗 OpenAPI 명세 다운로드: /openapi-spec.json`,',
+      `
+📘 **Konnect 프로젝트 API 문서**
+
+이 문서는 REST API 및 실시간(WebSocket) 이벤트 명세를 포함합니다.
+
+---
+
+### 💬 WebSocket (채팅/화상채팅) 연결 정보
+
+**Namespace:** \`/chat\`
+
+**Connection URL:** \`wss://api.konnect.store/chat\` (로컬: \`ws://localhost:3030/chat\`)
+
+**이벤트 목록**
+
+| 이벤트명 | 설명 | 예시 Payload |
+|-----------|------|---------------|
+| \`join_room\` | 채팅방 입장 | { "roomId": "r1", "userId": "u1", "token": "..." } |
+| \`leave_room\` | 채팅방 나가기 | { "roomId": "r1", "userId": "u1" } |
+| \`new_message\` | 새 메시지 전송 | { "roomId": "r1", "message": "안녕하세요" } |
+| \`user_joined\` | 다른 유저 입장 알림 | { "userId": "u2" } |
+| \`user_left\` | 다른 유저 퇴장 알림 | { "userId": "u2" } |
+| \`webrtc_signal\` | 화상채팅 시그널 전송 | { "type": "offer", "sdp": "..." } |
+
+---
+
+🔗 **OpenAPI JSON 다운로드:** [/openapi-spec.json](./openapi-spec.json)
+  `,
     )
     .setVersion('1.0')
-    // 스웨어에서 로그인 할때
     .addBearerAuth(
       {
         type: 'http',
@@ -64,9 +101,16 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   writeFileSync('./openapi-spec.json', JSON.stringify(document, null, 2));
-  const port = process.env.PORT;
+
+  const port = process.env.PORT || 3001;
 
   await app.listen(port);
+
+  console.log(`🚀 Server running on: http://localhost:${port}`);
+  console.log(`📚 API Documentation: http://localhost:${port}/api`);
+  console.log(`💬 Chat WebSocket: ws://localhost:${port}/chat`);
+  console.log(`📹 WebRTC WebSocket: ws://localhost:${port}/webrtc`);
+
   if (module.hot) {
     module.hot.accept();
     module.hot.dispose(() => app.close());

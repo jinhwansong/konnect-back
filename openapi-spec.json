@@ -3328,11 +3328,277 @@
           }
         }
       }
+    },
+    "/chat/rooms": {
+      "post": {
+        "operationId": "ChatController_createRoom",
+        "summary": "채팅방 생성",
+        "description": "신규 채팅방을 생성합니다. (웹소켓 Gateway와 별개로 REST 기반 방 생성)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "채팅방 생성 요청 본문",
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "name": "멘토링 101반",
+                  "description": "주 1회 멘토링 방",
+                  "participants": [
+                    "mentor-123",
+                    "mentee-456"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "방 생성 성공",
+                    "data": {
+                      "id": "room-abc",
+                      "name": "멘토링 101반",
+                      "description": "주 1회 멘토링 방",
+                      "participantCount": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효성 검증 실패"
+          },
+          "401": {
+            "description": "인증 실패"
+          },
+          "404": {
+            "description": "관련 리소스 없음"
+          }
+        },
+        "tags": [
+          "Chat & Video Chat"
+        ]
+      },
+      "get": {
+        "operationId": "ChatController_listRooms",
+        "summary": "채팅방 목록 조회",
+        "description": "생성된 채팅방 목록을 페치합니다.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "목록 조회 성공",
+                    "data": [
+                      {
+                        "id": "room-abc",
+                        "name": "멘토링 101반",
+                        "description": "주 1회 멘토링 방",
+                        "participantCount": 2
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효성 검증 실패"
+          },
+          "401": {
+            "description": "인증 실패"
+          },
+          "404": {
+            "description": "관련 리소스 없음"
+          }
+        },
+        "tags": [
+          "Chat & Video Chat"
+        ]
+      }
+    },
+    "/chat/rooms/{roomId}/messages": {
+      "get": {
+        "operationId": "ChatController_getRoomMessages",
+        "summary": "특정 방 메시지 조회",
+        "description": "특정 채팅방의 메시지 기록을 조회합니다.",
+        "parameters": [
+          {
+            "name": "roomId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "메시지 조회 성공",
+                    "data": [
+                      {
+                        "id": "msg-1",
+                        "roomId": "room-abc",
+                        "userId": "mentor-123",
+                        "message": "안녕하세요",
+                        "createdAt": "2025-10-06T10:00:00.000Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효성 검증 실패"
+          },
+          "401": {
+            "description": "인증 실패"
+          },
+          "404": {
+            "description": "방 또는 메시지 없음"
+          }
+        },
+        "tags": [
+          "Chat & Video Chat"
+        ]
+      },
+      "post": {
+        "operationId": "ChatController_sendMessage",
+        "summary": "메시지 전송",
+        "description": "특정 채팅방으로 메시지를 전송합니다. (실제 송수신은 WebSocket으로 처리되며, 서버 저장/이력 접근은 REST로 접근)",
+        "parameters": [
+          {
+            "name": "roomId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "메시지 전송 요청 본문",
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "userId": "mentee-456",
+                  "message": "자료 공유 부탁드립니다."
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "메시지 전송 성공",
+                    "data": {
+                      "id": "msg-2",
+                      "roomId": "room-abc",
+                      "userId": "mentee-456",
+                      "message": "자료 공유 부탁드립니다.",
+                      "createdAt": "2025-10-06T10:10:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효성 검증 실패"
+          },
+          "401": {
+            "description": "인증 실패"
+          },
+          "404": {
+            "description": "방 없음"
+          }
+        },
+        "tags": [
+          "Chat & Video Chat"
+        ]
+      }
+    },
+    "/chat/webrtc/token": {
+      "post": {
+        "operationId": "ChatController_issueWebRTCToken",
+        "summary": "화상채팅 방 참여 토큰 발급",
+        "description": "WebRTC 시그널링/참여를 위해 필요한 토큰을 발급합니다.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "토큰 발급 요청 본문",
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "roomId": "room-abc",
+                  "userId": "mentor-123"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "message": "토큰 발급 성공",
+                    "data": {
+                      "roomId": "room-abc",
+                      "userId": "mentor-123",
+                      "token": "eyJhbGciOi...",
+                      "expiresIn": 3600
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "유효성 검증 실패"
+          },
+          "401": {
+            "description": "인증 실패"
+          },
+          "404": {
+            "description": "방 없음"
+          }
+        },
+        "tags": [
+          "Chat & Video Chat"
+        ]
+      }
     }
   },
   "info": {
-    "title": "커넥트 api문서",
-    "description": "커넥트 개발을 위한 api문서 \n\n🔗 OpenAPI 명세 다운로드: /openapi-spec.json`,",
+    "title": "커넥트 API 문서",
+    "description": "\n📘 **Konnect 프로젝트 API 문서**\n\n이 문서는 REST API 및 실시간(WebSocket) 이벤트 명세를 포함합니다.\n\n---\n\n### 💬 WebSocket (채팅/화상채팅) 연결 정보\n\n**Namespace:** `/chat`\n\n**Connection URL:** `wss://api.konnect.store/chat` (로컬: `ws://localhost:3030/chat`)\n\n**이벤트 목록**\n\n| 이벤트명 | 설명 | 예시 Payload |\n|-----------|------|---------------|\n| `join_room` | 채팅방 입장 | { \"roomId\": \"r1\", \"userId\": \"u1\", \"token\": \"...\" } |\n| `leave_room` | 채팅방 나가기 | { \"roomId\": \"r1\", \"userId\": \"u1\" } |\n| `new_message` | 새 메시지 전송 | { \"roomId\": \"r1\", \"message\": \"안녕하세요\" } |\n| `user_joined` | 다른 유저 입장 알림 | { \"userId\": \"u2\" } |\n| `user_left` | 다른 유저 퇴장 알림 | { \"userId\": \"u2\" } |\n| `webrtc_signal` | 화상채팅 시그널 전송 | { \"type\": \"offer\", \"sdp\": \"...\" } |\n\n---\n\n🔗 **OpenAPI JSON 다운로드:** [/openapi-spec.json](./openapi-spec.json)\n  ",
     "version": "1.0",
     "contact": {}
   },

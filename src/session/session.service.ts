@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import striptags from 'striptags';
 import { MentoringReview, MentoringSession } from '@/entities';
 import { SessionQueryDto } from './dto/session.dto';
 import { PaginationDto } from '@/common/dto/page.dto';
@@ -124,7 +123,7 @@ export class SessionService {
           take: 3,
         });
         const previewReviews = reviews.map((review) => ({
-          content: striptags(review.content).split('\n').slice(0, 3).join('\n'),
+          content: review.content.split('\n').slice(0, 3).join('\n'),
           rating: review.rating,
           createdAt: review.createdAt,
           nickname: review.mentee.nickname,
@@ -132,7 +131,7 @@ export class SessionService {
         return {
           id: item.id,
           title: item.title,
-          description: striptags(item.description)
+          description: item.description
             .replace(/&nbsp;/g, ' ')
             .replace(/⭐only\.?/gi, '')
             .replace(/\s+/g, ' ')

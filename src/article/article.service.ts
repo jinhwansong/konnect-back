@@ -12,7 +12,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { ArticleQueryDto, CreateArticleDto } from './dto/article.dto';
-import striptags from 'striptags';
 import { Comment } from '@/entities/comment.entity';
 import { CreateCommentDto, PatchCommentDto } from './dto/comment.dto';
 import { PaginationDto } from '@/common/dto/page.dto';
@@ -93,7 +92,7 @@ export class ArticleService {
       likeCount: (entity as any).likeCount ?? 0,
       category: entity.category,
       createdAt: entity.createdAt,
-      content: striptags(entity.content)
+      content: entity.content
         .replace(/&nbsp;/g, ' ')
         .replace(/\s+/g, ' ')
         .trim()

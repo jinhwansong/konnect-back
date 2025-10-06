@@ -7,6 +7,7 @@ import {
   ChatParticipant,
   ChatParticipantSchema,
 } from '@/schema/chat-participant.schema';
+import { ChatController } from './chat.controller';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import {
       { name: ChatParticipant.name, schema: ChatParticipantSchema },
     ]),
   ],
+  controllers: [ChatController],
   providers: [ChatService],
   exports: [ChatService],
 })

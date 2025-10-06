@@ -27,6 +27,8 @@ import { ListenerModule } from './listener/listener.module';
 import { NotificationController } from './notification/notification.controller';
 import { NotificationModule } from './notification/notification.module';
 import { FcmModule } from './fcm/fcm.module';
+import { ChatModule as RealtimeChatModule } from './realtime/chat/chat.module';
+import { WebRTCModule } from './realtime/webrtc/webrtc.module';
 
 @Module({
   imports: [
@@ -80,6 +82,9 @@ import { FcmModule } from './fcm/fcm.module';
     ListenerModule,
     NotificationModule,
     FcmModule,
+    ChatModule,
+    WebRTCModule,
+    RealtimeChatModule,
   ],
   controllers: [AppController, NotificationController],
   providers: [AppService],
