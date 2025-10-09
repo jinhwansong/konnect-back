@@ -28,7 +28,7 @@ import {
 } from './dto/reservation.dto';
 import { ReservationService } from './reservation.service';
 import { DonePaymentResponseDto } from './dto/reservation.response.dto';
-import { JoinRoomResponseDto } from './dto/room.dtd';
+import { JoinRoomResponseDto } from './dto/room.dto';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('Reservation')
@@ -206,7 +206,7 @@ export class ReservationController {
     status: 404,
     description: '예약을 찾을 수 없음',
   })
-  @Get('joinRoom/:roomId')
+  @Post('joinRoom/:roomId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '멘토링 방 입장' })
   async joinRoom(@User('id') userId: string, @Param('roomId') roomId: string) {

@@ -7,6 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 export class ChatRoom extends Document {
   @Prop({ required: true, unique: true, default: uuidv4 })
   roomId: string;
+
+  @Prop({ type: String })
+  name: string;
+
   @Prop({ type: [String], required: true })
   participants: string[];
 

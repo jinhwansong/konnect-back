@@ -19,7 +19,7 @@ export class MailListener {
       relations: ['session', 'session.mentor', 'session.mentor.user', 'mentee'],
     });
     if (!reservation) return;
-    const meetingLink = `${process.env.FRONT_URL}/room/${reservation.roomId}`;
+    const meetingLink = `${process.env.FRONT_URL}/room/${reservation.id}`;
     await this.mailService.sendReservationConfirmed(reservation, meetingLink);
   }
   @OnEvent('reservation.refunded')

@@ -267,6 +267,7 @@ export class ScheduleService {
         menteeName: reservation.mentee.nickname,
         menteeEmail: reservation.mentee.email,
         menteePhone: reservation.mentee.phone,
+        roomId: reservation.roomId,
       };
     } catch (error) {
       this.logger.error(

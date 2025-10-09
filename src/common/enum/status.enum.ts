@@ -48,6 +48,7 @@ export enum ChatRoomStatus {
 export enum ChatMessageType {
   TEXT = 'text',
   SYSTEM = 'system',
+  FILE = 'file',
 }
 
 // 알림

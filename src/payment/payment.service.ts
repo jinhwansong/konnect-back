@@ -119,9 +119,9 @@ export class PaymentService {
         );
       });
 
-      // this.eventEmitter.emit('payment.confirmed', {
-      //   reservationId: reservation.id,
-      // });
+      this.eventEmitter.emit('payment.confirmed', {
+        reservationId: reservation.id,
+      });
 
       return {
         message: '결제에 성공했습니다.',

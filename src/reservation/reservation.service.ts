@@ -158,7 +158,7 @@ export class ReservationService {
 
   async createReservation(userId: string, body: CreateReservationDto) {
     const { sessionId, date, startTime, endTime, question } = body;
-    
+
     return this.dataSource.transaction(async (manager) => {
       try {
         const session = await manager.findOne(MentoringSession, {
@@ -198,16 +198,21 @@ export class ReservationService {
 
         await manager.save(newReservation);
 
-        this.logger.log(`Reservation created successfully: ${newReservation.id}`);
+        this.logger.log(
+          `Reservation created successfully: ${newReservation.id}`,
+        );
 
         return {
           reservationId: newReservation.id,
         };
       } catch (error) {
         this.logger.error(`Failed to create reservation: ${error.message}`);
-        throw error instanceof ConflictException || error instanceof NotFoundException
+        throw error instanceof ConflictException ||
+          error instanceof NotFoundException
           ? error
-          : new InternalServerErrorException('멘토링 예약 중 오류가 발생했습니다.');
+          : new InternalServerErrorException(
+              '멘토링 예약 중 오류가 발생했습니다.',
+            );
       }
     });
   }
@@ -240,7 +245,6 @@ export class ReservationService {
       status: res.status,
       sessionTitle: res.session.title,
       mentorName: res.session.mentor.user.name,
-      roomId: res.roomId,
       canEnter: this.checkEnterable(res),
       duration: res.session.duration,
     }));
@@ -335,14 +339,15 @@ export class ReservationService {
     };
   }
 
-  async joinRoom(userId: string, roomId: string) {
+  async joinRoom(userId: string, id: string) {
     const reservation = await this.reservationRepository.findOne({
-      where: { roomId },
+      where: { id },
       relations: ['mentee', 'session', 'session.mentor', 'session.mentor.user'],
     });
     if (!reservation) throw new NotFoundException('예약된 멘토링이 없습니다.');
+
     if (
-      reservation.mentee.id !== userId ||
+      reservation.mentee.id !== userId &&
       reservation.session.mentor.user.id !== userId
     ) {
       throw new ForbiddenException('본인의 예약만 입장 가능합니다.');
@@ -360,9 +365,8 @@ export class ReservationService {
     }
 
     return {
-      reservationId: reservation.id,
-      roomId,
       status: this.checkEnterable(reservation),
+      roomId: reservation.roomId,
     };
   }
 }

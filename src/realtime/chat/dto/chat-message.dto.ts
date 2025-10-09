@@ -7,21 +7,6 @@ export class CreateMessageDto {
 
   @IsString()
   @IsNotEmpty()
-  userId!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  userName!: string;
-
-  @IsOptional()
-  @IsString()
-  userImage?: string;
-
-  @IsBoolean()
-  isMentor!: boolean;
-
-  @IsString()
-  @IsNotEmpty()
   message!: string;
 
   @IsOptional()
@@ -41,31 +26,12 @@ export class JoinRoomDto {
   @IsString()
   @IsNotEmpty()
   roomId!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  userId!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  userName!: string;
-
-  @IsOptional()
-  @IsString()
-  userImage?: string;
-
-  @IsBoolean()
-  isMentor!: boolean;
 }
 
 export class LeaveRoomDto {
   @IsString()
   @IsNotEmpty()
   roomId!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  userId!: string;
 }
 
 
