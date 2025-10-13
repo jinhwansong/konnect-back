@@ -265,6 +265,26 @@ export class WebRTCGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage('track_state_changed')
+  handleTrackStateChanged(
+    @MessageBody() data: { roomId: string; userId: string; isVideoEnabled: boolean; isAudioEnabled: boolean },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId, userId, isVideoEnabled, isAudioEnabled } = data;
+    
+    const user = this.users.get(client.id);
+    if (user && user.roomId === roomId) {
+      this.logger.log(`🎚️ Track state changed by ${user.userName} (${userId}): video=${isVideoEnabled}, audio=${isAudioEnabled}`);
+      
+      // Broadcast to all other users in the room
+      client.to(roomId).emit('track_state_changed', {
+        userId,
+        isVideoEnabled,
+        isAudioEnabled,
+      });
+    }
+  }
+
   // Helper method to get room statistics
   getRoomStats(roomId: string) {
     const roomMembers = this.rooms.get(roomId);

@@ -43,15 +43,6 @@ export class ChatRoomListQueryDto {
 export class SendMessageDto {
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({
-    example: 'user-123',
-    description: '보낸 사람 사용자 ID',
-    required: true,
-  })
-  userId: string;
-
-  @IsString()
-  @IsNotEmpty()
   @MaxLength(1000)
   @ApiProperty({
     example: '안녕하세요',
@@ -88,13 +79,25 @@ export class IssueWebRTCTokenDto {
     required: true,
   })
   roomId: string;
+}
 
+export class GetRoomMessagesQueryDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @ApiProperty({
-    example: 'user-123',
-    description: '토큰을 발급받으려는 사용자 ID',
-    required: true,
+    example: '507f1f77bcf86cd799439011',
+    description: '마지막으로 받은 메시지 ID (커서). 없으면 최신 메시지부터 가져옴',
+    required: false,
   })
-  userId: string;
+  cursor?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    example: '20',
+    description: '한 번에 가져올 메시지 개수 (기본 20)',
+    required: false,
+    default: '20',
+  })
+  limit?: string;
 }

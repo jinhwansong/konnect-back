@@ -1,5 +1,46 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class ChatUserDto {
+  @ApiProperty({
+    example: 'user-123',
+    description: '사용자 ID',
+  })
+  id: string;
+
+  @ApiProperty({
+    example: '홍길동',
+    description: '사용자 이름',
+  })
+  name: string;
+
+  @ApiProperty({
+    example: 'https://example.com/profile.jpg',
+    description: '프로필 이미지 URL',
+    required: false,
+  })
+  image?: string;
+
+  @ApiProperty({
+    example: true,
+    description: '멘토 여부',
+  })
+  isMentor: boolean;
+
+  @ApiProperty({
+    example: 'room-abc',
+    description: '현재 참여중인 방 ID',
+    required: false,
+  })
+  roomId?: string;
+
+  @ApiProperty({
+    example: 'socket-xyz',
+    description: '소켓 ID (실시간 연결용)',
+    required: false,
+  })
+  socketId?: string;
+}
+
 export class ChatRoomSummaryDto {
   @ApiProperty({
     example: 'room-abc',
@@ -34,16 +75,23 @@ export class ChatMessageDto {
   roomId: string;
 
   @ApiProperty({
-    example: 'user-123',
-    description: '발신자 ID',
+    type: ChatUserDto,
+    description: '발신자 정보',
   })
-  userId: string;
+  sender: ChatUserDto;
 
   @ApiProperty({
     example: '안녕하세요',
     description: '메시지 내용',
   })
   message: string;
+
+  @ApiProperty({
+    example: 'text',
+    description: '메시지 타입',
+    enum: ['text', 'system', 'file'],
+  })
+  type: 'text' | 'system' | 'file';
 
   @ApiProperty({
     example: '2025-10-06T10:00:00.000Z',
@@ -64,6 +112,33 @@ export class ChatMessageDto {
     required: false,
   })
   fileName?: string;
+}
+
+export class ChatMessageListPaginationDto {
+  @ApiProperty({
+    type: [ChatMessageDto],
+    description: '메시지 목록',
+  })
+  data: ChatMessageDto[];
+
+  @ApiProperty({
+    example: true,
+    description: '더 가져올 메시지가 있는지',
+  })
+  hasMore: boolean;
+
+  @ApiProperty({
+    example: '507f1f77bcf86cd799439011',
+    description: '다음 요청에 사용할 커서 (마지막 메시지 ID)',
+    required: false,
+  })
+  nextCursor?: string;
+
+  @ApiProperty({
+    example: 20,
+    description: '반환된 메시지 개수',
+  })
+  count: number;
 }
 
 export class WebRTCTokenDto {

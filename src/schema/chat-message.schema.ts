@@ -17,6 +17,12 @@ export class ChatMessage extends Document {
   @Prop({ type: String, enum: ChatMessageType, default: ChatMessageType.TEXT })
   type: string;
 
+  @Prop({ type: String })
+  fileUrl?: string;
+
+  @Prop({ type: String })
+  fileName?: string;
+
   @Prop({ type: [{ userId: String, emoji: String }], default: [] })
   reactions: { userId: string; emoji: string }[];
 }

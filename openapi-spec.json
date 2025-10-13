@@ -3376,13 +3376,34 @@
     "/chat/rooms/{roomId}/messages": {
       "get": {
         "operationId": "ChatController_getRoomMessages",
-        "summary": "특정 방 메시지 조회",
+        "summary": "특정 방 메시지 조회 (무한스크롤)",
         "parameters": [
           {
             "name": "roomId",
             "required": true,
             "in": "path",
             "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "마지막으로 받은 메시지 ID (커서). 없으면 최신 메시지부터 가져옴",
+            "schema": {
+              "example": "507f1f77bcf86cd799439011",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "한 번에 가져올 메시지 개수 (기본 20)",
+            "schema": {
+              "default": "20",
+              "example": "20",
               "type": "string"
             }
           }
@@ -3393,7 +3414,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChatMessageListResponseDto"
+                  "$ref": "#/components/schemas/ChatMessageListPaginationDto"
                 }
               }
             }
@@ -5733,6 +5754,46 @@
           "data"
         ]
       },
+      "ChatUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "user-123",
+            "description": "사용자 ID"
+          },
+          "name": {
+            "type": "string",
+            "example": "홍길동",
+            "description": "사용자 이름"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://example.com/profile.jpg",
+            "description": "프로필 이미지 URL"
+          },
+          "isMentor": {
+            "type": "boolean",
+            "example": true,
+            "description": "멘토 여부"
+          },
+          "roomId": {
+            "type": "string",
+            "example": "room-abc",
+            "description": "현재 참여중인 방 ID"
+          },
+          "socketId": {
+            "type": "string",
+            "example": "socket-xyz",
+            "description": "소켓 ID (실시간 연결용)"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isMentor"
+        ]
+      },
       "ChatMessageDto": {
         "type": "object",
         "properties": {
@@ -5746,15 +5807,28 @@
             "example": "room-abc",
             "description": "채팅방 ID"
           },
-          "userId": {
-            "type": "string",
-            "example": "user-123",
-            "description": "발신자 ID"
+          "sender": {
+            "description": "발신자 정보",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatUserDto"
+              }
+            ]
           },
           "message": {
             "type": "string",
             "example": "안녕하세요",
             "description": "메시지 내용"
+          },
+          "type": {
+            "type": "string",
+            "example": "text",
+            "description": "메시지 타입",
+            "enum": [
+              "text",
+              "system",
+              "file"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -5775,40 +5849,47 @@
         "required": [
           "id",
           "roomId",
-          "userId",
+          "sender",
           "message",
+          "type",
           "createdAt"
         ]
       },
-      "ChatMessageListResponseDto": {
+      "ChatMessageListPaginationDto": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string",
-            "example": "메시지 목록을 조회했습니다.",
-            "description": "응답 메시지"
-          },
           "data": {
             "description": "메시지 목록",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ChatMessageDto"
             }
+          },
+          "hasMore": {
+            "type": "boolean",
+            "example": true,
+            "description": "더 가져올 메시지가 있는지"
+          },
+          "nextCursor": {
+            "type": "string",
+            "example": "507f1f77bcf86cd799439011",
+            "description": "다음 요청에 사용할 커서 (마지막 메시지 ID)"
+          },
+          "count": {
+            "type": "number",
+            "example": 20,
+            "description": "반환된 메시지 개수"
           }
         },
         "required": [
-          "message",
-          "data"
+          "data",
+          "hasMore",
+          "count"
         ]
       },
       "SendMessageDto": {
         "type": "object",
         "properties": {
-          "userId": {
-            "type": "string",
-            "example": "user-123",
-            "description": "보낸 사람 사용자 ID"
-          },
           "message": {
             "type": "string",
             "example": "안녕하세요",
@@ -5826,7 +5907,6 @@
           }
         },
         "required": [
-          "userId",
           "message"
         ]
       },
@@ -5859,16 +5939,10 @@
             "type": "string",
             "example": "room-abc",
             "description": "참여할 채팅/화상 방 ID"
-          },
-          "userId": {
-            "type": "string",
-            "example": "user-123",
-            "description": "토큰을 발급받으려는 사용자 ID"
           }
         },
         "required": [
-          "roomId",
-          "userId"
+          "roomId"
         ]
       },
       "WebRTCTokenDto": {

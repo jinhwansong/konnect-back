@@ -17,27 +17,25 @@ import { UserRole } from '@/common/enum/status.enum';
 import { CreateMessageDto, JoinRoomDto, LeaveRoomDto } from './dto/chat-message.dto';
 import * as jwt from 'jsonwebtoken';
 
-interface ChatUser {
+export interface ChatUser {
   id: string;
   name: string;
   image?: string;
   isMentor: boolean;
-  socketId: string;
-  roomId: string;
+  isConnected?: boolean;
+  socketId?: string;
+  roomId?: string;
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
-  userId: string;
-  userName: string;
-  userImage?: string;
-  isMentor: boolean;
+  roomId: string;
+  sender: ChatUser;
   message: string;
   type: 'text' | 'system' | 'file';
   fileUrl?: string;
   fileName?: string;
-  timestamp: Date;
-  roomId: string;
+  createdAt: Date | string;
 }
 
 @WebSocketGateway({
@@ -93,9 +91,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  /**
-   * JWT 토큰 검증 및 사용자 정보 조회
-   */
+  // JWT 토큰 검증 및 사용자 정보 조회
   private async verifyTokenAndGetUser(client: Socket): Promise<Users | null> {
     try {
       const token = client.handshake.auth?.token;
@@ -282,19 +278,26 @@ const user = await this.usersRepository.findOne({
     
     const isMentor = dbUser.role === UserRole.MENTOR;
     
-    const chatMessage: ChatMessage = {
-      id: Date.now().toString(),
-      userId: dbUser.id,
-      userName: dbUser.name,
-      userImage: dbUser.image || undefined,
-      isMentor,
-      message,
-      type,
-      fileUrl,
-      fileName,
-      timestamp: new Date(),
-      roomId,
-    };
+      const sender: ChatUser = {
+        id: dbUser.id,
+        name: dbUser.name,
+        image: dbUser.image || undefined,
+        isMentor: dbUser.role === UserRole.MENTOR,
+        socketId: client.id,
+        roomId,
+      };
+
+      const chatMessage: ChatMessage = {
+        id: Date.now().toString(),
+        roomId,
+        sender,
+        message,
+        type,
+        fileUrl,
+        fileName,
+        createdAt: new Date(),
+      };
+
     
     // Store message
     const roomMessages = this.messages.get(roomId) || [];
@@ -329,19 +332,26 @@ const user = await this.usersRepository.findOne({
     
     const isMentor = dbUser.role === UserRole.MENTOR;
     
+    const sender: ChatUser = {
+      id: dbUser.id,
+      name: dbUser.name,
+      image: dbUser.image || undefined,
+      isMentor: dbUser.role === UserRole.MENTOR,
+      socketId: client.id,
+      roomId,
+    };
+
     const chatMessage: ChatMessage = {
       id: Date.now().toString(),
-      userId: dbUser.id,
-      userName: dbUser.name,
-      userImage: dbUser.image || undefined,
-      isMentor,
+      roomId,
+      sender,
       message,
       type,
       fileUrl,
       fileName,
-      timestamp: new Date(),
-      roomId,
+      createdAt: new Date(),
     };
+
     
     // Store message
     const roomMessages = this.messages.get(roomId) || [];

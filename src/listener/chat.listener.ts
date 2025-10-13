@@ -23,7 +23,7 @@ export class ChatListener {
 
     const room = await this.chatService.createRoom(
       reservation.id,
-      [reservation.session.mentor.id, reservation.mentee.id],
+      [reservation.session.mentor.user.id, reservation.mentee.id],
       reservation.startTime,
       reservation.endTime,
     );

@@ -31,6 +31,7 @@ export class MentoringService {
         where: { user: { id: userId } },
         relations: ['user'],
       });
+
       if (!mentor) throw new NotFoundException('멘토를 찾을 수 없습니다.');
       const hasSchedule = await this.scheduleRepository.findOne({
         where: { mentor: { id: mentor.id } },

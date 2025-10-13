@@ -21,13 +21,14 @@ import {
 } from '@nestjs/swagger';
 import {
   ChatRoomListQueryDto,
+  GetRoomMessagesQueryDto,
   IssueWebRTCTokenDto,
   SendMessageDto,
 } from './dto/chat.dto';
 import {
   ChatRoomListResponseDto,
   ChatMessageResponseDto,
-  ChatMessageListResponseDto,
+  ChatMessageListPaginationDto,
   WebRTCTokenResponseDto,
 } from './dto/message.dto';
 import { ChatService } from './chat.service';
@@ -69,11 +70,11 @@ export class ChatController {
     };
   }
 
-  @ApiOperation({ summary: '특정 방 메시지 조회' })
+  @ApiOperation({ summary: '특정 방 메시지 조회 (무한스크롤)' })
   @ApiResponse({
     status: 200,
     description: '메시지 목록을 조회했습니다.',
-    type: ChatMessageListResponseDto,
+    type: ChatMessageListPaginationDto,
   })
   @ApiResponse({
     status: 401,
@@ -92,9 +93,15 @@ export class ChatController {
   async getRoomMessages(
     @User('id') userId: string,
     @Param('roomId') roomId: string,
+    @Query() query: GetRoomMessagesQueryDto,
   ) {
-    return this.chatService.getRoomMessages(roomId, userId);
-   
+    const limit = query.limit ? parseInt(query.limit, 10) : 20;
+    return this.chatService.getRoomMessages(
+      roomId,
+      userId,
+      query.cursor,
+      limit,
+    );
   }
 
   @ApiOperation({ summary: '메시지 전송' })

@@ -174,7 +174,7 @@ export class NotificationService {
         { userId, isRead: false },
         { isRead: true },
       );
-      console.log(result);
+
       this.logger.log(
         `Marked ${result.affected} notifications as read for user ${userId}`,
       );
@@ -256,8 +256,6 @@ export class NotificationService {
 
   async deleteAll(userId: string) {
     try {
-      console.log('userId:', userId);
-
       this.logger.log(`Deleting all notifications for user ${userId}`);
 
       const result = await this.notificationRepository.delete({
