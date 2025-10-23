@@ -11,7 +11,10 @@ export class SocketIoAdapter extends IoAdapter {
 
   createIOServer(port: number, options?: ServerOptions) {
     const cors = {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      origin: [
+        'https://surge-lobby-printing-conjunction.trycloudflare.com',
+        'http://localhost:3000',
+      ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie', 'Cookie'],
@@ -32,7 +35,7 @@ export class SocketIoAdapter extends IoAdapter {
     // Configure chat namespace
     chatNamespace.on('connection', (socket) => {
       this.logger.log(`🔌 Chat client connected: ${socket.id}`);
-      
+
       socket.on('disconnect', () => {
         this.logger.log(`🔌 Chat client disconnected: ${socket.id}`);
       });
@@ -41,15 +44,15 @@ export class SocketIoAdapter extends IoAdapter {
     // Configure webrtc namespace
     webrtcNamespace.on('connection', (socket) => {
       this.logger.log(`🔌 WebRTC client connected: ${socket.id}`);
-      
+
       socket.on('disconnect', () => {
         this.logger.log(`🔌 WebRTC client disconnected: ${socket.id}`);
       });
     });
 
-    this.logger.log('🚀 Socket.IO server created with namespaces: /chat, /webrtc');
+    this.logger.log(
+      '🚀 Socket.IO server created with namespaces: /chat, /webrtc',
+    );
     return server;
   }
 }
-
-

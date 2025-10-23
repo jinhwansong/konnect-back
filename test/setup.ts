@@ -12,13 +12,13 @@ try {
 let testDataSource: DataSource;
 
 beforeAll(async () => {
-  console.log('🔧 테스트 DB 초기화 시작...');
-  
+  ('🔧 테스트 DB 초기화 시작...');
+
   // 안전장치 재확인
   const dbDatabase = process.env.DB_DATABASE || 'konnect_test';
   if (!dbDatabase.includes('test')) {
     throw new Error(
-      `❌ 테스트 환경에서 운영 DB 접근 시도! DB: ${dbDatabase}. `.repeat(3)
+      `❌ 테스트 환경에서 운영 DB 접근 시도! DB: ${dbDatabase}. `.repeat(3),
     );
   }
 
@@ -42,15 +42,15 @@ beforeAll(async () => {
   });
 
   await testDataSource.initialize();
-  console.log('✅ 테스트 DB 초기화 완료');
+  ('✅ 테스트 DB 초기화 완료');
 });
 
 afterAll(async () => {
-  console.log('🧹 테스트 DB 정리 시작...');
-  
+  ('🧹 테스트 DB 정리 시작...');
+
   if (testDataSource && testDataSource.isInitialized) {
     await testDataSource.destroy();
-    console.log('✅ 테스트 DB 정리 완료');
+    ('✅ 테스트 DB 정리 완료');
   }
 });
 

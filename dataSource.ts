@@ -64,19 +64,19 @@ export const AppDataSource = new DataSource({
 
 // CLI에서 사용할 때 환경 정보 출력
 if (require.main === module) {
-  console.log(
+  (
     `🔧 DataSource 초기화 - 환경: ${process.env.NODE_ENV || 'development'}`,
   );
-  console.log(`📊 데이터베이스: ${dbDatabase}`);
-  console.log(`🏠 호스트: ${process.env.DB_HOST || 'localhost'}`);
-  console.log(`👤 사용자: ${process.env.DB_USERNAME || 'root'}`);
-  console.log(`🔄 Synchronize: ${isTestEnv ? 'true (테스트용)' : 'false'}`);
-  console.log(
+  (`📊 데이터베이스: ${dbDatabase}`);
+  (`🏠 호스트: ${process.env.DB_HOST || 'localhost'}`);
+  (`👤 사용자: ${process.env.DB_USERNAME || 'root'}`);
+  (`🔄 Synchronize: ${isTestEnv ? 'true (테스트용)' : 'false'}`);
+  (
     `📝 Migrations Run: ${isProdEnv ? 'true (프로덕션용)' : 'false'}`,
   );
 
   // entities 경로 확인
-  console.log(
+  (
     `📁 Entities 경로: ${join(__dirname, 'src/entities/**/*.entity.{ts,js}')}`,
   );
 }

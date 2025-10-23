@@ -9,13 +9,12 @@ import { Logger, UsePipes, ValidationPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Server, Socket } from 'socket.io';
 
-
 interface MentoringReservation {
   mentorId: string;
   menteeId: string;
-  date: string; 
-  startTime: string; 
-  endTime: string; 
+  date: string;
+  startTime: string;
+  endTime: string;
 }
 
 interface JoinRoomPayload {
@@ -98,7 +97,7 @@ export class ChatGateway {
 
       client.emit('join_success', { roomId, userId });
       client.to(roomId).emit('user_joined', { userId, socketId: client.id });
-      console.log(`[CHAT] ${userId} joined room ${roomId}`);
+      `[CHAT] ${userId} joined room ${roomId}`;
     } catch (err) {
       this.logger.error(
         `join_denied: exception user=${userId} room=${roomId} (socket=${client.id}) - ${err?.message}`,
@@ -120,7 +119,7 @@ export class ChatGateway {
         `user_left: user=${userId} left room=${roomId} (socket=${client.id})`,
       );
       this.server.to(roomId).emit('user_left', { userId, socketId: client.id });
-      console.log(`[CHAT] ${userId} left room ${roomId}`);
+      `[CHAT] ${userId} left room ${roomId}`;
     } catch (err) {
       this.logger.error(
         `leave_room error: user=${userId} room=${roomId} (socket=${client.id}) - ${err?.message}`,
@@ -128,5 +127,3 @@ export class ChatGateway {
     }
   }
 }
-
-

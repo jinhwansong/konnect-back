@@ -25,9 +25,8 @@ async function bootstrap() {
   // HTTP CORS 설정
   app.enableCors({
     origin: [
-      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'https://surge-lobby-printing-conjunction.trycloudflare.com',
       'http://localhost:3000',
-      'http://127.0.0.1:3000',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -51,7 +50,6 @@ async function bootstrap() {
   // 이미지 정적 파일
   const uploadsPath = path.join(__dirname, '..', 'uploads');
   app.useStaticAssets(uploadsPath, { prefix: '/uploads' });
-  console.log('📂 Static uploads path:', uploadsPath);
 
   // 스웨거 설정
   const config = new DocumentBuilder()
@@ -106,10 +104,10 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  console.log(`🚀 Server running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api`);
-  console.log(`💬 Chat WebSocket: ws://localhost:${port}/chat`);
-  console.log(`📹 WebRTC WebSocket: ws://localhost:${port}/webrtc`);
+  `🚀 Server running on: http://localhost:${port}`;
+  `📚 API Documentation: http://localhost:${port}/api`;
+  `💬 Chat WebSocket: ws://localhost:${port}/chat`;
+  `📹 WebRTC WebSocket: ws://localhost:${port}/webrtc`;
 
   if (module.hot) {
     module.hot.accept();

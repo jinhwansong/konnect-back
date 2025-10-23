@@ -14,7 +14,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Users } from '@/entities/user.entity';
 import { UserRole } from '@/common/enum/status.enum';
-import { CreateMessageDto, JoinRoomDto, LeaveRoomDto } from './dto/chat-message.dto';
+import {
+  CreateMessageDto,
+  JoinRoomDto,
+  LeaveRoomDto,
+} from './dto/chat-message.dto';
 import * as jwt from 'jsonwebtoken';
 
 export interface ChatUser {
@@ -40,7 +44,11 @@ export interface ChatMessage {
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+      'https://surge-lobby-printing-conjunction.trycloudflare.com',
+      'http://localhost:3000',
+    ],
+
     credentials: true,
   },
   namespace: '/chat',
@@ -66,7 +74,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
-    
+
     const user = this.users.get(client.id);
     if (user) {
       // Notify room members about user disconnection
@@ -102,12 +110,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       const publicKey = process.env.JWT_PUBLIC_KEY!.replace(/\\n/g, '\n');
-const decoded = jwt.verify(token, publicKey, {
-  algorithms: ['RS256'],
-}) as jwt.JwtPayload & { id: string };
+      const decoded = jwt.verify(token, publicKey, {
+        algorithms: ['RS256'],
+      }) as jwt.JwtPayload & { id: string };
 
-const user = await this.usersRepository.findOne({
-        where: { id: decoded.sub  },
+      const user = await this.usersRepository.findOne({
+        where: { id: decoded.sub },
       });
 
       if (!user) {
@@ -131,15 +139,15 @@ const user = await this.usersRepository.findOne({
     const user = await this.verifyTokenAndGetUser(client);
 
     if (!user) {
-      client.emit('join_denied', { 
-        reason: '인증에 실패했습니다. 다시 로그인해주세요.' 
+      client.emit('join_denied', {
+        reason: '인증에 실패했습니다. 다시 로그인해주세요.',
       });
       client.disconnect();
       return;
     }
     const { roomId } = dto;
     const isMentor = user.role === UserRole.MENTOR;
-    
+
     this.logger.log(
       `user_connected: ${user.name} (${user.id}) [${isMentor ? '멘토' : '멘티'}], socket: ${client.id}`,
     );
@@ -152,13 +160,11 @@ const user = await this.usersRepository.findOne({
         );
 
         try {
-          const namespace = this.server.of('/chat'); 
+          const namespace = this.server.of('/chat');
           const oldClient = namespace.sockets.get(socketId);
           oldClient?.leave(roomId);
         } catch (err) {
-          this.logger.warn(
-            `기존 소켓 제거 실패 ${socketId}: ${err.message}`,
-          );
+          this.logger.warn(`기존 소켓 제거 실패 ${socketId}: ${err.message}`);
         }
 
         this.users.delete(socketId);
@@ -212,7 +218,7 @@ const user = await this.usersRepository.findOne({
     // Send current users list to the new user
     client.emit('users_list', currentUsers);
     this.logger.log('📋 현재 접속자 목록:', currentUsers);
-    
+
     // Send message history to the new user
     const roomMessages = this.messages.get(roomId) || [];
     client.emit('messages_history', roomMessages);
@@ -226,19 +232,19 @@ const user = await this.usersRepository.findOne({
     @ConnectedSocket() client: Socket,
   ) {
     const { roomId } = dto;
-    
+
     const chatUser = this.users.get(client.id);
     if (chatUser && chatUser.roomId === roomId) {
       // Leave room
       client.leave(roomId);
-      
+
       // Notify room members
       this.server.to(roomId).emit('user_disconnected', {
         userId: chatUser.id,
         userName: chatUser.name,
         socketId: client.id,
       });
-      
+
       // Clean up room membership
       const roomMembers = this.rooms.get(roomId);
       if (roomMembers) {
@@ -248,11 +254,13 @@ const user = await this.usersRepository.findOne({
           this.messages.delete(roomId);
         }
       }
-      
+
       // Remove user from tracking
       this.users.delete(client.id);
-      
-      this.logger.log(`👋 사용자 퇴장: ${chatUser.name} (${chatUser.id}) → 방 ${roomId}`);
+
+      this.logger.log(
+        `👋 사용자 퇴장: ${chatUser.name} (${chatUser.id}) → 방 ${roomId}`,
+      );
     }
   }
 
@@ -262,76 +270,24 @@ const user = await this.usersRepository.findOne({
     @ConnectedSocket() client: Socket,
   ) {
     const { roomId, message, type = 'text', fileUrl, fileName } = dto;
-    
+
     // JWT 토큰 검증 및 사용자 정보 조회
     const dbUser = await this.verifyTokenAndGetUser(client);
     if (!dbUser) {
       this.logger.warn(`❌ 인증되지 않은 메시지 전송 시도: ${client.id}`);
       return;
     }
-    
+
     const chatUser = this.users.get(client.id);
     if (!chatUser || chatUser.roomId !== roomId) {
-      this.logger.warn(`❌ 방에 없는 사용자의 메시지 전송 시도: ${client.id}, 방: ${roomId}`);
+      this.logger.warn(
+        `❌ 방에 없는 사용자의 메시지 전송 시도: ${client.id}, 방: ${roomId}`,
+      );
       return;
     }
-    
+
     const isMentor = dbUser.role === UserRole.MENTOR;
-    
-      const sender: ChatUser = {
-        id: dbUser.id,
-        name: dbUser.name,
-        image: dbUser.image || undefined,
-        isMentor: dbUser.role === UserRole.MENTOR,
-        socketId: client.id,
-        roomId,
-      };
 
-      const chatMessage: ChatMessage = {
-        id: Date.now().toString(),
-        roomId,
-        sender,
-        message,
-        type,
-        fileUrl,
-        fileName,
-        createdAt: new Date(),
-      };
-
-    
-    // Store message
-    const roomMessages = this.messages.get(roomId) || [];
-    roomMessages.push(chatMessage);
-    this.messages.set(roomId, roomMessages);
-    
-    // Broadcast to room
-    this.server.to(roomId).emit('new_message', chatMessage);
-    
-    this.logger.log(`💬 메시지 전송 [${isMentor ? '멘토' : '멘티'}] ${dbUser.name}: ${message}`);
-  }
-
-  @SubscribeMessage('broadcast_message')
-  async handleBroadcastMessage(
-    @MessageBody() dto: CreateMessageDto,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const { roomId, message, type = 'text', fileUrl, fileName } = dto;
-    
-    // JWT 토큰 검증 및 사용자 정보 조회
-    const dbUser = await this.verifyTokenAndGetUser(client);
-    if (!dbUser) {
-      this.logger.warn(`❌ 인증되지 않은 브로드캐스트 시도: ${client.id}`);
-      return;
-    }
-    
-    const chatUser = this.users.get(client.id);
-    if (!chatUser || chatUser.roomId !== roomId) {
-      this.logger.warn(`❌ 방에 없는 사용자의 브로드캐스트 시도: ${client.id}, 방: ${roomId}`);
-      return;
-    }
-    
-    const isMentor = dbUser.role === UserRole.MENTOR;
-    
     const sender: ChatUser = {
       id: dbUser.id,
       name: dbUser.name,
@@ -352,30 +308,88 @@ const user = await this.usersRepository.findOne({
       createdAt: new Date(),
     };
 
-    
     // Store message
     const roomMessages = this.messages.get(roomId) || [];
     roomMessages.push(chatMessage);
     this.messages.set(roomId, roomMessages);
-    
+
+    // Broadcast to room
+    this.server.to(roomId).emit('new_message', chatMessage);
+
+    this.logger.log(
+      `💬 메시지 전송 [${isMentor ? '멘토' : '멘티'}] ${dbUser.name}: ${message}`,
+    );
+  }
+
+  @SubscribeMessage('broadcast_message')
+  async handleBroadcastMessage(
+    @MessageBody() dto: CreateMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId, message, type = 'text', fileUrl, fileName } = dto;
+
+    // JWT 토큰 검증 및 사용자 정보 조회
+    const dbUser = await this.verifyTokenAndGetUser(client);
+    if (!dbUser) {
+      this.logger.warn(`❌ 인증되지 않은 브로드캐스트 시도: ${client.id}`);
+      return;
+    }
+
+    const chatUser = this.users.get(client.id);
+    if (!chatUser || chatUser.roomId !== roomId) {
+      this.logger.warn(
+        `❌ 방에 없는 사용자의 브로드캐스트 시도: ${client.id}, 방: ${roomId}`,
+      );
+      return;
+    }
+
+    const isMentor = dbUser.role === UserRole.MENTOR;
+
+    const sender: ChatUser = {
+      id: dbUser.id,
+      name: dbUser.name,
+      image: dbUser.image || undefined,
+      isMentor: dbUser.role === UserRole.MENTOR,
+      socketId: client.id,
+      roomId,
+    };
+
+    const chatMessage: ChatMessage = {
+      id: Date.now().toString(),
+      roomId,
+      sender,
+      message,
+      type,
+      fileUrl,
+      fileName,
+      createdAt: new Date(),
+    };
+
+    // Store message
+    const roomMessages = this.messages.get(roomId) || [];
+    roomMessages.push(chatMessage);
+    this.messages.set(roomId, roomMessages);
+
     // Broadcast to all connected clients (not just room)
     this.server.emit('broadcast_message', chatMessage);
-    
-    this.logger.log(`📢 브로드캐스트 메시지 전송 [${isMentor ? '멘토' : '멘티'}] ${dbUser.name}: ${message}`);
+
+    this.logger.log(
+      `📢 브로드캐스트 메시지 전송 [${isMentor ? '멘토' : '멘티'}] ${dbUser.name}: ${message}`,
+    );
   }
 
   // Helper method to get room statistics
   getRoomStats(roomId: string) {
     const roomMembers = this.rooms.get(roomId);
     const roomMessages = this.messages.get(roomId);
-    
+
     return {
       roomId,
       memberCount: roomMembers?.size || 0,
       messageCount: roomMessages?.length || 0,
       members: Array.from(this.users.values())
-        .filter(u => u.roomId === roomId)
-        .map(u => ({
+        .filter((u) => u.roomId === roomId)
+        .map((u) => ({
           id: u.id,
           name: u.name,
           isMentor: u.isMentor,
@@ -383,5 +397,3 @@ const user = await this.usersRepository.findOne({
     };
   }
 }
-
-

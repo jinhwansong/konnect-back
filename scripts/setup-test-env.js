@@ -3,16 +3,16 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔧 E2E 테스트 환경 설정 스크립트 시작...');
+('🔧 E2E 테스트 환경 설정 스크립트 시작...');
 
 // .env.test 파일 경로
 const envTestPath = path.join(__dirname, '..', '.env.test');
 
 // .env.test 파일이 이미 존재하는지 확인
 if (fs.existsSync(envTestPath)) {
-  console.log('✅ .env.test 파일이 이미 존재합니다.');
-  console.log('📄 현재 .env.test 내용:');
-  console.log(fs.readFileSync(envTestPath, 'utf8'));
+  ('✅ .env.test 파일이 이미 존재합니다.');
+  ('📄 현재 .env.test 내용:');
+  fs.readFileSync(envTestPath, 'utf8');
   return;
 }
 
@@ -41,19 +41,16 @@ REDIS_URL=redis://localhost:6379/1
 try {
   // .env.test 파일 생성
   fs.writeFileSync(envTestPath, envTestContent);
-  console.log('✅ .env.test 파일이 성공적으로 생성되었습니다.');
-  console.log('📁 경로:', envTestPath);
-  console.log('');
-  console.log('🛡️ 안전장치 활성화:');
-  console.log('  - 테스트 전용 DB: konnect_test');
-  console.log('  - 운영 DB 보호: kon, konnect_dev 접근 차단');
-  console.log('  - 테스트 전용 JWT 시크릿');
-  console.log('');
-  console.log('🚀 이제 npm run test:e2e 명령으로 안전하게 테스트를 실행할 수 있습니다!');
-  
+  ('✅ .env.test 파일이 성공적으로 생성되었습니다.');
+  ('📁 경로:', envTestPath);
+  ('');
+  ('🛡️ 안전장치 활성화:');
+  ('  - 테스트 전용 DB: konnect_test');
+  ('  - 운영 DB 보호: kon, konnect_dev 접근 차단');
+  ('  - 테스트 전용 JWT 시크릿');
+  ('');
+  ('🚀 이제 npm run test:e2e 명령으로 안전하게 테스트를 실행할 수 있습니다!');
 } catch (error) {
   console.error('❌ .env.test 파일 생성 실패:', error.message);
   process.exit(1);
 }
-
-
