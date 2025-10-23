@@ -1,18 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 
 @Injectable()
-export class RedisService {
+export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: RedisClientType;
   // 레디스를 전역으로 관리 및 각각의 서비스에서 관리 하기 위해 사용된다.
-  constructor() {
-    this.client = createClient({
-      url: `redis://${process.env.REDIS_USER}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-    });
+  async onModuleInit() {
+    // 비밀번호 유무에 따라 URL 구성
+    const url = process.env.REDIS_PASSWORD
+      ? `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+      : `redis://${process.env.REDIS_HOST_SERVER}:${process.env.REDIS_PORT_SERVER}`;
+
+    this.client = createClient({ url });
+
     this.client.on('error', (err) => {
-      console.error(`❌ Redis 연결 오류: ${err}`);
+      console.error('❌ Redis 연결 오류:', err);
     });
-    this.client.connect();
+
+    await this.client.connect();
+    console.log('✅ Redis 연결 성공');
+  }
+
+  async onModuleDestroy() {
+    await this.client.quit();
   }
 
   // 인증코드 저장

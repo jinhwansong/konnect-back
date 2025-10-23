@@ -61,22 +61,3 @@ export const AppDataSource = new DataSource({
     connectionLimit: isTestEnv ? 5 : 10,
   },
 });
-
-// CLI에서 사용할 때 환경 정보 출력
-if (require.main === module) {
-  (
-    `🔧 DataSource 초기화 - 환경: ${process.env.NODE_ENV || 'development'}`,
-  );
-  (`📊 데이터베이스: ${dbDatabase}`);
-  (`🏠 호스트: ${process.env.DB_HOST || 'localhost'}`);
-  (`👤 사용자: ${process.env.DB_USERNAME || 'root'}`);
-  (`🔄 Synchronize: ${isTestEnv ? 'true (테스트용)' : 'false'}`);
-  (
-    `📝 Migrations Run: ${isProdEnv ? 'true (프로덕션용)' : 'false'}`,
-  );
-
-  // entities 경로 확인
-  (
-    `📁 Entities 경로: ${join(__dirname, 'src/entities/**/*.entity.{ts,js}')}`,
-  );
-}
