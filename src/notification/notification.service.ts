@@ -216,36 +216,58 @@ export class NotificationService {
     if (!user) {
       throw new NotFoundException('유저를 찾을 수 없습니다.');
     }
-    // 이미 등록된 토큰이면 중복 방지
-    const existing = await this.fcmTokenRepository.findOne({
+    
+    // 같은 사용자가 이미 같은 토큰을 등록했으면 중복 방지
+    const existingForUser = await this.fcmTokenRepository.findOne({
       where: { token, user: { id: userId } },
     });
-    if (existing) return { message: '이미 등록된 토큰입니다.' };
+    if (existingForUser) {
+      this.logger.log(`FCM token already registered for user ${userId}`);
+      return { message: '이미 등록된 토큰입니다.' };
+    }
+
+    // 중요: 같은 토큰이 다른 사용자와 연결되어 있으면 먼저 삭제
+    // (브라우저당 하나의 토큰만 존재하므로, 이전 사용자의 매핑을 제거해야 함)
+    const existingForOtherUser = await this.fcmTokenRepository.findOne({
+      where: { token },
+      relations: ['user'],
+    });
+    
+    if (existingForOtherUser && existingForOtherUser.user.id !== userId) {
+      this.logger.log(
+        `FCM token ${token} was registered for user ${existingForOtherUser.user.id}, removing and re-registering for user ${userId}`,
+      );
+      await this.fcmTokenRepository.delete({ token });
+    }
 
     const entity = this.fcmTokenRepository.create({ token, user });
     await this.fcmTokenRepository.save(entity);
-    this.logger.log(`FCM token updated for user ${userId}`);
+    this.logger.log(`FCM token registered for user ${userId}`);
     return { message: 'FCM 토큰이 등록되었습니다.' };
   }
-  async removeToken(userId: string, tokenId: string) {
+  // 브라우저에서 넘어오는 값은 DB의 id가 아닌 "실제 FCM 토큰 문자열"이므로
+  // 해당 토큰 문자열과 userId 기준으로 삭제하도록 수정
+  async removeToken(userId: string, token: string) {
     try {
-      this.logger.log(`Removing FCM token ${tokenId} for user ${userId}`);
+      this.logger.log(`Removing FCM token (token=${token}) for user ${userId}`);
 
       const result = await this.fcmTokenRepository.delete({
-        id: tokenId,
+        token,
         user: { id: userId },
       });
 
       if (result.affected === 0) {
-        this.logger.warn(`FCM token ${tokenId} not found for user ${userId}`);
+        this.logger.warn(
+          `FCM token not found for user ${userId} (token=${token})`,
+        );
         throw new NotFoundException('FCM 토큰을 찾을 수 없습니다.');
       }
 
-      this.logger.log(`FCM token ${tokenId} deleted for user ${userId}`);
+      this.logger.log(`FCM token ${token} deleted for user ${userId}`);
       return { message: 'FCM 토큰이 삭제되었습니다.' };
     } catch (error) {
       this.logger.error(
-        `Failed to delete FCM token ${tokenId} for user ${userId}: ${error.message}`,
+        `Failed to delete FCM token ${token} for user ${userId}: ${error.message}`,
         error.stack,
       );
       throw new InternalServerErrorException(

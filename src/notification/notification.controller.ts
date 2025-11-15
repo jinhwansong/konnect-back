@@ -208,8 +208,12 @@ export class NotificationController {
     return this.notificationService.updateFcmToken(userId, body.token);
   }
 
-  @Delete('fcm-token/:id')
-  async removeFcmToken(@User('id') userId: string, @Param('id') id: string) {
-    return this.notificationService.removeToken(userId, id);
+  // 경로 파라미터는 실제 FCM 토큰 문자열을 의미하도록 token 으로 명시
+  @Delete('fcm-token/:token')
+  async removeFcmToken(
+    @User('id') userId: string,
+    @Param('token') token: string,
+  ) {
+    return this.notificationService.removeToken(userId, token);
   }
 }

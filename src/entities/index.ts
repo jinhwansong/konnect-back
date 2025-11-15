@@ -11,3 +11,4 @@ export { SocialAccount } from './social-account.entity';
 export { Users } from './user.entity';
 export { Notification } from './notification.entity';
 export { UserFcmToken } from './fcm.entity';
+export { Notice } from './notice.entity';

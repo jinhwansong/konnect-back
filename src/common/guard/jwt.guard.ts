@@ -13,6 +13,7 @@ export class JwtAuthGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request>();
     const authHeader = req.headers['authorization'];
     const token = authHeader?.replace('Bearer ', '');
+
     if (!token) throw new UnauthorizedException('JWT 토큰이 없습니다.');
 
     try {
