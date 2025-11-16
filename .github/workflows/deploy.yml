@@ -24,4 +24,4 @@ jobs:
             git pull origin main
             npm ci
             npm run build
-            pm2 restart konnect-api || pm2 start dist/main.js --name konnect-api
+            pm2 restart konnect-back || pm2 start dist/main.js --name konnect-back
