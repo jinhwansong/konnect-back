@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { Seeder } from 'typeorm-extension';
 import { UserRole } from '@/common/enum/status.enum';
 import { Users } from '@/entities';
+
 export default class UserSeeder implements Seeder {
   public async run(
     dataSource: DataSource,

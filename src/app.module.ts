@@ -51,7 +51,7 @@ import { WebRTCModule } from './realtime/webrtc/webrtc.module';
       logging: process.env.NODE_ENV === 'production' ? false : true,
       // 마이그레이션
       migrations: [join(__dirname, './migrations/**/*{.ts,.js}')],
-      migrationsRun: process.env.NODE_ENV === 'production' ? false : true,
+      migrationsRun: process.env.NODE_ENV === 'production' ? false :true ,
       migrationsTableName: 'migrations',
       // 이모티콘을 사용하기 위해 쓰는거
       charset: 'utf8mb4_general_ci',
@@ -62,7 +62,9 @@ import { WebRTCModule } from './realtime/webrtc/webrtc.module';
       // 테스트 환경에서는 synchronize 활성화
       synchronize: false,
       extra: {
-        connectionLimit: 10,
+       connectionLimit: 5, 
+       enableKeepAlive: true,
+      keepAliveInitialDelay: 30000,
       },
     }),
     UsersModule,
