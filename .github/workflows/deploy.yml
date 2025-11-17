@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -19,6 +20,7 @@ jobs:
           username: root
           key: ${{ secrets.VULTR_SSH_KEY }}
           port: 22
+
           script: |
             set -e
             cd /var/www/konnect-back
@@ -26,20 +28,26 @@ jobs:
             echo "📥 최신 코드 가져오기..."
             git fetch origin
             git reset --hard origin/main
-            
+
             echo "📦 패키지 설치 중..."
-            # package-lock.json이 있으면 npm ci, 없으면 npm install
+            # NODE_ENV=production으로 devDependencies 설치 방지
+            export NODE_ENV=production
+            
             if [ -f "package-lock.json" ]; then
-              npm ci --prefer-offline --no-audit
+              echo "npm ci --omit=dev 실행"
+              npm ci --omit=dev --no-audit --prefer-offline
             else
-              echo "⚠️ package-lock.json이 없습니다. npm install을 실행합니다..."
-              npm install --prefer-offline --no-audit
+              echo "npm install --omit=dev 실행"
+              npm install --omit=dev --no-audit --prefer-offline
             fi
-            
-            echo "🏗️ 빌드 중..."
+
+            echo "🏗️ NestJS 빌드 중..."
             npm run build
-            
-            echo "🚀 애플리케이션 재시작..."
-            pm2 restart konnect-back || pm2 start dist/main.js --name konnect-back
-            
+
+            echo "🚀 PM2 재시작..."
+            pm2 restart konnect-back --env production || pm2 start dist/main.js --name konnect-back --env production
+
+            echo "🧹 PM2 리스트 저장..."
+            pm2 save
+
             echo "✅ 배포 완료!"
