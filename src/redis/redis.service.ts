@@ -1,15 +1,26 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 
+
+console.log("ENV CHECK REDIS:", {
+  HOST: process.env.REDIS_HOST,
+  HOST_SERVER: process.env.REDIS_HOST_SERVER,
+  PORT: process.env.REDIS_PORT,
+  PORT_SERVER: process.env.REDIS_PORT_SERVER,
+});
+
+
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: RedisClientType;
   // 레디스를 전역으로 관리 및 각각의 서비스에서 관리 하기 위해 사용된다.
   async onModuleInit() {
     // 비밀번호 유무에 따라 URL 구성
-    this.client = createClient({
-      url: `redis://${process.env.REDIS_USER}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-    });
+const url = process.env.REDIS_PASSWORD
+      ? `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+      : `redis://${process.env.REDIS_HOST_SERVER}:${process.env.REDIS_PORT_SERVER}`;
+
+    this.client = createClient({ url });
 
     this.client.on('error', (err) => {
       console.error('❌ Redis 연결 오류:', err);
