@@ -1,40 +1,7 @@
 import { DataSource } from 'typeorm';
 import { join } from 'path';
-import * as dotenv from 'dotenv';
-
-// 환경별 .env 파일 로드
-try {
-  if (process.env.NODE_ENV === 'test') {
-    dotenv.config({ path: '.env.test' });
-  } else {
-    dotenv.config();
-  }
-} catch (error) {
-  console.warn('환경 변수 파일 로드 실패:', error.message);
-}
-
-// 안전장치: 테스트 환경에서 운영 DB 접근 방지
-const isTestEnv = process.env.NODE_ENV === 'test';
-const isProdEnv = process.env.NODE_ENV === 'production';
-const dbDatabase = process.env.DB_DATABASE || 'konnect';
-
-if (isTestEnv) {
-  if (!dbDatabase.includes('test') && dbDatabase !== 'konnect_test') {
-    throw new Error(
-      `❌ 테스트 환경에서는 테스트 DB만 사용 가능합니다. 현재 DB: ${dbDatabase}. `.repeat(
-        3,
-      ),
-    );
-  }
-} else {
-  if (dbDatabase.includes('test')) {
-    throw new Error(
-      `❌ 운영/개발 환경에서는 테스트 DB 접근이 금지됩니다. 현재 DB: ${dbDatabase}. `.repeat(
-        3,
-      ),
-    );
-  }
-}
+import { config } from 'dotenv'
+config()
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -42,7 +9,7 @@ export const AppDataSource = new DataSource({
   port: parseInt(process.env.DB_PORT) || 3306,
   username: process.env.DB_USERNAME || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: dbDatabase,
+  database: process.env.DB_DATABASE,
   // CLI에서 entities를 정확히 찾기 위한 경로 수정
   entities: [
     join(__dirname, 'src/entities/**/*.entity.{ts,js}'),
@@ -50,14 +17,15 @@ export const AppDataSource = new DataSource({
   ],
   migrations: [join(__dirname, 'src/migrations/**/*.{ts,js}')],
   // 환경별 synchronize 설정
-  synchronize: isTestEnv ? true : false, // 테스트에서만 자동 동기화
-  dropSchema: isTestEnv ? true : false, // 테스트에서만 스키마 삭제
+  synchronize: process.env.NODE_ENV === 'production' ? false : true, // 테스트에서만 자동 동기화
+  dropSchema: process.env.NODE_ENV === 'test' ? false : true,// 테스트에서만 스키마 삭제
   // 환경별 migration 설정
-  migrationsRun: isProdEnv ? true : false, // 프로덕션에서만 마이그레이션 자동 실행
+        migrationsRun: process.env.NODE_ENV === 'production' ? false :true ,
+ // 프로덕션에서만 마이그레이션 자동 실행
   migrationsTableName: 'migrations',
-  logging: isProdEnv ? false : true, // 프로덕션에서만 로깅 비활성화
+  logging: process.env.NODE_ENV === 'production' ? false : true, // 프로덕션에서만 로깅 비활성화
   charset: 'utf8mb4_general_ci',
   extra: {
-    connectionLimit: isTestEnv ? 5 : 10,
+    connectionLimit: process.env.NODE_ENV === 'test' ? 5 : 10,
   },
 });

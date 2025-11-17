@@ -44,10 +44,7 @@ export interface ChatMessage {
 
 @WebSocketGateway({
   cors: {
-    origin: [
-      'https://surge-lobby-printing-conjunction.trycloudflare.com',
-      'http://localhost:3000',
-    ],
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
 
     credentials: true,
   },

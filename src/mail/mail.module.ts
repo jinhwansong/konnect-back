@@ -20,13 +20,8 @@ import path from 'path';
             from: '"멘토링 서비스" <no-reply@konnect.com>',
           },
           template: {
-            dir: path.join(
-              process.env.NODE_ENV === 'development'
-                ? process.cwd()
-                : path.join(process.cwd(), 'dist', 'src'),
-              'mail',
-              'templates',
-            ),
+                       dir: path.join(__dirname, 'templates'),
+ 
             adapter: new HandlebarsAdapter(),
             options: { strict: true },
           },
