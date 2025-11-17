@@ -3,6 +3,8 @@ import { join } from 'path';
 import { config } from 'dotenv'
 config()
 
+const isProd = process.env.NODE_ENV === 'production';
+
 export const AppDataSource = new DataSource({
   type: 'mysql',
   host: process.env.DB_HOST || 'localhost',
@@ -11,19 +13,26 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_DATABASE,
   // CLI에서 entities를 정확히 찾기 위한 경로 수정
-  entities: [
-    join(__dirname, 'src/entities/**/*.entity.{ts,js}'),
-    join(__dirname, 'src/entities/index.ts'), // index.ts도 포함
+ entities: [
+    isProd
+      ? join(__dirname, './entities/**/*.entity.js')
+      : join(__dirname, 'src/entities/**/*.entity.ts'),
   ],
-  migrations: [join(__dirname, 'src/migrations/**/*.{ts,js}')],
+
+  migrations: [
+    isProd
+      ? join(__dirname, './migrations/*.js')
+      : join(__dirname, 'src/migrations/*.ts'),
+  ],
   // 환경별 synchronize 설정
-  synchronize: process.env.NODE_ENV === 'production' ? false : true, // 테스트에서만 자동 동기화
-  dropSchema: process.env.NODE_ENV === 'test' ? false : true,// 테스트에서만 스키마 삭제
+   synchronize: false,  
+  dropSchema: false,    
   // 환경별 migration 설정
-        migrationsRun: process.env.NODE_ENV === 'production' ? false :true ,
+    migrationsRun: isProd, 
+
  // 프로덕션에서만 마이그레이션 자동 실행
   migrationsTableName: 'migrations',
-  logging: process.env.NODE_ENV === 'production' ? false : true, // 프로덕션에서만 로깅 비활성화
+  logging: !isProd,
   charset: 'utf8mb4_general_ci',
   extra: {
     connectionLimit: process.env.NODE_ENV === 'test' ? 5 : 10,
