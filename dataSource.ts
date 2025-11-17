@@ -21,7 +21,7 @@ export const AppDataSource = new DataSource({
   migrationsRun: process.env.NODE_ENV === 'production' ? false : true,
   // 프로덕션에서만 마이그레이션 자동 실행
   migrationsTableName: 'migrations',
-  logging: process.env.NODE_ENV === 'production' ? false : true, // 프로덕션에서만 로깅 비활성화 지롱롱롱롱....
+  logging: process.env.NODE_ENV === 'production' ? false : true, // 프로덕션에서만 로깅 비활성화 지롱롱롱롱....gngn
   charset: 'utf8mb4_general_ci',
   extra: {
     connectionLimit: process.env.NODE_ENV === 'test' ? 5 : 10,
