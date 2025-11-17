@@ -8,9 +8,22 @@ export default class UserSeeder implements Seeder {
     dataSource: DataSource,
     // 랜덤데이터 만들때 사용
   ): Promise<any> {
+    const userRepository = await dataSource.getRepository(Users);
+    
+    // 기존 관리자 계정 확인
+    const existingAdmin = await userRepository.findOne({
+      where: { email: 'admin@naver.com' },
+    });
+
+    // 관리자 계정이 이미 존재하면 seed하지 않음
+    if (existingAdmin) {
+      console.log('✅ 관리자 계정이 이미 존재합니다. Seed를 건너뜁니다.');
+      return;
+    }
+
+    // 관리자 계정이 없을 때만 생성
     const password = await bcrypt.hash('admin123!#', 12);
-    const admin = await dataSource.getRepository(Users);
-    await admin.insert([
+    await userRepository.insert([
       {
         email: 'admin@naver.com',
         password: password,
@@ -20,5 +33,6 @@ export default class UserSeeder implements Seeder {
         role: UserRole.ADMIN,
       },
     ]);
+    console.log('✅ 관리자 계정이 생성되었습니다.');
   }
 }
