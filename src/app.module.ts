@@ -35,7 +35,7 @@ import { WebRTCModule } from './realtime/webrtc/webrtc.module';
     // dotenv 전역사용
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
+ envFilePath: ['.env.prod', '.env'],
     }),
     EventEmitterModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URL, {

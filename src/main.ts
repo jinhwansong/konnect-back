@@ -25,7 +25,7 @@ async function bootstrap() {
   // HTTP CORS 설정
   app.enableCors({
     origin: [
-      'https://surge-lobby-printing-conjunction.trycloudflare.com',
+      'https://konnect-front-phi.vercel.app',
       'http://localhost:3000',
     ],
     credentials: true,
