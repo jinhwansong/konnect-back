@@ -60,5 +60,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 .uploads
 
+.cursor
 firebase-service-account.json
 eslint.config.mjs

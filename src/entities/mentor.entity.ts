@@ -21,7 +21,7 @@ export class Mentors {
   id: string;
   @Column({ type: 'varchar', length: 20, nullable: true })
   company: string;
-  @Column({ type: 'varchar', nullable: false, length: 100 })
+  @Column({ type: 'varchar', nullable: false, length: 500 })
   introduce: string;
   @Column({
     type: 'enum',
