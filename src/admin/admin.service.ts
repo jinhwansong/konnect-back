@@ -178,7 +178,6 @@ export class AdminService {
     userId: string,
     body: ApproveOrRejectMentorDto,
   ) {
-
     return this.dataSource.transaction(async (manager) => {
       try {
         const admin = await manager.findOne(Users, {
