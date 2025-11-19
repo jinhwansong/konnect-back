@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { MentoringReview, MentoringSession } from '@/entities';
 import { SessionQueryDto } from './dto/session.dto';
 import { PaginationDto } from '@/common/dto/page.dto';
+import sanitizeHtml from 'sanitize-html';
 
 @Injectable()
 export class SessionService {
@@ -128,17 +129,21 @@ export class SessionService {
           createdAt: review.createdAt,
           nickname: review.mentee.nickname,
         }));
+        const cleanText = sanitizeHtml(item.description, {
+          allowedTags: [], // 태그 전부 제거
+          allowedAttributes: {}, // 속성도 전부 제거
+        });
+const processedDescription = cleanText
+  .replace(/&nbsp;/g, ' ')
+  .replace(/\s+/g, ' ') // 여러 스페이스 하나로
+  .trim()
+  .split('\n')
+  .slice(0, 3)
+  .join('\n');
         return {
           id: item.id,
           title: item.title,
-          description: item.description
-            .replace(/&nbsp;/g, ' ')
-            .replace(/⭐only\.?/gi, '')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .split('\n')
-            .slice(0, 3)
-            .join('\n'),
+          description: processedDescription,
           price: item.price,
           duration: item.duration,
           previewReviews,
