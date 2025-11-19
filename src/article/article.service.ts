@@ -1,5 +1,6 @@
 import { LikeType, NotificationType } from '@/common/enum/status.enum';
 import { Article, Like, Mentors, Users } from '@/entities';
+import sanitizeHtml from 'sanitize-html';
 import { RedisService } from '@/redis/redis.service';
 import {
   BadRequestException,
@@ -84,27 +85,35 @@ export class ArticleService {
     }
     const entities = await article.skip(skip).take(limit).getMany();
 
-    const data = entities.map((entity) => ({
-      id: entity.id,
-      title: entity.title,
-      thumbnail: entity.thumbnail,
-      views: entity.views,
-      likeCount: (entity as any).likeCount ?? 0,
-      category: entity.category,
-      createdAt: entity.createdAt,
-      content: entity.content
-        .replace(/&nbsp;/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .split('\n')
-        .slice(0, 2)
-        .join('\n'),
-      author: {
-        id: entity.author.id,
-        nickname: entity.author.nickname,
-        image: entity.author.image,
-      },
-    }));
+    const data = entities.map((entity) => {
+      const cleanText = sanitizeHtml(entity.content, {
+    allowedTags: [], // 태그 완전 제거
+    allowedAttributes: {}, // 속성 제거
+  });
+const processedDescription = cleanText
+  .replace(/&nbsp;/g, ' ')
+  .replace(/\s+/g, ' ') 
+  .trim()
+  .split('\n')
+  .slice(0, 2)
+  .join('\n');
+  return {
+    id: entity.id,
+    title: entity.title,
+    thumbnail: entity.thumbnail,
+    views: entity.views,
+    likeCount: (entity as any).likeCount ?? 0,
+    category: entity.category,
+    createdAt: entity.createdAt,
+    content: processedDescription,
+    author: {
+      id: entity.author.id,
+      nickname: entity.author.nickname,
+      image: entity.author.image,
+    },
+  };
+      
+    });
 
     const total = await article.getCount();
 
