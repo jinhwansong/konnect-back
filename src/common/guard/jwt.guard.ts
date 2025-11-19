@@ -20,8 +20,19 @@ export class JwtAuthGuard implements CanActivate {
       const publicKey = process.env.JWT_PUBLIC_KEY!.replace(/\\n/g, '\n');
       const decoded = jwt.verify(token, publicKey, {
         algorithms: ['RS256'],
-      });
-      req.user = decoded as any;
+      }) as jwt.JwtPayload & {
+        sub: string;
+        email: string;
+        name: string;
+        nickname: string;
+        phone: string;
+        role: string;
+        image?: string;
+      };
+      req.user = {
+        ...decoded,
+        id: decoded.sub,
+      };
       return true;
     } catch (e) {
       throw new UnauthorizedException('유효하지 않은 토큰입니다.');

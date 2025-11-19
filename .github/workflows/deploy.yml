@@ -30,7 +30,6 @@ jobs:
             git reset --hard origin/main
 
             echo "📦 패키지 설치 중..."
-            # NODE_ENV=production으로 devDependencies 설치 방지
             export NODE_ENV=production
             
             if [ -f "package-lock.json" ]; then
@@ -45,7 +44,8 @@ jobs:
             npm run build
 
             echo "🚀 PM2 재시작..."
-            pm2 restart konnect-back --env production || pm2 start dist/main.js --name konnect-back --env production
+            # 기존 프로세스 있으면 restart, 없으면 start
+            pm2 restart konnect-back || pm2 start dist/main.js --name konnect-back
 
             echo "🧹 PM2 리스트 저장..."
             pm2 save

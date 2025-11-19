@@ -178,6 +178,8 @@ export class AdminService {
     userId: string,
     body: ApproveOrRejectMentorDto,
   ) {
+                        console.log('userId', userId);
+
     return this.dataSource.transaction(async (manager) => {
       try {
         const admin = await manager.findOne(Users, {
@@ -189,6 +191,7 @@ export class AdminService {
           throw new ForbiddenException(
             '관리자만 이 작업을 수행할 수 있습니다.',
           );
+          console.log('admin', admin);
 
         const mentor = await manager.findOne(Mentors, {
           where: { id: mentorId },

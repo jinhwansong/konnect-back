@@ -73,15 +73,30 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'q', required: false, description: '검색어' })
-  @ApiQuery({ name: 'role', required: false, description: '역할 필터 (mentee, mentor, admin, all)' })
-  @ApiQuery({ name: 'status', required: false, description: '상태 필터 (active, suspended, all)' })
-  @ApiQuery({ name: 'sort', required: false, description: '정렬 (field:direction)', example: 'createdAt:desc' })
+  @ApiQuery({
+    name: 'role',
+    required: false,
+    description: '역할 필터 (mentee, mentor, admin, all)',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: '상태 필터 (active, suspended, all)',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '정렬 (field:direction)',
+    example: 'createdAt:desc',
+  })
   @ApiResponse({
     status: 200,
     description: '사용자 목록 조회 성공',
   })
   @HttpCode(HttpStatus.OK)
-  async getUserListWithFilters(@Query() dto: AdminQueryDto & { role?: string; status?: string }) {
+  async getUserListWithFilters(
+    @Query() dto: AdminQueryDto & { role?: string; status?: string },
+  ) {
     return this.adminService.getUserListWithFilters(dto);
   }
 
@@ -182,7 +197,7 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   async approveMentor(
     @Param('id') id: string,
-    @User('id') userId: string,
+    @User('sub') userId: string,
     @Body() body: ApproveOrRejectMentorDto,
   ) {
     return this.adminService.approveMentor(id, userId, body);
@@ -193,8 +208,17 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'q', required: false, description: '검색어' })
-  @ApiQuery({ name: 'status', required: false, description: '상태 필터 (성공, 실패, 환불, all)' })
-  @ApiQuery({ name: 'sort', required: false, description: '정렬 (field:direction)', example: 'createdAt:desc' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: '상태 필터 (성공, 실패, 환불, all)',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '정렬 (field:direction)',
+    example: 'createdAt:desc',
+  })
   @ApiResponse({
     status: 200,
     description: '결제 목록 조회 성공',
@@ -209,7 +233,12 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'q', required: false, description: '검색어' })
-  @ApiQuery({ name: 'sort', required: false, description: '정렬 (field:direction)', example: 'createdAt:desc' })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '정렬 (field:direction)',
+    example: 'createdAt:desc',
+  })
   @ApiResponse({
     status: 200,
     description: '아티클 목록 조회 성공',
@@ -224,8 +253,17 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'q', required: false, description: '검색어' })
-  @ApiQuery({ name: 'reported', required: false, description: '신고 필터 (reported, not-reported, all)' })
-  @ApiQuery({ name: 'sort', required: false, description: '정렬 (field:direction)', example: 'createdAt:desc' })
+  @ApiQuery({
+    name: 'reported',
+    required: false,
+    description: '신고 필터 (reported, not-reported, all)',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '정렬 (field:direction)',
+    example: 'createdAt:desc',
+  })
   @ApiResponse({
     status: 200,
     description: '리뷰 목록 조회 성공',
@@ -240,8 +278,17 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'q', required: false, description: '검색어' })
-  @ApiQuery({ name: 'published', required: false, description: '발행 필터 (true, false, all)' })
-  @ApiQuery({ name: 'sort', required: false, description: '정렬 (field:direction)', example: 'createdAt:desc' })
+  @ApiQuery({
+    name: 'published',
+    required: false,
+    description: '발행 필터 (true, false, all)',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '정렬 (field:direction)',
+    example: 'createdAt:desc',
+  })
   @ApiResponse({
     status: 200,
     description: '공지사항 목록 조회 성공',
@@ -294,14 +341,25 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'q', required: false, description: '검색어' })
-  @ApiQuery({ name: 'status', required: false, description: '상태 필터 (published, draft, all)' })
-  @ApiQuery({ name: 'sort', required: false, description: '정렬 (field:direction)', example: 'createdAt:desc' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: '상태 필터 (published, draft, all)',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '정렬 (field:direction)',
+    example: 'createdAt:desc',
+  })
   @ApiResponse({
     status: 200,
     description: '멘토링 세션 목록 조회 성공',
   })
   @HttpCode(HttpStatus.OK)
-  async getMentoringSessions(@Query() dto: AdminQueryDto & { status?: string }) {
+  async getMentoringSessions(
+    @Query() dto: AdminQueryDto & { status?: string },
+  ) {
     return this.adminService.getMentoringSessions(dto);
   }
 
@@ -332,14 +390,25 @@ export class AdminController {
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'q', required: false, description: '검색어' })
-  @ApiQuery({ name: 'status', required: false, description: '상태 필터 (pending, confirmed, cancelled, all)' })
-  @ApiQuery({ name: 'sort', required: false, description: '정렬 (field:direction)', example: 'createdAt:desc' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: '상태 필터 (pending, confirmed, cancelled, all)',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '정렬 (field:direction)',
+    example: 'createdAt:desc',
+  })
   @ApiResponse({
     status: 200,
     description: '멘토링 예약 목록 조회 성공',
   })
   @HttpCode(HttpStatus.OK)
-  async getMentoringReservations(@Query() dto: AdminQueryDto & { status?: string }) {
+  async getMentoringReservations(
+    @Query() dto: AdminQueryDto & { status?: string },
+  ) {
     return this.adminService.getMentoringReservations(dto);
   }
 
@@ -349,7 +418,11 @@ export class AdminController {
     schema: {
       type: 'object',
       properties: {
-        status: { type: 'string', enum: ['confirmed', 'cancelled'], example: 'confirmed' },
+        status: {
+          type: 'string',
+          enum: ['confirmed', 'cancelled'],
+          example: 'confirmed',
+        },
       },
     },
   })
