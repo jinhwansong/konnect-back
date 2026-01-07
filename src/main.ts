@@ -63,7 +63,7 @@ async function bootstrap() {
 
 **Namespace:** \`/chat\`
 
-**Connection URL:** \`wss://api.konnect.store/chat\` (로컬: \`ws://localhost:3030/chat\`)
+**Connection URL:** \`wss://konee.shop/chat\` (로컬: \`ws://localhost:3030/chat\`)
 
 **이벤트 목록**
 
@@ -102,9 +102,9 @@ async function bootstrap() {
   await app.listen(port);
 
   `🚀 Server running on: http://localhost:${port}`;
-  `📚 API Documentation: http://localhost:${port}/api`;
-  `💬 Chat WebSocket: ws://localhost:${port}/chat`;
-  `📹 WebRTC WebSocket: ws://localhost:${port}/webrtc`;
+  `📚 API Documentation: https://konee.shop/api`;
+  `💬 Chat WebSocket: wss://konee.shop/chat`;
+  `📹 WebRTC WebSocket: wss://konee.shop/webrtc`;
 
   if (module.hot) {
     module.hot.accept();
